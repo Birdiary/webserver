@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+  <head>
+    <title>File Upload</title>
+  </head>
+  <body>
+
+    <form id="form">
+      <input type = "file" name = "image" accept="image/*" id="image"/>
+    </form>
+    <button onclick="uploadPicture()">upload</button>
+    <p id="result"></p>
+  </body>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script type="text/javascript">
+  
+            function uploadPicture()
+            {
+                //Prepare form data
+                var data = new FormData();
+                file= $("#image")[0].files[0]
+                console.log(file)
+                data.append("image", file);
+                for (var p of data) {
+                  console.log(p);
+                }                 
+          
+                jQuery.ajax({
+                    url: "/image",
+                    data: data,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    method: 'POST',
+                    success: function (res) {
+                      processResult (res)
+                    }
+                });   
+            }
+            function processResult(res){
+              resultText= "Results: <br/>"
+              result= res.result
+              for (i in result){
+                j = Number(i)+1
+                text=  "Prediction " + j +": <b>" + result[i][1] + "</b> with score: " + result[i][0] + "<br/>"
+                resultText += text
+
+              }
+              $("#result").html(resultText);
+            }            
+</script>
+</html>
