@@ -3,7 +3,8 @@ from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_mongoengine import MongoEngine
 import json
 from flask_uploads import configure_uploads, IMAGES, UploadSet, AUDIO
-from classify_birds import classify
+from scripts.classify_birds import classify
+from scripts.email_service import send_email
 import uuid
 
 
@@ -119,8 +120,8 @@ def add_box():
         print(mail)
         # Add object to movie and save
         box = Box(box_id = id, location=location, name=body['name'], measurements = measurement, mail=mail).save()
-        return id, 201
-    boxes = Box.objects()
+        return {"id": id}, 201
+    boxes = Box.objects.only('box_id').exclude('_id')
     return  jsonify(boxes), 200
 
 @app.route('/box/<box_id>', methods=['GET'])
@@ -133,13 +134,7 @@ def add_environment(box_id: str):
 
     box = Box.objects(box_id=box_id).first_or_404()
 
-    ##TODO: Count Birds in image and Crop images to bird onyl 
-    
-    
-
     body = request.get_json()
-    body=body[0]
-    print (body)
 
     environmentClass = Environment()
     for name,value in body.items():
@@ -147,8 +142,6 @@ def add_environment(box_id: str):
     env_id = str(uuid.uuid4())
     environmentClass.env_id = env_id
 
-    
-    
     environmentList = box.measurements.environment
     environmentList.insert(0, environmentClass)
     box.measurements.environment = environmentList
@@ -156,7 +149,7 @@ def add_environment(box_id: str):
 
 #TODO send E-Mail
 
-    return jsonify(box), 200
+    return jsonify(id = env_id), 200
 
 @app.route('/movement/<box_id>', methods=['POST'])
 def add_movement(box_id: str):
@@ -197,7 +190,6 @@ def add_movement(box_id: str):
         image = request.files[detection['image']]
         detectionClass = Detection()
 
-    # this line prints out the form to the browser
     #return jsonify(data)
         filename = images.save(image)
         result = classify('uploads/images/' + filename)
@@ -209,22 +201,19 @@ def add_movement(box_id: str):
         detectionClass.image = "http://localhost:5000/uploads/images/" + filename
         detectionClass.weight = detection['weight']
         movementsClass.detections.append(detectionClass)
-        
 
+    movementsClass.count =  movementsClass.detections[0].count
 
-    #print (body)
-    #print(result)
-        # this line prints out the form to the browser
-        #return jsonify(data)
-    #filename = images.save(data)
-    #result = classify('static/data/images/' + filename)
+    for mail in box.mail.adresses:
+        send_email(mail, filename, 'uploads/images/' + filename, movementsClass.count)
+    
     movementList = box.measurements.movements
     movementList.insert(0, movementsClass)
     box.measurements.movements = movementList
     box.update(measurements = box.measurements)
     print(movementList)
 
-    return jsonify(box), 200
+    return jsonify(id = mov_id), 200
 
 @app.route('/uploads/images/<filename>')
 def uploadImages(filename):
@@ -233,6 +222,10 @@ def uploadImages(filename):
 @app.route('/uploads/audios/<filename>')
 def uploadAudios(filename):
     return send_from_directory(app.config['UPLOADED_AUDIOS_DEST'], filename)
+
+@app.route('/api')
+def api():
+    return render_template('./redoc/redoc.html')
 
 
 if __name__==('__main__'):

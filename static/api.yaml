@@ -1,0 +1,893 @@
+openapi: 3.1.0
+info:
+  title: Count Your Birds
+  version: '1.0'
+  summary: 'API '
+  contact:
+    name: Nick Jakuschona
+    email: info@countyourbirds.org
+servers:
+  - url: 'http://10.14.29.24:5000'
+    description: Nick Jakuschona
+paths:
+  /box:
+    post:
+      summary: Create Box
+      operationId: post-box
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                description: ''
+                type: object
+                properties:
+                  id:
+                    type: number
+                required:
+                  - id
+                x-examples:
+                  example-1:
+                    id: 123
+        '400':
+          description: Bad Request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              description: ''
+              type: object
+              x-examples:
+                example-1:
+                  name: test
+                  location:
+                    lat: 12
+                    lon: 12
+                  mail:
+                    adresses:
+                      - n_jaku01@wwu.de
+                      - nick@test.de
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                location:
+                  type: object
+                  required:
+                    - lat
+                    - lon
+                  properties:
+                    lat:
+                      type: number
+                    lon:
+                      type: number
+                mail:
+                  type: object
+                  required:
+                    - adresses
+                  properties:
+                    adresses:
+                      type: array
+                      description: list of email adresses which will receive a notification via e-mail about bird occurences
+                      items:
+                        type: string
+              required:
+                - name
+                - location
+                - mail
+            examples:
+              Example:
+                value:
+                  name: Test
+                  location:
+                    lat: 12
+                    lon: 12
+                  mail:
+                    adresses:
+                      - e-mail@test.de
+      description: 'Endpoint to create a new box. Example '
+      parameters: []
+  '/box/{box_id}':
+    parameters:
+      - schema:
+          type: string
+        name: box_id
+        in: path
+        required: true
+    get:
+      summary: Get Measurements of one Box
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                description: ''
+                type: object
+                x-examples:
+                  example-1:
+                    _id:
+                      $oid: 61f90dee49c53fcca2a06580
+                    box_id: 5dba702d-ccff-4095-8c0a-f5cbe2e1baf6
+                    location:
+                      lat: 51.399206
+                      lon: 9.688879
+                    mail:
+                      adresses:
+                        - tom.niers@countyourbirds.org
+                    measurements:
+                      environment:
+                        - date: '2022-02-01 11:56:58.898282'
+                          env_id: d8b8e9f5-26a5-48e8-8deb-f56615818b90
+                          temp: 36
+                      movements:
+                        - audio: 'http://localhost:5000/uploads/audios/test.mp3'
+                          detections:
+                            - count:
+                                Cyanistes caeruleus: 1
+                              det_id: f317bdc8-39cf-4940-ac46-c48ed192c8fb
+                              image: 'http://localhost:5000/uploads/images/svetozar-cenisev-pvqTCIOx9MQ-unsplash.jpg'
+                              weight: 7.6
+                            - count:
+                                Cyanistes caeruleus: 1
+                              det_id: a874d4bf-a16a-45a6-beda-b63aa8337d63
+                              image: 'http://localhost:5000/uploads/images/svetozar-cenisev-pvqTCIOx9MQ-unsplash_1.jpg'
+                              weight: 7.6
+                          end_date: '123'
+                          environment:
+                            date: '123'
+                            env_id: d80e4e89-b8f0-4ade-818d-48526dbf22eb
+                            temp: 10
+                          mov_id: cd20f9db-7156-4288-9687-9fb1db182982
+                          start_date: '123'
+                    name: Peter Lustigs Station
+                properties:
+                  _id:
+                    type: object
+                    required:
+                      - $oid
+                    description: internal id
+                    properties:
+                      $oid:
+                        type: string
+                        minLength: 1
+                  box_id:
+                    type: string
+                    minLength: 1
+                    description: box id which can be used for further requests
+                  location:
+                    type: object
+                    required:
+                      - lat
+                      - lon
+                    properties:
+                      lat:
+                        type: number
+                      lon:
+                        type: number
+                  mail:
+                    type: object
+                    required:
+                      - adresses
+                    properties:
+                      adresses:
+                        type: array
+                        items:
+                          type: string
+                  measurements:
+                    type: object
+                    required:
+                      - environment
+                      - movements
+                    properties:
+                      environment:
+                        type: array
+                        uniqueItems: true
+                        minItems: 1
+                        items:
+                          type: object
+                          properties:
+                            date:
+                              type: string
+                              minLength: 1
+                            env_id:
+                              type: string
+                              minLength: 1
+                            temp:
+                              type: number
+                          required:
+                            - date
+                            - env_id
+                            - temp
+                      movements:
+                        type: array
+                        uniqueItems: true
+                        minItems: 1
+                        items:
+                          type: object
+                          properties:
+                            audio:
+                              type: string
+                              minLength: 1
+                              description: 'url to audio file '
+                            detections:
+                              type: array
+                              uniqueItems: true
+                              minItems: 1
+                              items:
+                                type: object
+                                properties:
+                                  count:
+                                    type: object
+                                    properties:
+                                      Cyanistes caeruleus:
+                                        type: number
+                                    required:
+                                      - Cyanistes caeruleus
+                                  det_id:
+                                    type: string
+                                    minLength: 1
+                                  image:
+                                    type: string
+                                    minLength: 1
+                                    description: url to image files
+                                  weight:
+                                    type: number
+                                required:
+                                  - det_id
+                                  - image
+                                  - weight
+                            environment:
+                              type: object
+                              properties:
+                                date:
+                                  type: string
+                                  minLength: 1
+                                env_id:
+                                  type: string
+                                  minLength: 1
+                                temp:
+                                  type: number
+                              required:
+                                - date
+                                - env_id
+                                - temp
+                            start_date:
+                              type: string
+                              minLength: 1
+                            end_date:
+                              type: string
+                              minLength: 1
+                            mov_id:
+                              type: string
+                              minLength: 1
+                          required:
+                            - audio
+                            - start_date
+                            - end_date
+                            - mov_id
+                  name:
+                    type: string
+                    minLength: 1
+                required:
+                  - _id
+                  - box_id
+                  - location
+                  - mail
+                  - measurements
+                  - name
+              examples:
+                example:
+                  value:
+                    _id:
+                      $oid: 61f90dee49c53fcca2a06580
+                    box_id: 5dba702d-ccff-4095-8c0a-f5cbe2e1baf6
+                    location:
+                      lat: 51.399206
+                      lon: 9.688879
+                    mail:
+                      adresses:
+                        - tom.niers@countyourbirds.org
+                    measurements:
+                      environment:
+                        - date: '2022-02-01 11:56:58.898282'
+                          env_id: d8b8e9f5-26a5-48e8-8deb-f56615818b90
+                          temp: 36
+                      movements:
+                        - audio: 'http://localhost:5000/uploads/audios/test.mp3'
+                          detections:
+                            - count:
+                                Cyanistes caeruleus: 1
+                              det_id: f317bdc8-39cf-4940-ac46-c48ed192c8fb
+                              image: 'http://localhost:5000/uploads/images/svetozar-cenisev-pvqTCIOx9MQ-unsplash.jpg'
+                              weight: 7.6
+                            - count:
+                                Cyanistes caeruleus: 1
+                              det_id: a874d4bf-a16a-45a6-beda-b63aa8337d63
+                              image: 'http://localhost:5000/uploads/images/svetozar-cenisev-pvqTCIOx9MQ-unsplash_1.jpg'
+                              weight: 7.6
+                          end_date: '123'
+                          environment:
+                            date: '123'
+                            env_id: d80e4e89-b8f0-4ade-818d-48526dbf22eb
+                            temp: 10
+                          mov_id: cd20f9db-7156-4288-9687-9fb1db182982
+                          start_date: '123'
+                    name: Peter Lustigs Station
+        '404':
+          description: Box not Found
+      operationId: get-box-box_id
+      parameters: []
+      description: 'Endpoint to get one box, with all measurements'
+  '/environment/{box_id}':
+    parameters:
+      - schema:
+          type: string
+        name: box_id
+        in: path
+        required: true
+    post:
+      summary: Send environment
+      operationId: post-environment-box_id
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                description: ''
+                type: object
+                x-examples:
+                  example-1:
+                    id: 12
+                properties:
+                  id:
+                    type: string
+                required:
+                  - id
+        '404':
+          description: Box not found
+      requestBody:
+        content:
+          application/json:
+            schema:
+              description: ''
+              type: object
+              x-examples:
+                example-1:
+                  date: '2022-02-01 11:56:58.898282'
+                  env_id: d8b8e9f5-26a5-48e8-8deb-f56615818b90
+                  temp: 36
+              properties:
+                date:
+                  type: string
+                  minLength: 1
+                temp:
+                  type: number
+              required:
+                - date
+            examples:
+              example-1:
+                value:
+                  date: string
+                  temp: 0
+      description: 'Endpoint to send values of environment sensors from the box to the server '
+  '/movement/{box_id}':
+    parameters:
+      - schema:
+          type: string
+        name: box_id
+        in: path
+        required: true
+    post:
+      summary: Send movement
+      operationId: post-movement-box_id
+      responses:
+        '200':
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                description: ''
+                type: object
+                properties:
+                  id:
+                    type: number
+                required:
+                  - id
+                x-examples:
+                  example-1:
+                    id: 123
+        '404':
+          description: Box Not Found
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              description: ''
+              type: object
+              x-examples:
+                example-1:
+                  json:
+                    start_date: '123'
+                    end_date: '123'
+                    audio: audioKey
+                    environment:
+                      date: '123'
+                      temp: 10
+                    detections:
+                      - date: '123'
+                        image: imageKey1
+                        weight: 7.6
+                      - date: '123'
+                        image: imageKey2
+                        weight: 7.6
+                  audioKey: files
+                  imageKey1: files
+                  imageKey2: files
+              properties:
+                json:
+                  type: object
+                  required:
+                    - start_date
+                    - end_date
+                    - audio
+                    - environment
+                    - detections
+                  description: 'json object, send as file containing all objects'
+                  properties:
+                    start_date:
+                      type: string
+                      minLength: 1
+                    end_date:
+                      type: string
+                      minLength: 1
+                    audio:
+                      type: string
+                      minLength: 1
+                      description: Name of the parameter under which the audio file is stored to this movement
+                    environment:
+                      type: object
+                      required:
+                        - date
+                        - temp
+                      description: environment object. containing values of different sensors
+                      properties:
+                        date:
+                          type: string
+                          minLength: 1
+                        temp:
+                          type: number
+                          description: 'exampe measurement, more possible'
+                    detections:
+                      type: array
+                      uniqueItems: true
+                      minItems: 1
+                      items:
+                        type: object
+                        properties:
+                          date:
+                            type: string
+                            minLength: 1
+                          image:
+                            type: string
+                            minLength: 1
+                            description: name of the parameter under which the images of this detection is stored
+                          weight:
+                            type: number
+                        required:
+                          - date
+                          - image
+                          - weight
+                audioKey:
+                  type: object
+                  description: the name "audioKey" has to be set in the json under audio. The object is the audio the file itself
+                imageKey1:
+                  type: object
+                  description: 'the name "imageKey1" has to be set in the json int the detection under image. The object is the image file itself. It is possible to send more image obejcts. For each detection one image, the keys have to be stored in the detection object.'
+              required:
+                - json
+                - audioKey
+                - imageKey1
+            examples:
+              example:
+                value:
+                  json:
+                    start_date: string
+                    end_date: string
+                    audio: audioKey
+                    environment:
+                      date: string
+                      temp: 0
+                    detections:
+                      - date: string
+                        image: imageKey1
+                        weight: 0
+                      - date: string
+                        image: imageKey2
+                        weight: 0
+                  audioKey: {}
+                  imageKey1: {}
+                  imageKey2: {}
+      x-code_example: null
+      description: 'Endpoint to send a new movement to the box. Example Pythorn request can be found here: https://github.com/CountYourBirds/webserver/blob/bdc7814753ad3db087c9c3b27010d7bef2b86966/request.py#L4'
+  /image:
+    post:
+      summary: Identify bird on image
+      operationId: post-image
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                description: ''
+                type: object
+                x-examples:
+                  example-1:
+                    result:
+                      - - 0.9176470588235294
+                        - Cyanistes caeruleus
+                      - - 0.01568627450980392
+                        - Parus major
+                      - - 0.011764705882352941
+                        - Setophaga americana
+                      - - 0.00392156862745098
+                        - Vireo philadelphicus
+                      - - 0
+                        - None
+                properties:
+                  result:
+                    type: array
+                    description: 'Array of 5 predictions. Containing an array[propability, birdname]. Best prediction is placed first in the array.'
+                    items:
+                      type: array
+                      description: 'Array of 5 predictions. Containing an array[propability, birdname]. Best prediction is placed first in the array.'
+                      items: {}
+                required:
+                  - result
+              examples:
+                example:
+                  value:
+                    result:
+                      - - 0.9176470588235294
+                        - Cyanistes caeruleus
+                      - - 0.01568627450980392
+                        - Parus major
+                      - - 0.011764705882352941
+                        - Setophaga americana
+                      - - 0.00392156862745098
+                        - Vireo philadelphicus
+                      - - 0
+                        - None
+      description: Test the image detection tool
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: object
+                  description: the image files
+  '/uploads/audios/{filename}':
+    parameters:
+      - schema:
+          type: string
+        name: filename
+        in: path
+        required: true
+    get:
+      summary: Get uploaded audio
+      tags: []
+      responses:
+        '200':
+          description: OK
+      operationId: get-uploads-audios-filename
+      description: Get the uploaded audio
+  '/uploads/images/{filename}':
+    parameters:
+      - schema:
+          type: string
+        name: filename
+        in: path
+        required: true
+    get:
+      summary: Get image file
+      tags: []
+      operationId: get-uploads-images-filename
+      description: Get the uploaded image
+components:
+  schemas:
+    box:
+      description: ''
+      type: object
+      x-examples:
+        example-1:
+          _id:
+            $oid: 61f90dee49c53fcca2a06580
+          box_id: 5dba702d-ccff-4095-8c0a-f5cbe2e1baf6
+          location:
+            lat: 51.399206
+            lon: 9.688879
+          mail:
+            adresses:
+              - tom.niers@countyourbirds.org
+          measurements:
+            environment:
+              - date: '2022-02-01 11:56:58.898282'
+                env_id: d8b8e9f5-26a5-48e8-8deb-f56615818b90
+                temp: 36
+            movements:
+              - audio: 'http://localhost:5000/uploads/audios/test.mp3'
+                detections:
+                  - count:
+                      Cyanistes caeruleus: 1
+                    det_id: f317bdc8-39cf-4940-ac46-c48ed192c8fb
+                    image: 'http://localhost:5000/uploads/images/svetozar-cenisev-pvqTCIOx9MQ-unsplash.jpg'
+                    weight: 7.6
+                  - count:
+                      Cyanistes caeruleus: 1
+                    det_id: a874d4bf-a16a-45a6-beda-b63aa8337d63
+                    image: 'http://localhost:5000/uploads/images/svetozar-cenisev-pvqTCIOx9MQ-unsplash_1.jpg'
+                    weight: 7.6
+                end_date: '123'
+                environment:
+                  date: '123'
+                  env_id: d80e4e89-b8f0-4ade-818d-48526dbf22eb
+                  temp: 10
+                mov_id: cd20f9db-7156-4288-9687-9fb1db182982
+                start_date: '123'
+          name: Peter Lustigs Station
+      properties:
+        box_id:
+          type: string
+          minLength: 1
+        location:
+          type: object
+          required:
+            - lat
+            - lon
+          properties:
+            lat:
+              type: number
+            lon:
+              type: number
+        mail:
+          type: object
+          required:
+            - adresses
+          properties:
+            adresses:
+              type: array
+              items:
+                type: object
+        measurements:
+          type: object
+          required:
+            - environment
+            - movements
+          properties:
+            environment:
+              type: array
+              uniqueItems: true
+              minItems: 1
+              items:
+                type: object
+                properties:
+                  date:
+                    type: string
+                    minLength: 1
+                  env_id:
+                    type: string
+                    minLength: 1
+                  temp:
+                    type: number
+                required:
+                  - date
+                  - env_id
+                  - temp
+            movements:
+              type: array
+              uniqueItems: true
+              minItems: 1
+              items:
+                type: object
+                properties:
+                  audio:
+                    type: string
+                    minLength: 1
+                  detections:
+                    type: array
+                    uniqueItems: true
+                    minItems: 1
+                    items:
+                      type: object
+                      properties:
+                        count:
+                          type: object
+                          properties:
+                            Cyanistes caeruleus:
+                              type: number
+                          required:
+                            - Cyanistes caeruleus
+                        det_id:
+                          type: string
+                          minLength: 1
+                        image:
+                          type: string
+                          minLength: 1
+                        weight:
+                          type: number
+                      required:
+                        - det_id
+                        - image
+                        - weight
+                  end_date:
+                    type: string
+                    minLength: 1
+                  environment:
+                    type: object
+                    properties:
+                      date:
+                        type: string
+                        minLength: 1
+                      env_id:
+                        type: string
+                        minLength: 1
+                      temp:
+                        type: number
+                  mov_id:
+                    type: string
+                    minLength: 1
+                  start_date:
+                    type: string
+                    minLength: 1
+                required:
+                  - audio
+                  - detections
+                  - end_date
+                  - mov_id
+                  - start_date
+        name:
+          type: string
+          minLength: 1
+      required:
+        - location
+        - mail
+        - measurements
+        - name
+      examples:
+        - _id:
+            $oid: 61f90dee49c53fcca2a06580
+          box_id: 5dba702d-ccff-4095-8c0a-f5cbe2e1baf6
+          location:
+            lat: 51.399206
+            lon: 9.688879
+          mail:
+            adresses:
+              - tom.niers@countyourbirds.org
+          measurements:
+            environment:
+              - date: '2022-02-01 11:56:58.898282'
+                env_id: d8b8e9f5-26a5-48e8-8deb-f56615818b90
+                temp: 36
+            movements:
+              - audio: 'http://localhost:5000/uploads/audios/test.mp3'
+                detections:
+                  - count:
+                      Cyanistes caeruleus: 1
+                    det_id: f317bdc8-39cf-4940-ac46-c48ed192c8fb
+                    image: 'http://localhost:5000/uploads/images/svetozar-cenisev-pvqTCIOx9MQ-unsplash.jpg'
+                    weight: 7.6
+                  - count:
+                      Cyanistes caeruleus: 1
+                    det_id: a874d4bf-a16a-45a6-beda-b63aa8337d63
+                    image: 'http://localhost:5000/uploads/images/svetozar-cenisev-pvqTCIOx9MQ-unsplash_1.jpg'
+                    weight: 7.6
+                end_date: '123'
+                environment:
+                  date: '123'
+                  env_id: d80e4e89-b8f0-4ade-818d-48526dbf22eb
+                  temp: 10
+                mov_id: cd20f9db-7156-4288-9687-9fb1db182982
+                start_date: '123'
+          name: Peter Lustigs Station
+    movement:
+      description: ''
+      type: object
+      x-examples:
+        example-1:
+          audio: 'http://localhost:5000/uploads/audios/test.mp3'
+          detections:
+            - count:
+                Cyanistes caeruleus: 1
+              det_id: f317bdc8-39cf-4940-ac46-c48ed192c8fb
+              image: 'http://localhost:5000/uploads/images/svetozar-cenisev-pvqTCIOx9MQ-unsplash.jpg'
+              weight: 7.6
+            - count:
+                Cyanistes caeruleus: 1
+              det_id: a874d4bf-a16a-45a6-beda-b63aa8337d63
+              image: 'http://localhost:5000/uploads/images/svetozar-cenisev-pvqTCIOx9MQ-unsplash_1.jpg'
+              weight: 7.6
+          end_date: '123'
+          environment:
+            date: '123'
+            env_id: d80e4e89-b8f0-4ade-818d-48526dbf22eb
+            temp: 10
+          mov_id: cd20f9db-7156-4288-9687-9fb1db182982
+          start_date: '123'
+      properties:
+        audio:
+          type: string
+          minLength: 1
+        detections:
+          type: array
+          uniqueItems: true
+          minItems: 1
+          items:
+            type: object
+            properties:
+              count:
+                type: object
+                properties:
+                  Cyanistes caeruleus:
+                    type: number
+              det_id:
+                type: string
+                minLength: 1
+              image:
+                type: string
+                minLength: 1
+              weight:
+                type: number
+            required:
+              - image
+              - weight
+        end_date:
+          type: string
+          minLength: 1
+        environment:
+          type: object
+          properties:
+            date:
+              type: string
+              minLength: 1
+            env_id:
+              type: string
+              minLength: 1
+            temp:
+              type: number
+        mov_id:
+          type: string
+          minLength: 1
+        start_date:
+          type: string
+          minLength: 1
+      required:
+        - audio
+        - detections
+        - end_date
+        - start_date
+    environment:
+      description: ''
+      type: object
+      x-examples:
+        example-1:
+          date: '2022-02-01 11:56:58.898282'
+          env_id: d8b8e9f5-26a5-48e8-8deb-f56615818b90
+          temp: 36
+      properties:
+        date:
+          type: string
+          minLength: 1
+        env_id:
+          type: string
+          minLength: 1
+        temp:
+          type: number
+  requestBodies: {}
+  examples: {}
