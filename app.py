@@ -196,6 +196,8 @@ def add_movement(box_id: str):
         if result[0][0] > 0.5:
             bird_name = result[0][1]
             detectionClass.count = {bird_name: 1}
+        else:
+           detectionClass.count = {"undefined": 1} 
         det_id = str(uuid.uuid4())
         detectionClass.det_id = det_id
         detectionClass.image = "http://localhost:5000/uploads/images/" + filename
