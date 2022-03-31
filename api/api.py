@@ -15,7 +15,7 @@ app.config['UPLOADED_IMAGES_DEST'] = 'uploads/images'
 app.config['UPLOADED_AUDIOS_DEST'] = 'uploads/audios'
 app.config['MONGODB_SETTINGS'] = {
     'db': 'your_database',
-    'host': 'localhost',
+    'host': 'mongodb',
     'port': 27017
 }
 db = MongoEngine()
@@ -68,13 +68,13 @@ class Box(db.DynamicDocument):
     mail = db.EmbeddedDocumentField(Mail)
     
 
-@app.route('/')
-def index():
-    return render_template('./ui/index.html')
+#@app.route('/')
+#def index():
+#    return render_template('./ui/index.html') 
 
 
 
-@app.route('/image', methods=['Get', 'POST'])
+@app.route('/api/image', methods=['Get', 'POST'])
 def image():
     if request.method=="POST":
         # this line goes to the console/terminal in flask dev server
@@ -90,7 +90,7 @@ def image():
     )
     return render_template('./index.html')
 
-@app.route('/audio', methods=['POST'])
+@app.route('/api/audio', methods=['POST'])
 def audio():
     if request.method=="POST":
         # this line goes to the console/terminal in flask dev server
@@ -102,7 +102,7 @@ def audio():
         return filename
     return render_template('./index.html')
 
-@app.route('/box', methods=['GET', 'POST'])
+@app.route('/api/box', methods=['GET', 'POST'])
 def add_box():
     if request.method=="POST":
         body = request.get_json()
@@ -117,6 +117,12 @@ def add_box():
             list.append(mailToInsert)
         mail.adresses = list
         id = str(uuid.uuid4())
+        #senseboxid = ""
+        #if(body['senseboxID']):
+        #    senseboxid = body['senseboxID']
+        #else: 
+        #    senseboxid
+
         print(mail)
         # Add object to movie and save
         box = Box(box_id = id, location=location, name=body['name'], measurements = measurement, mail=mail).save()
@@ -124,12 +130,12 @@ def add_box():
     boxes = Box.objects.only('box_id').exclude('_id')
     return  jsonify(boxes), 200
 
-@app.route('/box/<box_id>', methods=['GET'])
+@app.route('/api/box/<box_id>', methods=['GET'])
 def get_one_box(box_id: str):
     box = Box.objects(box_id=box_id).first_or_404()
     return jsonify(box), 200
 
-@app.route('/environment/<box_id>', methods=['POST'])
+@app.route('/api/environment/<box_id>', methods=['POST'])
 def add_environment(box_id: str):
 
     box = Box.objects(box_id=box_id).first_or_404()
@@ -151,7 +157,7 @@ def add_environment(box_id: str):
 
     return jsonify(id = env_id), 200
 
-@app.route('/movement/<box_id>', methods=['POST'])
+@app.route('/api/movement/<box_id>', methods=['POST'])
 def add_movement(box_id: str):
     content_type = request.headers.get('Content-Type')
     print(content_type)
@@ -202,6 +208,7 @@ def add_movement(box_id: str):
         detectionClass.det_id = det_id
         detectionClass.image = "http://localhost:5000/uploads/images/" + filename
         detectionClass.weight = detection['weight']
+        detectionClass.date = detection['date']
         movementsClass.detections.append(detectionClass)
 
     movementsClass.count =  movementsClass.detections[0].count
@@ -217,17 +224,17 @@ def add_movement(box_id: str):
 
     return jsonify(id = mov_id), 200
 
-@app.route('/uploads/images/<filename>')
+@app.route('/api/uploads/images/<filename>')
 def uploadImages(filename):
     return send_from_directory(app.config['UPLOADED_IMAGES_DEST'], filename)
 
-@app.route('/uploads/audios/<filename>')
+@app.route('/api/uploads/audios/<filename>')
 def uploadAudios(filename):
     return send_from_directory(app.config['UPLOADED_AUDIOS_DEST'], filename)
 
-@app.route('/api')
-def api():
-    return render_template('./redoc/redoc.html')
+#@app.route('/api')
+#def api():
+#    return render_template('./redoc/redoc.html')
 
 
 if __name__==('__main__'):
