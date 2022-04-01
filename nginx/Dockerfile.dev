@@ -1,6 +1,6 @@
 FROM nginx:1.15.8-alpine
 
-COPY ./templates/info ./usr/share/nginx/html/info
+COPY ./templates/info ./usr/share/nginx/html
 COPY ./templates/redoc ./usr/share/nginx/html/doc
 COPY ./templates/upload ./usr/share/nginx/html/upload
 

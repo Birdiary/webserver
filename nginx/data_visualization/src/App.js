@@ -17,8 +17,6 @@ const Item = styled(Paper)(({ theme }) => ({
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-      </header>
       <Grid container spacing={2}>
         <Grid item xs={8}>
           <Item>xs=8</Item>

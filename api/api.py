@@ -6,6 +6,9 @@ from flask_uploads import configure_uploads, IMAGES, UploadSet, AUDIO
 from scripts.classify_birds import classify
 from scripts.email_service import send_email
 import uuid
+import os
+
+host= os.environ.get('host'),
 
 
 app = Flask(__name__)
@@ -181,7 +184,7 @@ def add_movement(box_id: str):
     movementsClass.end_date = body['end_date']
     audio = request.files[body['audio']]
     filename = audios.save(audio)
-    movementsClass.audio = "http://localhost:5000/uploads/audios/" + filename
+    movementsClass.audio = host + "/uploads/audios/" + filename
 
     environmentClass = Environment()
     for name,value in body['environment'].items():
@@ -206,7 +209,7 @@ def add_movement(box_id: str):
            detectionClass.count = {"undefined": 1} 
         det_id = str(uuid.uuid4())
         detectionClass.det_id = det_id
-        detectionClass.image = "http://localhost:5000/uploads/images/" + filename
+        detectionClass.image = host + "/uploads/images/" + filename
         detectionClass.weight = detection['weight']
         detectionClass.date = detection['date']
         movementsClass.detections.append(detectionClass)
