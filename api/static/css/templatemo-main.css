@@ -146,6 +146,18 @@ a:hover { color: #FF0; }
 .baner-content {
   padding-top: 30vh;
   text-align: center;
+  background-image: url(../img/r1.png);
+}
+
+.video-content {
+  padding-top: 10vh;
+  text-align: center;
+  background-image: url(../img/bird4.jpg);
+}
+
+.workshop-content {
+  padding-top: 10vh;
+  text-align: center;
   background-image: url(../img/bird4.jpg);
 }
 
@@ -234,7 +246,7 @@ h4, .h4 {
   margin-bottom: 30px;
 }
 
-.service-content .service-item .line-dec {
+.line-dec {
   width: 45px;
   height: 3px;
   background-color: #ff7d27;
@@ -434,6 +446,14 @@ section {
   font-weight: 700;
   text-decoration: none;
   letter-spacing: 0.5px;
+}
+
+.workshop-text {
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 25px 30px;
+  text-align: center;
+  color: #fff;
+  margin-bottom: 30px;
 }
 
 .map {
