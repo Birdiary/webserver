@@ -73,7 +73,7 @@ class Box(db.DynamicDocument):
 
 #@app.route('/')
 #def index():
-#    return render_template('./ui/index.html') 
+#    return render_template('./index.html') 
 
 
 
@@ -130,7 +130,7 @@ def add_box():
         # Add object to movie and save
         box = Box(box_id = id, location=location, name=body['name'], measurements = measurement, mail=mail).save()
         return {"id": id}, 201
-    boxes = Box.objects.only('box_id').exclude('_id')
+    boxes = Box.objects.only('box_id', "location", "name" ).exclude('_id')
     return  jsonify(boxes), 200
 
 @app.route('/api/box/<box_id>', methods=['GET'])

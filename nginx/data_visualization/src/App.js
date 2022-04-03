@@ -1,33 +1,80 @@
-import logo from './logo.svg';
-import './App.css';
-import * as React from 'react';
+import React from 'react'
+import OwnMap from './Map/Map'
+import CreateBox from './CreateBox/CreateBox';
+import Box from './Box/Box'
+import Button from '@mui/material/Button';
+import { Route, BrowserRouter, Routes } from "react-router-dom";
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 
-import { styled } from '@mui/material/styles';
-import Paper from '@mui/material/Paper';
-import Grid from '@mui/material/Grid';
 
-const Item = styled(Paper)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
-  ...theme.typography.body2,
-  padding: theme.spacing(1),
-  textAlign: 'center',
-  color: theme.palette.text.secondary,
-}));
-
-function App() {
+const Header = ( props ) => {
   return (
-    <div className="App">
-      <Grid container spacing={2}>
-        <Grid item xs={8}>
-          <Item>xs=8</Item>
-        </Grid>
-        <Grid item xs={4}>
-          <Item>xs=4</Item>
-        </Grid>
+    <AppBar style={{backgroundColor : "orange"}} id="header">
+      <Toolbar>
+      <a href="/react">Logo</a>
+       {!props.ojsView ?<Typography variant="h4" color="inherit" style={{ flex: 1 }}>
+          <Button style={{marginLeft: "120px", fontWeight : "bold"}} color="inherit" href={"/react"}>HOME</Button>
+        </Typography> : ""}
+        <Button rel="noopener" color="inherit" href="/">
+          Learn more about our Project
+        </Button>
+        
+      </Toolbar>
+    </AppBar>
+  );
+};
 
-      </Grid>
+
+  
+
+const Footer = (props) => {
+
+
+  return(
+    <div style={{backgroundColor : "orange"}} className="mui-container mui--text-center" id="footer">
+      <BrowserRouter forceRefresh>
+      <div id="links" style={{color: "white"}}>
+          <a  id="link" href="/doc">API</a> |&nbsp;
+          Version&nbsp;<code>#dev#</code>
+      </div>
+      </BrowserRouter>
     </div>
   );
 }
 
-export default App;
+class App extends React.Component {
+  constructor(props){
+    super(props);
+    this.state = {
+    };
+  };
+
+  
+
+  render() {
+    return (
+      <div id="pageContainer">
+      <Header>
+      </Header>
+
+      <BrowserRouter>
+      <div>
+        <div className="content" id="mainView">
+          <Routes>
+          <Route exact path="/react" element={<OwnMap ></OwnMap>} />
+          <Route exact path="/react/box/:id" element={(props) => <Box {...props}  />}></Route>
+          <Route path="/react/createBox" element={<CreateBox/>}></Route>
+          </Routes>
+        </div>
+      </div>
+      </BrowserRouter>
+      <Footer
+      ></Footer>
+      </div>
+     
+    )}
+}
+
+export default App
