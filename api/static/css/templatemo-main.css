@@ -152,7 +152,11 @@ a:hover { color: #FF0; }
 .video-content {
   padding-top: 10vh;
   text-align: center;
-  background-image: url(../img/bird4.jpg);
+  background-image: url(../img/GEO1.png);
+  background-attachment: fixed;
+  min-height: 100vh;
+  background-size: cover;
+  background-position: center center !important;
 }
 
 .workshop-content {
