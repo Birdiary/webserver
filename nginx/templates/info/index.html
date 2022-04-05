@@ -48,19 +48,19 @@ https://templatemo.com/tm-526-vanilla
             </div>
             
         </div>
-        <p style="display: table-cell">Image Credit: WWU – Simon Jöcker</p>
+        <div style="position: absolute; bottom: 0;">Image Credit: WWU – Simon Jöcker</div>
     </div>
 
     <div class="parallax-content video-content" id="video">
         <div class="container">
             <div class="first-content">
-            <---> <iframe title="vimeo-player" src="https://player.vimeo.com/video/693248561?h=8fff965013" width=960 height="540" frameborder="0" allowfullscreen></iframe>
+            <iframe id="test" title="vimeo-player" src="https://player.vimeo.com/video/693248561?h=8fff965013"  width=960 height="540"  frameborder="0" allowfullscreen></iframe>
             </div>
         </div>
         <div class="primary-button" padding-bottom: 5vh>
             <a href="#services">Ich will noch mehr wissen</a>
         </div>
-        <p style="display: table-cell">Image Credit: WWU – Simon Jöcker</p>
+        <div style="position: absolute; bottom: 0;">Image Credit: WWU – Simon Jöcker</div>
     </div>
 
 
@@ -133,7 +133,8 @@ https://templatemo.com/tm-526-vanilla
                 Der Workshop selber wird am Samstag dem 30.04. von 10:00 Uhr bis ca. 17:00 Uhr stattfinden. Während des Workshops werden wir gemeinsam die Stationen zusammenbauen und ans Laufen bringen. Dazu verkabeln wir die entsprechenden Sensoren mit einem Mikrocomputer, welcher die Rechenzentrale eurer Station sein wird und integrieren das Alles dann in ein Vogelfutterhaus. <br/>
                 Teilnehmende werden gebeten die Station dann entsprechend bei sich zu Hause für Vögel zugänglich aufzubauen und zu pflegen. Das bezieht insbesondere die Beschaffung und das Nachfüllen von Vogelfutter mit ein. Außerdem sind alle Teilnehmenden dazu eingeladen an einem zweiten Workshop teilzunehmen, in dem die gesammelten Daten ausgewertet werden und Verbesserungsvorschläge für die Station erarbeitet werden. Dieser wird voraussichtlich Mitte August stattfinden.<br/>
                 Bewerben für den ersten Workshop könnt ihr euch hier: <a href="https://arcg.is/1KS844" target="_blank">https://arcg.is/1KS844</a>. Das Projekt findet im Rahmen des Citizen Science Preises der WWU statt und die Stationen werden durch das Preisgeld finanziert. Daher ist die Teilnehmerzahl auf 20 Stationen begrenzt, wobei auch mehrere Teilnehmer pro Station möglich sind. Im Verlauf der Bewerbung werdet ihr gebeten ein paar Angaben zu eurem möglichen Standort für die Station zu machen. Damit helft ihr uns dabei letztlich möglich unterschiedliche Standorte und Gegebenheiten für die Stationen abzudecken, um anschließend vielerlei spannende Forschungsfragen gemeinsam mit euch beantworten zu können. <br/>
-                Bei Fragen könnt ihr euch an die unter Kontakt zu findenden E-Mail Adressen oder die entsprechende Telefonnummer wenden.   
+                Bei Fragen könnt ihr euch an die unter Kontakt zu findenden E-Mail Adressen oder die entsprechende Telefonnummer wenden.  <br/>
+                Eine Anmeldung zum Workshop ist bis einschließlich 19.04.22 möglich.
                 
             </p>
         </div>
@@ -232,6 +233,37 @@ https://templatemo.com/tm-526-vanilla
     <footer>
         <div class="container">
             <div class="row">
+                <div class="col-md-12"><h4 >Gefördert von: </h4></div>
+            </div>
+            <div class="row align-items-center" style="padding-bottom: 5px;">
+                <div class="col-md-4" style="padding-bottom: 5px;">
+                    <img src="/static/img/CS_Siegel_rgb.png">
+                </div>
+                <div class="col-md-4" style="padding-bottom: 5px;">
+                    <img src="/static/img/Logo_StiftungWWU_2019_rgb.png">
+                </div>
+                <div class="col-md-4" style="padding-bottom: 5px;">
+                    <img src="/static/img/safir_logo.svg">
+                </div>
+            </div>
+            <div class="row" >
+                <div class="col-md-12"><h4>Unterstütz von: </h4></div>
+            </div>
+            <div class="row gx-5 align-items-center" style="padding-bottom: 5px;">
+                <div class="col-md-3"  style="padding-bottom: 5px;">
+                    <img src="/static/img/sensebox_logo.svg">
+                </div>
+                <div class="col-md-3 "  style="padding-bottom: 5px;">
+                    <img src="/static/img/logo_reedu.png">
+                </div>
+                <div class="col-md-3"  style="padding-bottom: 5px;">
+                    <img src="/static/img/Logo_ifgi_long.png">
+                </div>
+                <div class="col-md-3"  style="padding-bottom: 5px;">
+                    <img src="/static/img/WWUMuenster_Logo_2021_rgb.png">
+                </div>
+            </div>
+            <div class="row">
                 <div class="col-md-12">
                     <div class="primary-button">
                         <a href="#home">Back To Top</a>
@@ -269,6 +301,24 @@ https://templatemo.com/tm-526-vanilla
 
     <script>
         $(document).ready(function(){
+        initializeV();
+        function initializeV(){
+                //note: I can't use window.parent becuase the code snippet loads on a different frame than the parent page. See the other snippet for a practical example. This snippet is meant to merely illustrate the effect.
+                //1% of the parent viewport width (same as 1vw):
+            	var vw = window.innerWidth/100;
+                //1% of the viewport height (same as 1vh):
+            	var vh = window.innerHeight/100;
+        
+              //this is where the magic happens. Simply set width/height/whatever to a multiple of vw/vh and add 'px'. Dimensions must be in pixels since the vw/vh measurement is based on pixels.
+              document.getElementById('test').width = 70*vw+'px';
+              //document.getElementById('test').style.height = 0.5625*90*vh+'px';
+                //assign width and height to your v unit elements here
+        }
+        
+        window.addEventListener('resize',function(){
+              //when the browser window is resized; recalculate
+              initializeV();
+        });
           // Add smooth scrolling to all links
           $(".fixed-side-navbar a, .primary-button a").on('click', function(event) {
 
