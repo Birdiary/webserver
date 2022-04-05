@@ -24,7 +24,7 @@ Vanilla Template
 https://templatemo.com/tm-526-vanilla
 -->
 
-<body style="overflow-x: clip;">
+<body>
 
     <div class="fixed-side-navbar">
         <ul class="nav flex-column">
@@ -55,10 +55,9 @@ https://templatemo.com/tm-526-vanilla
     </div>
 
     <div class="parallax-content video-content" id="video">
-        <div class="container">
-            <div class="first-content">
-                <iframe id="test" title="vimeo-player" src="https://player.vimeo.com/video/693248561?h=8fff965013"
-                    width=960 height="540" frameborder="0" allowfullscreen></iframe>
+        <div class="container" style="min-width: fit-content;">
+            <div class="first-content" style="min-width: fit-content;">
+                    <iframe id="test" width="560" height="315" src="https://www.youtube.com/embed/RgjZkUdeO5I" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
             </div>
         </div>
         <div class="primary-button" padding-bottom: 5vh>
@@ -398,9 +397,16 @@ https://templatemo.com/tm-526-vanilla
                 //1% of the viewport height (same as 1vh):
                 var vh = window.innerHeight / 100;
 
+                let width = 70 * vw 
+                let height = 0.5625*70*vw
+
+                if (height > (80*vh)){
+                    height = 80*vh
+                }
+
                 //this is where the magic happens. Simply set width/height/whatever to a multiple of vw/vh and add 'px'. Dimensions must be in pixels since the vw/vh measurement is based on pixels.
-                document.getElementById('test').width = 70 * vw + 'px';
-                //document.getElementById('test').style.height = 0.5625*90*vh+'px';
+                document.getElementById('test').width = width + 'px';
+                document.getElementById('test').height = height + 'px';
                 //assign width and height to your v unit elements here
             }
 
