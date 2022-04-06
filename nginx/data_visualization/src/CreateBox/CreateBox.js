@@ -1,44 +1,61 @@
 import React from 'react';
- import { Formik, Field, Form, ErrorMessage } from 'formik';
- import * as Yup from 'yup';
- 
+ import { useFormik } from 'formik';
+ import * as yup from 'yup';
+ import Button from '@mui/material/Button';
+ import TextField from '@mui/material/TextField';
+
+ const validationSchema = yup.object({
+  email: yup
+    .string('Enter your email')
+    .email('Enter a valid email')
+    .required('Email is required'),
+  password: yup
+    .string('Enter your password')
+    .min(8, 'Password should be of minimum 8 characters length')
+    .required('Password is required'),
+});
+
   const BoxForm = () => {
-   return (
-     <Formik
-       initialValues={{ firstName: '', lastName: '', email: '' }}
-       validationSchema={Yup.object({
-         firstName: Yup.string()
-           .max(15, 'Must be 15 characters or less')
-           .required('Required'),
-         lastName: Yup.string()
-           .max(20, 'Must be 20 characters or less')
-           .required('Required'),
-         email: Yup.string().email('Invalid email address').required('Required'),
-       })}
-       onSubmit={(values, { setSubmitting }) => {
-         setTimeout(() => {
-           alert(JSON.stringify(values, null, 2));
-           setSubmitting(false);
-         }, 400);
-       }}
-     >
-       <Form>
-         <label htmlFor="firstName">First Name</label>
-         <Field name="firstName" type="text" />
-         <ErrorMessage name="firstName" />
- 
-         <label htmlFor="lastName">Last Name</label>
-         <Field name="lastName" type="text" />
-         <ErrorMessage name="lastName" />
- 
-         <label htmlFor="email">Email Address</label>
-         <Field name="email" type="email" />
-         <ErrorMessage name="email" />
- 
-         <button type="submit">Submit</button>
-       </Form>
-     </Formik>
-   );
+  const formik = useFormik({
+    initialValues: {
+    },
+    validationSchema: validationSchema,
+    onSubmit: (values) => {
+      alert(JSON.stringify(values, null, 2));
+    },
+  });
+
+  return (
+    <div>
+      <form onSubmit={formik.handleSubmit}>
+        <TextField
+          id="email"
+          name="email"
+          label="Email"
+          value={formik.values.email}
+          onChange={formik.handleChange}
+          error={formik.touched.email && Boolean(formik.errors.email)}
+          helperText={formik.touched.email && formik.errors.email}
+        />
+        <br/>
+        <br/>
+        <TextField
+          id="password"
+          name="password"
+          label="Password"
+          value={formik.values.password}
+          onChange={formik.handleChange}
+          error={formik.touched.password && Boolean(formik.errors.password)}
+          helperText={formik.touched.password && formik.errors.password}
+        />
+        <br/>
+        <br/>
+        <Button color="primary" variant="contained" type="submit">
+          Submit
+        </Button>
+      </form>
+    </div>
+  );
  };
 
  class CreateBox extends React.Component {
@@ -53,7 +70,11 @@ import React from 'react';
   
     render() {
       return (
+        <div style={{textAlign: "center"}}>
+          <h1>Create a Box: </h1>
           <BoxForm></BoxForm>
+          </div>
+          
        
        
       )}

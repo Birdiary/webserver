@@ -467,10 +467,11 @@ section {
 
 .workshop-text {
   background-color: rgba(0, 0, 0, 0.5);
+  width: 85vw;
   padding: 25px 30px;
   text-align: center;
   color: #fff;
-  margin-bottom: 30px;
+  
 }
 
 .map {
