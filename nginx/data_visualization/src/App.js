@@ -3,7 +3,7 @@ import OwnMap from './Map/Map'
 import CreateBox from './CreateBox/CreateBox';
 import Box from './Box/Box'
 import Button from '@mui/material/Button';
-import { Route, BrowserRouter, Routes } from "react-router-dom";
+import { Route, Routes, BrowserRouter } from "react-router-dom";
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
