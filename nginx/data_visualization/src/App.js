@@ -63,7 +63,7 @@ class App extends React.Component {
       <BrowserRouter>
       <div>
         <div className="content" id="mainView">
-          <Routes>
+          <Routes history={history} basename="/webapp">
           <Route exact path="/react" element={<OwnMap ></OwnMap>} />
           <Route exact path="/react/box/:id" element={(props) => <Box {...props}  />}></Route>
           <Route path="/react/createBox" element={<CreateBox/>}></Route>
