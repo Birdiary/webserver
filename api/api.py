@@ -8,7 +8,10 @@ from scripts.email_service import send_email
 import uuid
 import os
 
-host= os.environ.get('host'),
+
+host= os.environ['HOST']
+pwd = os.environ['Mail_PWD']
+
 
 
 app = Flask(__name__)
@@ -71,9 +74,9 @@ class Box(db.DynamicDocument):
     mail = db.EmbeddedDocumentField(Mail)
     
 
-#@app.route('/')
-#def index():
-#    return render_template('./index.html') 
+@app.route('/')
+def index():
+    return render_template('./index.html') 
 
 
 
@@ -140,10 +143,13 @@ def get_one_box(box_id: str):
 
 @app.route('/api/environment/<box_id>', methods=['POST'])
 def add_environment(box_id: str):
-
+    content_type = request.headers.get('Content-Type')
+    print(content_type, flush=True)
+    
     box = Box.objects(box_id=box_id).first_or_404()
 
     body = request.get_json()
+    print(body, flush=True)
 
     environmentClass = Environment()
     for name,value in body.items():
@@ -163,17 +169,17 @@ def add_environment(box_id: str):
 @app.route('/api/movement/<box_id>', methods=['POST'])
 def add_movement(box_id: str):
     content_type = request.headers.get('Content-Type')
-    print(content_type)
+    print(content_type, flush=True)
     box = Box.objects(box_id=box_id).first_or_404()
+
 
     ##TODO: Count Birds in image and Crop images to bird onyl 
     
     
 
     body = request.form['json']
-    print(body)
     body = json.loads(body)
-    print(body.items())
+    print(body.items(), flush=True)
 
 
 
@@ -184,7 +190,7 @@ def add_movement(box_id: str):
     movementsClass.end_date = body['end_date']
     audio = request.files[body['audio']]
     filename = audios.save(audio)
-    movementsClass.audio = host + "/uploads/audios/" + filename
+    movementsClass.audio = host + "/api/uploads/audios/" + filename
 
     environmentClass = Environment()
     for name,value in body['environment'].items():
@@ -209,7 +215,7 @@ def add_movement(box_id: str):
            detectionClass.count = {"undefined": 1} 
         det_id = str(uuid.uuid4())
         detectionClass.det_id = det_id
-        detectionClass.image = host + "/uploads/images/" + filename
+        detectionClass.image = host + "/api/uploads/images/" + filename
         detectionClass.weight = detection['weight']
         detectionClass.date = detection['date']
         movementsClass.detections.append(detectionClass)
@@ -217,7 +223,11 @@ def add_movement(box_id: str):
     movementsClass.count =  movementsClass.detections[0].count
 
     for mail in box.mail.adresses:
-        send_email(mail, filename, 'uploads/images/' + filename, movementsClass.count)
+        try:
+            send_email(mail, filename, 'uploads/images/' + filename, movementsClass.count, pwd )
+        except:
+            print("mail to " + mail + " failed")
+
     
     movementList = box.measurements.movements
     movementList.insert(0, movementsClass)

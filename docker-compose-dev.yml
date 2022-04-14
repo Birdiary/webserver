@@ -10,7 +10,7 @@ services:
     ports:
       - 5000:5000
     env_file:
-      - .env
+      - server.env
     environment:
       - FLASK_CONFIG=development
       - FLASK_ENV=development

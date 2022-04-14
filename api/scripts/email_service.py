@@ -7,10 +7,10 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 
-def send_email (receiver_email, imageName, imagePath, count):
+def send_email (receiver_email, imageName, imagePath, count, pw):
     subject = "New Bird detected"
     sender_email = "info@countyourbirds.org"
-    password= "b=zxw:.57hS9X5k"
+    password= pw
 
     # Create a multipart message and set headers
     message = MIMEMultipart()
@@ -22,7 +22,7 @@ def send_email (receiver_email, imageName, imagePath, count):
 
     textString= "Hey, there were birds at your bird feeder: \n"
     for item in count.items():
-        print(item)
+        print(item, flush=True)
         textString= textString+ "There were " + str(item[1]) +  " bird(s) of the species \"" + item[0] +"\".\n"
 
     text = MIMEText(textString)
