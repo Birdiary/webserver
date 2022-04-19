@@ -4,6 +4,7 @@ FROM python:latest
 # install netcat
 RUN apt-get update && \
 		apt-get -y install netcat && \
+		sudo apt-get -y install gpac && \
         apt-get install -y python3-opencv && \
 		apt-get clean
 
