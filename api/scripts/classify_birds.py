@@ -68,9 +68,9 @@ input_std = 127.5
 # image = cv2.imread(image_path)
 # test_im = cv2.imread("/home/pi/motion/saved/test_4.jpg")
 
-def classify(image_path):
+def classify(image_array):
     # cv2.imwrite("/home/pi/motion/saved/test.jpg", image_array)
-            image_array = cv2.imread(image_path)
+    #image_array = cv2.imread(image_path)
     
     #cv2.imshow("bird", image_array)
     #cv2.waitKey(2000)
@@ -93,18 +93,18 @@ def classify(image_path):
 
             top_k = results.argsort()[-5:][::-1]
            
-            result = []
+            result = {}
             for i in top_k:
                 if floating_model:
                     print('{:08.6f}: {}'.format(float(results[i]), labels[i]))
-                    result.append([float(results[i]), labels[i]])
+                    result[labels[i]]=float(results[i])
                     #if float(results[i]) > 0.5:
                     #    bird_name = labels[i]
                 else:
                     print('{:08.6f}: {}'.format(float(results[i] / 255.0), labels[i]))
-                    result.append([float(results[i] / 255.0), labels[i]])
-                    if float(results[i] / 255.0) > 0.5:
-                        bird_name = labels[i]
+                    result[labels[i]]=float(results[i] / 255.0)
+                    #if float(results[i] / 255.0) > 0.5:
+                    #    bird_name = labels[i]
             print(result)
             return result
     #except Exception as e:

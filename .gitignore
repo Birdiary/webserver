@@ -133,3 +133,4 @@ dmypy.json
 /data
 
 /api/static/img
+/api/uploads

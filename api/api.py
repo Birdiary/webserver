@@ -1,24 +1,34 @@
+from cgitb import reset
+from posixpath import basename
+
+from charset_normalizer import detect
 from flask import Flask, render_template, request, jsonify, send_from_directory
 
 from flask_mongoengine import MongoEngine
 import json
-from flask_uploads import configure_uploads, IMAGES, UploadSet, AUDIO
+from flask_uploads import configure_uploads, IMAGES, UploadSet, AUDIO, ALL
 from scripts.classify_birds import classify
 from scripts.email_service import send_email
+
+import subprocess
 import uuid
 import os
+import cv2
 
 
-host= os.environ['HOST']
-pwd = os.environ['Mail_PWD']
+
+host= os.getenv('HOST', "localhost")
+pwd = os.getenv('Mail_PWD', "ABC")
 
 
 
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'thisisasecret'
+app.config['JSON_SORT_KEYS'] = False
 app.config['UPLOADED_IMAGES_DEST'] = 'uploads/images'
 app.config['UPLOADED_AUDIOS_DEST'] = 'uploads/audios'
+app.config['UPLOADED_VIDEOS_DEST'] = 'uploads/videos'
 app.config['MONGODB_SETTINGS'] = {
     'db': 'your_database',
     'host': 'mongodb',
@@ -31,7 +41,8 @@ images = UploadSet('images', IMAGES)
 
 
 audios = UploadSet('audios', AUDIO)
-configure_uploads(app, (images, audios))
+videos = UploadSet('videos', ALL)
+configure_uploads(app, (images, audios, videos))
 
 
 
@@ -45,19 +56,15 @@ class Environment(db.DynamicEmbeddedDocument):
     date = db.StringField()
     
 
-class Detection(db.DynamicEmbeddedDocument):
-    det_id = db.StringField()
-    date = db.StringField()
-    image = db.URLField()
-    weight = db.FloatField()
 
 class Movements(db.DynamicEmbeddedDocument):
     mov_id = db.StringField()
     start_date =db.StringField()
     end_date = db.StringField()
     audio= db.URLField()
+    video = db.URLField()
     environment = db.EmbeddedDocumentField(Environment)
-    detections = db.ListField(db.EmbeddedDocumentField(Detection))
+    detections = db.DictField()
 
 class Measurement(db.EmbeddedDocument):
     environment = db.ListField(db.EmbeddedDocumentField(Environment))
@@ -83,17 +90,58 @@ def index():
 @app.route('/api/image', methods=['Get', 'POST'])
 def image():
     if request.method=="POST":
-        # this line goes to the console/terminal in flask dev server
         data = request.files['image']
         print (data)
-        # this line prints out the form to the browser
-        #return jsonify(data)
         filename = images.save(data)
         result = classify('uploads/images/' + filename)
 
         return jsonify(
             result=result
     )
+    return render_template('./index.html')
+
+@app.route('/api/video', methods=['Get', 'POST'])
+def video():
+    if request.method=="POST":
+        data = request.files['video']
+        print (data)
+        filename = videos.save(data)
+        command = "MP4Box -add {} {}.mp4".format("/uploads/videos/" + filename, "/uploads/videos/" + os.path.splitext(filename)[0])
+        try:
+            output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+        except subprocess.CalledProcessError as e:
+             print('FAIL:\ncmd:{}\noutput:{}'.format(e.cmd, e.output))
+        #name = filename.split('.')
+        #basename = (name[-1])
+        #print(basename)
+        #video_to_mp4('uploads/videos/' + filename, 'uploads/videos/' + basename+ '.mp4', fourcc="avc1")
+        cap = cv2.VideoCapture('uploads/videos/' + os.path.splitext(filename)[0] +".mp4")
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        print(total_frames)
+        result=[]
+        images = 0
+        for fno in range(0, total_frames, 20):
+            cap.set(cv2.CAP_PROP_POS_FRAMES, fno)
+            _, image = cap.read()
+            images +=1
+            result.append(classify(image))
+	        # read next frame
+        output = {}
+        for i in range(len(result)): 
+            for key in result[i]:
+                if key in output:
+                    output[key]+=result[i][key]
+                else:
+                    output[key]=result[i][key]
+        print(output)
+        output2 = {k: v / images for k, v in output.items()}
+        marklist = sorted(output2.items(), key=lambda x:x[1], reverse=True)
+        birds = dict(marklist)
+        print(birds)
+                
+        return jsonify(
+            result= birds
+        )
     return render_template('./index.html')
 
 @app.route('/api/audio', methods=['POST'])
@@ -191,6 +239,9 @@ def add_movement(box_id: str):
     audio = request.files[body['audio']]
     filename = audios.save(audio)
     movementsClass.audio = host + "/api/uploads/audios/" + filename
+    video = request.files[body['video']]
+    filename = videos.save(video)
+    movementsClass.video = host + "/api/uploads/videos/" + filename
 
     environmentClass = Environment()
     for name,value in body['environment'].items():
@@ -200,27 +251,38 @@ def add_movement(box_id: str):
 
     movementsClass.environment = environmentClass
 
-    
-    for detection in body['detections']:
-        image = request.files[detection['image']]
-        detectionClass = Detection()
+    command = "MP4Box -add {} {}.mp4".format("/uploads/videos/" + filename, "/uploads/videos/" + os.path.splitext(filename)[0])
+    try:
+        output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+    except subprocess.CalledProcessError as e:
+        print('FAIL:\ncmd:{}\noutput:{}'.format(e.cmd, e.output))
 
-    #return jsonify(data)
-        filename = images.save(image)
-        result = classify('uploads/images/' + filename)
-        if result[0][0] > 0.5:
-            bird_name = result[0][1]
-            detectionClass.count = {bird_name: 1}
-        else:
-           detectionClass.count = {"undefined": 1} 
-        det_id = str(uuid.uuid4())
-        detectionClass.det_id = det_id
-        detectionClass.image = host + "/api/uploads/images/" + filename
-        detectionClass.weight = detection['weight']
-        detectionClass.date = detection['date']
-        movementsClass.detections.append(detectionClass)
+    cap = cv2.VideoCapture('uploads/videos/' + + os.path.splitext(filename)[0] +".mp4")
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    print(total_frames)
+    result=[]
+    images = 0
+    for fno in range(0, total_frames, 20):
+        cap.set(cv2.CAP_PROP_POS_FRAMES, fno)
+        _, image = cap.read()
+        images +=1
+        result.append(classify(image))
+        # read next frame
+    output = {}
+    for i in range(len(result)): 
+        for key in result[i]:
+            if key in output:
+                output[key]+=result[i][key]
+            else:
+                output[key]=result[i][key]
+    print(output)
+    output2 = {k: v / images for k, v in output.items()}
+    marklist = sorted(output2.items(), key=lambda x:x[1], reverse=True)
+    birds = dict(marklist)
+    print(birds)
+    movementsClass.detections = birds
 
-    movementsClass.count =  movementsClass.detections[0].count
+    movementsClass.count =  movementsClass.count
 
     for mail in box.mail.adresses:
         try:
