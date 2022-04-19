@@ -102,7 +102,7 @@ def video():
         data = request.files['video']
         print (data, flush=True)
         filename = videos.save(data)
-        command = "MP4Box -add {} {}.mp4".format("/uploads/videos/" + filename, "/uploads/videos/" + os.path.splitext(filename)[0])
+        command = "MP4Box -add {} {}.mp4".format("./uploads/videos/" + filename, "./uploads/videos/" + os.path.splitext(filename)[0])
         try:
             output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
         except subprocess.CalledProcessError as e:
@@ -234,10 +234,10 @@ def add_movement(box_id: str):
     movementsClass.end_date = body['end_date']
     audio = request.files[body['audio']]
     filename = audios.save(audio)
-    movementsClass.audio = host + "/api/uploads/audios/" + filename
+    movementsClass.audio = str(host)+ "/api/uploads/audios/" + filename
     video = request.files[body['video']]
     filename = videos.save(video)
-    movementsClass.video = host + "/api/uploads/videos/" + filename
+    
 
     environmentClass = Environment()
     for name,value in body['environment'].items():
@@ -247,13 +247,13 @@ def add_movement(box_id: str):
 
     movementsClass.environment = environmentClass
 
-    command = "MP4Box -add {} {}.mp4".format("/uploads/videos/" + filename, "/uploads/videos/" + os.path.splitext(filename)[0])
+    command = "MP4Box -add {} {}.mp4".format("./uploads/videos/" + filename, "./uploads/videos/" + os.path.splitext(filename)[0])
     try:
         output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
     except subprocess.CalledProcessError as e:
         print('FAIL:\ncmd:{}\noutput:{}'.format(e.cmd, e.output))
-
-    cap = cv2.VideoCapture('uploads/videos/' + + os.path.splitext(filename)[0] +".mp4")
+    movementsClass.video = str(host) + "/api/uploads/videos/" + os.path.splitext(filename)[0] +".mp4"
+    cap = cv2.VideoCapture('uploads/videos/' + os.path.splitext(filename)[0] +".mp4")
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     print(total_frames)
     result=[]
@@ -278,7 +278,6 @@ def add_movement(box_id: str):
     print(birds)
     movementsClass.detections = birds
 
-    movementsClass.count =  movementsClass.count
 
     for mail in box.mail.adresses:
         try:

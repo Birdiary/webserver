@@ -8,7 +8,7 @@ services:
     container_name: api
     restart: unless-stopped
     env_file:
-      - .env
+      - server.env
     ports:
       - 5000
     environment:
@@ -27,7 +27,7 @@ services:
     ports:
       - 27017
     volumes:
-      - db-data:/data/db
+      - ./db-data:/data/db
 
   nginx:
     build:

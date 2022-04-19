@@ -6,7 +6,7 @@ services:
       context: ./api
       dockerfile: Dockerfile.dev
     volumes:
-      - './api:/usr/src/app'
+      - ./data/uploads:/usr/src/app/uploads
     ports:
       - 5000:5000
     env_file:
@@ -17,6 +17,8 @@ services:
 
     depends_on:
       - mongodb
+
+
 
   mongodb:
     image: mongo:latest
