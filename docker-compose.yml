@@ -16,6 +16,8 @@ services:
       - APP_SETTINGS=project.config.ProductionConfig
     depends_on:
       - mongodb
+    volumes:
+      - ./data/uploads:/usr/src/app/uploads
 
 
 

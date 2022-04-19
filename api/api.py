@@ -1,7 +1,3 @@
-from cgitb import reset
-from posixpath import basename
-
-from charset_normalizer import detect
 from flask import Flask, render_template, request, jsonify, send_from_directory
 
 from flask_mongoengine import MongoEngine
@@ -104,7 +100,7 @@ def image():
 def video():
     if request.method=="POST":
         data = request.files['video']
-        print (data)
+        print (data, flush=True)
         filename = videos.save(data)
         command = "MP4Box -add {} {}.mp4".format("/uploads/videos/" + filename, "/uploads/videos/" + os.path.splitext(filename)[0])
         try:
@@ -300,12 +296,16 @@ def add_movement(box_id: str):
     return jsonify(id = mov_id), 200
 
 @app.route('/api/uploads/images/<filename>')
-def uploadImages(filename):
+def getImages(filename):
     return send_from_directory(app.config['UPLOADED_IMAGES_DEST'], filename)
 
 @app.route('/api/uploads/audios/<filename>')
-def uploadAudios(filename):
+def getAudios(filename):
     return send_from_directory(app.config['UPLOADED_AUDIOS_DEST'], filename)
+
+@app.route('/api/uploads/videos/<filename>')
+def getVideos(filename):
+    return send_from_directory(app.config['UPLOADED_VIDEOS_DEST'], filename)
 
 #@app.route('/api')
 #def api():
