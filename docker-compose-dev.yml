@@ -5,6 +5,8 @@ services:
     build:
       context: ./api
       dockerfile: Dockerfile.dev
+    image: api
+    container_name: api
     volumes:
       - ./data/uploads:/usr/src/app/uploads
     ports:
@@ -14,10 +16,9 @@ services:
     environment:
       - FLASK_CONFIG=development
       - FLASK_ENV=development
-
     depends_on:
       - mongodb
-
+      - redis
 
 
   mongodb:
@@ -25,7 +26,7 @@ services:
     ports:
       - 27017
     volumes:
-      - db-data:/data/db
+      - db-data
 
   nginx:
     build:
@@ -52,6 +53,26 @@ services:
     depends_on:
       - api
 
+  worker:
+    image: api
+    command: rq worker --url redis://redis:6379
+    volumes:
+      - ./data/uploads:/usr/src/app/uploads
+    depends_on:
+      - redis
+      - api
+
+  rq-dashboard:
+    image: eoranged/rq-dashboard
+    ports:
+      - "9181:9181"
+    environment: 
+     - RQ_DASHBOARD_REDIS_URL=redis://redis:6379
+    depends_on: 
+      - redis
+
+  redis:
+    image: redis:6.2-alpine
 
 volumes:
   db-data:

@@ -23,7 +23,7 @@ def send_email (receiver_email, imageName, imagePath, count, pw):
     textString= "Hey, there were birds at your bird feeder: \n"
     for item in count.items():
         print(item, flush=True)
-        textString= textString+ "There were " + str(item[1]) +  " bird(s) of the species \"" + item[0] +"\".\n"
+        textString= textString+ "There bird was with "+ count[item] + "% of the species \"" + item +"\".\n"
 
     text = MIMEText(textString)
     message.attach(text)

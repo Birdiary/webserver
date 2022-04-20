@@ -6,6 +6,7 @@ services:
       context: ./api
       dockerfile: Dockerfile
     container_name: api
+    image: api
     restart: unless-stopped
     env_file:
       - server.env
@@ -16,6 +17,7 @@ services:
       - APP_SETTINGS=project.config.ProductionConfig
     depends_on:
       - mongodb
+      - redis
     volumes:
       - ./data/uploads:/usr/src/app/uploads
 
@@ -44,6 +46,27 @@ services:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+
+  worker:
+    image: api
+    command: rq worker --url redis://redis:6379
+    volumes:
+      - ./data/uploads:/usr/src/app/uploads
+    depends_on:
+      - redis
+      - api
+
+  rq-dashboard:
+    image: eoranged/rq-dashboard
+    ports:
+      - "9181:9181"
+    environment: 
+     - RQ_DASHBOARD_REDIS_URL=redis://redis:6379
+    depends_on: 
+      - redis
+
+  redis:
+    image: redis:6.2-alpine
 
 
   certbot:

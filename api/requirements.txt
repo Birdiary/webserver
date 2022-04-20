@@ -64,3 +64,5 @@ wrapt==1.14.0
 WTForms==3.0.1
 zipp==1.0.0
 gunicorn==19.9.0
+redis
+rq

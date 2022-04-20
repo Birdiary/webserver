@@ -5,11 +5,17 @@ import json
 from flask_uploads import configure_uploads, IMAGES, UploadSet, AUDIO, ALL
 from scripts.classify_birds import classify
 from scripts.email_service import send_email
+from sys import modules
+from os.path import basename, splitext
 
 import subprocess
 import uuid
 import os
 import cv2
+from redis import Redis
+from rq import Queue
+
+
 
 
 
@@ -19,7 +25,8 @@ pwd = os.getenv('Mail_PWD', "ABC")
 
 
 app = Flask(__name__)
-
+redis = Redis(host='redis', port=6379)
+q = Queue(connection=redis)
 app.config['SECRET_KEY'] = 'thisisasecret'
 app.config['JSON_SORT_KEYS'] = False
 app.config['UPLOADED_IMAGES_DEST'] = 'uploads/images'
@@ -57,10 +64,9 @@ class Movements(db.DynamicEmbeddedDocument):
     mov_id = db.StringField()
     start_date =db.StringField()
     end_date = db.StringField()
-    audio= db.URLField()
-    video = db.URLField()
+    audio= db.StringField()
+    video = db.StringField()
     environment = db.EmbeddedDocumentField(Environment)
-    detections = db.DictField()
 
 class Measurement(db.EmbeddedDocument):
     environment = db.ListField(db.EmbeddedDocumentField(Environment))
@@ -75,7 +81,69 @@ class Box(db.DynamicDocument):
     location = db.EmbeddedDocumentField(Location)
     measurements = db.EmbeddedDocumentField(Measurement)
     mail = db.EmbeddedDocumentField(Mail)
-    
+
+def enqueueable(func):
+    if func.__module__ == "__main__":
+        func.__module__, _ = splitext(basename(modules["__main__"].__file__))
+    return func
+
+@enqueueable
+
+# Create a working task queue  
+def videoAnalysis(filename, movement_id, box_id):
+    if  os.path.splitext(filename)[1] == ".h264":
+        command = "MP4Box -add {} {}.mp4".format("./uploads/videos/" + filename, "./uploads/videos/" + os.path.splitext(filename)[0])
+        try:
+            output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+            filename = os.path.splitext(filename)[0] +".mp4"
+        except subprocess.CalledProcessError as e:
+            print('FAIL:\ncmd:{}\noutput:{}'.format(e.cmd, e.output))
+
+    cap = cv2.VideoCapture('uploads/videos/' + filename)
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    print(total_frames)
+    result=[]
+    images = 0
+    for fno in range(0, total_frames, 20):
+        cap.set(cv2.CAP_PROP_POS_FRAMES, fno)
+        _, image = cap.read()
+        images +=1
+        result.append(classify(image))
+        # read next frame
+    output = {}
+    for i in range(len(result)): 
+        for key in result[i]:
+            if key in output:
+                output[key]+=result[i][key]
+            else:
+                output[key]=result[i][key]
+    print(output)
+    output2 = {k: v / images for k, v in output.items()}
+    marklist = sorted(output2.items(), key=lambda x:x[1], reverse=True)
+    birds = dict(marklist)
+    print(birds)
+
+    box = Box.objects(box_id=box_id).first_or_404()
+
+    movements= box.measurements.movements
+
+    for i, movement in enumerate(movements):
+        if movement.mov_id == movement_id:
+            movements[i].detections = birds
+            movements[i].video = filename
+
+    box.measurements.movements= movements
+
+    box.update(measurements= box.measurements)
+
+    for mail in box.mail.adresses:
+        try:
+            send_email(mail, filename, 'uploads/videos/' + filename, birds, pwd )
+        except:
+            print("mail to " + mail + " failed")  
+ 
+ 
+    return birds
 
 @app.route('/')
 def index():
@@ -107,10 +175,6 @@ def video():
             output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
         except subprocess.CalledProcessError as e:
              print('FAIL:\ncmd:{}\noutput:{}'.format(e.cmd, e.output))
-        #name = filename.split('.')
-        #basename = (name[-1])
-        #print(basename)
-        #video_to_mp4('uploads/videos/' + filename, 'uploads/videos/' + basename+ '.mp4', fourcc="avc1")
         cap = cv2.VideoCapture('uploads/videos/' + os.path.splitext(filename)[0] +".mp4")
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         print(total_frames)
@@ -237,6 +301,7 @@ def add_movement(box_id: str):
     movementsClass.audio = str(host)+ "/api/uploads/audios/" + filename
     video = request.files[body['video']]
     filename = videos.save(video)
+    movementsClass.video = "pending"
     
 
     environmentClass = Environment()
@@ -247,50 +312,15 @@ def add_movement(box_id: str):
 
     movementsClass.environment = environmentClass
 
-    command = "MP4Box -add {} {}.mp4".format("./uploads/videos/" + filename, "./uploads/videos/" + os.path.splitext(filename)[0])
-    try:
-        output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
-    except subprocess.CalledProcessError as e:
-        print('FAIL:\ncmd:{}\noutput:{}'.format(e.cmd, e.output))
-    movementsClass.video = str(host) + "/api/uploads/videos/" + os.path.splitext(filename)[0] +".mp4"
-    cap = cv2.VideoCapture('uploads/videos/' + os.path.splitext(filename)[0] +".mp4")
-    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    print(total_frames)
-    result=[]
-    images = 0
-    for fno in range(0, total_frames, 20):
-        cap.set(cv2.CAP_PROP_POS_FRAMES, fno)
-        _, image = cap.read()
-        images +=1
-        result.append(classify(image))
-        # read next frame
-    output = {}
-    for i in range(len(result)): 
-        for key in result[i]:
-            if key in output:
-                output[key]+=result[i][key]
-            else:
-                output[key]=result[i][key]
-    print(output)
-    output2 = {k: v / images for k, v in output.items()}
-    marklist = sorted(output2.items(), key=lambda x:x[1], reverse=True)
-    birds = dict(marklist)
-    print(birds)
-    movementsClass.detections = birds
-
-
-    for mail in box.mail.adresses:
-        try:
-            send_email(mail, filename, 'uploads/images/' + filename, movementsClass.count, pwd )
-        except:
-            print("mail to " + mail + " failed")
+    movementsClass.detections = {}
 
     
     movementList = box.measurements.movements
     movementList.insert(0, movementsClass)
     box.measurements.movements = movementList
     box.update(measurements = box.measurements)
-    print(movementList)
+    job= q.enqueue(videoAnalysis, filename, mov_id, box_id)  
+    #print(movementList)
 
     return jsonify(id = mov_id), 200
 
