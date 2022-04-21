@@ -52,7 +52,7 @@ configure_uploads(app, (images, audios, videos))
 
 class Location(db.EmbeddedDocument):
     lat = db.FloatField()
-    lon = db.FloatField()
+    lng = db.FloatField()
 
 class Environment(db.DynamicEmbeddedDocument):
     env_id = db.StringField()
@@ -67,6 +67,7 @@ class Movements(db.DynamicEmbeddedDocument):
     audio= db.StringField()
     video = db.StringField()
     environment = db.EmbeddedDocumentField(Environment)
+    weight = db.FloatField()
 
 class Measurement(db.EmbeddedDocument):
     environment = db.ListField(db.EmbeddedDocumentField(Environment))
@@ -130,7 +131,7 @@ def videoAnalysis(filename, movement_id, box_id):
     for i, movement in enumerate(movements):
         if movement.mov_id == movement_id:
             movements[i].detections = birds
-            movements[i].video = filename
+            movements[i].video = str(host)+ "/api/uploads/videos/" + filename
 
     box.measurements.movements= movements
 
@@ -222,7 +223,7 @@ def add_box():
         body = request.get_json()
         location = Location()
         location.lat = body['location']['lat']
-        location.lon = body['location']['lon']
+        location.lng= body['location']['lng']
         measurement= Measurement()
         mail = Mail()
         list= mail.adresses
@@ -296,6 +297,7 @@ def add_movement(box_id: str):
     movementsClass.mov_id = mov_id
     movementsClass.start_date = body['start_date']
     movementsClass.end_date = body['end_date']
+    movementsClass.weight = body['weight']
     audio = request.files[body['audio']]
     filename = audios.save(audio)
     movementsClass.audio = str(host)+ "/api/uploads/audios/" + filename

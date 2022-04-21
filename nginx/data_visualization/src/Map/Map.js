@@ -44,8 +44,10 @@ class OwnMap extends React.Component {
         let boxes = [];
         requests.getBoxes()
         .then ( ( res ) => {
-            boxes= res;
-                        this.setState({
+           
+            boxes= res.data;            
+            console.log(boxes)
+            this.setState({
                             boxes: boxes
                         })
 
@@ -65,10 +67,8 @@ class OwnMap extends React.Component {
                 />
                 {/* Map markers on the Map,if marker was clicked turn green */}
                 {this.state.boxes.map((marker, i) => {
-                    return <Marker value={marker.id} onClick={this.handleClickMarker} key={"marker" + i}
-                        icon={ // if clause that checks if the marker is selected
-                            this.state.selectedMarker === marker.properties.time ? greenIcon : redIcon
-                        } position={[marker.location.lat, marker.position.lon]} />
+                    return <Marker  key={"marker" + i}
+                        position={[marker.location.lat, marker.location.lng]} />
                 })}
 
             </MapContainer>

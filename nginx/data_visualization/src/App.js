@@ -8,17 +8,21 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import './App.css';
+import { useNavigate, Link } from 'react-router-dom'; 
 
 
 const Header = ( props ) => {
   return (
     <AppBar style={{backgroundColor : "orange"}} id="header">
       <Toolbar>
-      <a href="/react">Logo</a>
-       {!props.ojsView ?<Typography variant="h4" color="inherit" style={{ flex: 1 }}>
-          <Button style={{marginLeft: "120px", fontWeight : "bold"}} color="inherit" href={"/react"}>HOME</Button>
-        </Typography> : ""}
-        <Button rel="noopener" color="inherit" href="/">
+      <a href="/">Logo</a>
+       <Typography variant="h4" color="inherit" style={{ flex: 1 }}>
+          <Button style={{marginLeft: "120px", fontWeight : "bold"}} color="inherit" component={Link} to="/react" >HOME</Button>
+        </Typography>
+        <Button rel="noopener" color="inherit" component={Link} to="/react/createBox">
+          Erstelle Box
+        </Button>
+        <Button rel="noopener" color="inherit" component={Link} to="/" >
           Learn more about our Project
         </Button>
         
@@ -35,12 +39,10 @@ const Footer = (props) => {
 
   return(
     <div style={{backgroundColor : "orange"}} className="mui-container mui--text-center" id="footer">
-      <BrowserRouter forceRefresh>
       <div id="links" style={{color: "white"}}>
           <a  id="link" href="/doc">API</a> |&nbsp;
           Version&nbsp;<code>#dev#</code>
       </div>
-      </BrowserRouter>
     </div>
   );
 }
@@ -57,22 +59,24 @@ class App extends React.Component {
   render() {
     return (
       <div id="pageContainer">
+      <BrowserRouter>
       <Header>
       </Header>
 
-      <BrowserRouter>
+
       <div>
         <div className="content" id="mainView">
           <Routes>
           <Route exact path="/react" element={<OwnMap ></OwnMap>} />
-          <Route exact path="/react/box/:id" element={(props) => <Box {...props}  />}></Route>
+          <Route exact path="/react/box/:id" element={<Box />}></Route>
           <Route path="/react/createBox" element={<CreateBox/>}></Route>
           </Routes>
         </div>
       </div>
-      </BrowserRouter>
+      
       <Footer
       ></Footer>
+      </BrowserRouter>
       </div>
      
     )}

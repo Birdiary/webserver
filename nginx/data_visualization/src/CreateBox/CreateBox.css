@@ -1,0 +1,9 @@
+.MuiDialog-paper{
+    align-items: center !important;
+    width: 40vw;
+    height: 40vh;
+}
+
+.MuiDialogContent-root{
+    display: contents !important;
+}

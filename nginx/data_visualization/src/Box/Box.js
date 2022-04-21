@@ -1,21 +1,12 @@
 import React from "react";
+import { useParams } from 'react-router-dom';
 
-class Box extends React.Component {
-    constructor(props){
-      super(props);
-      this.state = {
-          id : props.id
-      };
-    };
-  
-    
-  
-    render() {
-      return (
-          <p> </p>
-       
-       
-      )}
-  }
+
+
+function Box(props) {
+  const { id } = useParams()
+  return <h1>{id}</h1>;
+}
+
   
   export default Box

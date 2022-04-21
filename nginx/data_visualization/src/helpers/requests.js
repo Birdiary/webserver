@@ -5,7 +5,7 @@ const _env = {
 }
 
 function getBox(id) {
-    var _url = _env.api + 'box/' + id;
+    var _url = _env.api + '/box' + id;
     return axios.get(_url);
 }
 
@@ -14,7 +14,7 @@ function getBoxes() {
 }
 
 function sendBox(body) {
-    var _url = _env.api + 'box/';
+    var _url = _env.api + '/box';
     return axios.post(_url, body);
 }
 
