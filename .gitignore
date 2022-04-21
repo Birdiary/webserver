@@ -133,4 +133,6 @@ dmypy.json
 /data
 
 /api/static/img
+/api/data
 /api/uploads
+server.env

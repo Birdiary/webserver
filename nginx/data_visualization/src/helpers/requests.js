@@ -5,7 +5,7 @@ const _env = {
 }
 
 function getBox(id) {
-    var _url = _env.api + '/box' + id;
+    var _url = _env.api + '/box/' + id;
     return axios.get(_url);
 }
 

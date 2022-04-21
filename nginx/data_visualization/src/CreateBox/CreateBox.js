@@ -204,8 +204,8 @@ class CreateBox extends React.Component {
         </DialogContentText> }
         </DialogContent>
         <DialogActions>
-          <Button component={Link} to="/react" >Go to overview</Button>
-          <Button component={Link} to={"/react/box/" + this.state.id}>
+          <Button component={Link} to="/view" >Go to overview</Button>
+          <Button component={Link} to={"/view/box/" + this.state.id}>
             Inspect Box
           </Button>
         </DialogActions>

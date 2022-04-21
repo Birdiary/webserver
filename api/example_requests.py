@@ -1,47 +1,39 @@
 import json
 import requests
 import os
-def send_birddata(file, file2, file3 ):
+def send_birddata(file, file2 ):
     payload = {
-        "start_date" : "123",
-        "end_date" : "123",
+        "start_date" : "2022-04-21 16:03:10.210804",
+        "end_date" : "2022-04-21 16:03:10.210804",
         "audio" : "audioKey",
+        "video" : "videoKey",
         "environment" : {
             "date": "123",
             "temp": 10
         },
-        "detections" : [{
-            "date": "123",
-            "image": "imageKey",
-            "weight" : 7.6},
-            {
-            "date": "123",
-            "image": "imageKey2",
-            "weight" : 7.6} ]
-
+        "weight" : 7.6
     }   
     files = {
          'json': (None, json.dumps(payload), 'application/json'),
-         'imageKey': (os.path.basename(file), open(file, 'rb')),
-         'imageKey2': (os.path.basename(file2), open(file2, 'rb')),
-         'audioKey': (os.path.basename(file3), open(file3, 'rb'), 'audio/mpeg')
+         'videoKey': (os.path.basename(file), open(file, 'rb')),
+         'audioKey': (os.path.basename(file2), open(file2, 'rb'), 'audio/mpeg')
     }
     #headers = {'Content-type': 'multipart/form-data'}
-    r = requests.post("http://localhost:8080/api/movement/b7c44009-d865-4395-bb3a-ca3a5747990e", files=files)
+    r = requests.post("http://localhost:8080/api/movement/ca4222ca-e542-4a0c-a717-86b734db7c47", files=files)
     print(r.content)
 
-send_birddata("./static/data/images/300px-Pied_Crow.jpg", "./static/data/images/svetozar-cenisev-pvqTCIOx9MQ-unsplash.jpg","./static/data/images/test.mp3")
+send_birddata("bird1.h264", "./static/data/images/bird.mp3")
 
 def send_environment(payload):
 
     payload = {
-            "date": "123",
+            "date": "2022-04-21 16:03:10.210804",
             "temp": 10
         }
        
 
     headers = {'Content-type': 'application/json'}   
-    r = requests.post("http://localhost:8080/api/environment/b7c44009-d865-4395-bb3a-ca3a5747990e", json=payload)
+    r = requests.post("http://localhost:8080/api/environment/ca4222ca-e542-4a0c-a717-86b734db7c47", json=payload)
     print(r.content)
 
 send_environment("./static/data/images/svetozar-cenisev-pvqTCIOx9MQ-unsplash.jpg")
@@ -55,6 +47,15 @@ def send_audio(file):
 
 #send_audio( "test.mp3")
 
+def send_video(file):
+  
+    files = {
+         'video': (os.path.basename(file), open(file, 'rb'))
+    }
+    r = requests.post("https://wiediversistmeingarten.org/api/video", files=files)
+    print(r.content)
+
+#send_video("bird1.h264")
 def create_box():
 
     payload= {

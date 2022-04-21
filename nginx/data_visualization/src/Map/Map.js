@@ -1,29 +1,15 @@
 // export default OwnMap
 import React from 'react'
-import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 // icon creation
 import L from 'leaflet'
 import requests from '../helpers/requests'
+import { Button } from '@mui/material';
+
+
+import { useNavigate, Link } from 'react-router-dom'; 
 export let map;
 
-var greenIcon = new L.Icon({
-    iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41]
-});
-
-
-var redIcon = new L.Icon({
-    iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41]
-});
 
 class OwnMap extends React.Component {
     constructor(props) {
@@ -68,7 +54,14 @@ class OwnMap extends React.Component {
                 {/* Map markers on the Map,if marker was clicked turn green */}
                 {this.state.boxes.map((marker, i) => {
                     return <Marker  key={"marker" + i}
-                        position={[marker.location.lat, marker.location.lng]} />
+                        position={[marker.location.lat, marker.location.lng ? marker.location.lng : marker.location.lon]}>                 
+                        <Popup minWidth={90}>
+                        <span >
+                          Name der Station: {marker.name}
+                        </span>
+                        <br/>
+                        <Button component={Link} to={"/view/box/"+ marker.box_id}>Beobachte Box</Button>
+                      </Popup> </Marker>
                 })}
 
             </MapContainer>
