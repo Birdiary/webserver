@@ -21,6 +21,7 @@ export default function AmountTable(props) {
         if(birdList){
           for (let i = 0; i < birdList.length; i++) {
             rows2.push({name: birdList[i].latinName, amount:  birdList[i].amount, germanName: birdList[i].germanName})
+            rows2.sort((a,b)=> b.amount - a.amount)
             setRows(rows2)
           }
         }

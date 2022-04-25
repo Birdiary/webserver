@@ -384,55 +384,6 @@ def getAudios(filename):
 def getVideos(filename):
     return send_from_directory(app.config['UPLOADED_VIDEOS_DEST'], filename)
 
-@app.route('/api/transfer/<box_id>')
-def transfer(box_id):
-    box = Box.objects(box_id=box_id).first_or_404()
-
-    movements = box.measurements.movements
-
-    for i, movement in enumerate(movements):
-
-        birds = []
-
-        for key, value in movement.items():
-            germanName = ""
-            try:
-                germanName = birdJSON[key]
-            except:
-                germanName = ""
-            birds.append({"latinName":key, "germanName": germanName, "score" : value})
-        print(birds)
-
-        movements[i].detections = birds
-
-        count = {}
-        if "count" in box: 
-            count = box.count
-
-        today = movement.start_date.split()[0]
-
-        latinName=birds[0]['latinName']
-        germanName=birds[0]["germanName"]
-        
-
-        if today in count:
-            existName = False
-            for i, det in enumerate(count[today]):
-                if det["latinName"] == latinName:
-                    existName = True
-                    count[today][i]["amount"] = count[today][i]["amount"] + 1
-            if existName == False:
-                count[today].append({"latinName": latinName, "germanName" : germanName, "amount": 1})
-        else:
-            count[today] = [{"latinName": latinName, "germanName" : germanName, "amount": 1}]
-
-
-
-    box.measurements.movements= movements
-
-
-    box.update(measurements= box.measurements, count=count)
-
 #@app.route('/api')
 #def api():
 #    return render_template('./redoc/redoc.html')
