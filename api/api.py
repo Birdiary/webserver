@@ -17,7 +17,24 @@ from rq import Queue
 
 
 
+import csv 
 
+
+birdJSON = {}
+    
+#read csv file
+with open("static/data/birdlist1.csv", encoding='utf-8') as csvf: 
+    #load csv file data using csv library's dictionary reader
+    csvReader = csv.DictReader(csvf) 
+
+    #convert each csv row into python dict
+    for row in csvReader: 
+        print(row, flush=True)
+        #add this python dict to json array
+        key = row['latinName']
+        birdJSON[key] = row['germanName']
+
+    
 
 host= os.getenv('HOST', "localhost")
 pwd = os.getenv('Mail_PWD', "ABC")
@@ -59,7 +76,6 @@ class Environment(db.DynamicEmbeddedDocument):
     date = db.StringField()
     
 
-
 class Movements(db.DynamicEmbeddedDocument):
     mov_id = db.StringField()
     start_date =db.StringField()
@@ -89,7 +105,6 @@ def enqueueable(func):
     return func
 
 @enqueueable
-
 # Create a working task queue  
 def videoAnalysis(filename, movement_id, box_id):
     if  os.path.splitext(filename)[1] == ".h264":
@@ -104,38 +119,69 @@ def videoAnalysis(filename, movement_id, box_id):
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     print(total_frames)
     result=[]
-    images = 0
-    for fno in range(0, total_frames, 20):
+    for fno in range(0, total_frames, 10):
         cap.set(cv2.CAP_PROP_POS_FRAMES, fno)
         _, image = cap.read()
-        images +=1
         result.append(classify(image))
         # read next frame
     output = {}
     for i in range(len(result)): 
         for key in result[i]:
             if key in output:
-                output[key]+=result[i][key]
+                if result[i][key] > output[key]:
+                    output[key]=result[i][key]
             else:
-                output[key]=result[i][key]
+                if result[i][key] > 0.3:
+                    output[key]=result[i][key]
     print(output)
-    output2 = {k: v / images for k, v in output.items()}
+    output2 = {k: v for k, v in output.items()}
     marklist = sorted(output2.items(), key=lambda x:x[1], reverse=True)
-    birds = dict(marklist)
+    output3 = dict(marklist)
+    birds = []
+    for key, value in output3.items():
+        germanName = ""
+        try:
+            germanName = birdJSON[key]
+        except:
+            germanName = ""
+        birds.append({"latinName":key, "germanName": germanName, "score" : value})
     print(birds)
 
     box = Box.objects(box_id=box_id).first_or_404()
 
     movements= box.measurements.movements
+    selectedMovement = {}
 
     for i, movement in enumerate(movements):
         if movement.mov_id == movement_id:
             movements[i].detections = birds
             movements[i].video = str(host)+ "/api/uploads/videos/" + filename
+            selectedMovement = movements[i]
+
+    count = {}
+    if "count" in box: 
+        count = box.count
+
+
+    today = selectedMovement.start_date.split()[0]
+    print(today)
+    latinName=birds[0]['latinName']
+    germanName=birds[0]["germanName"]
+        
+
+    if today in count:
+        existName = False
+        for i, det in enumerate(count[today]):
+            if det["latinName"] == latinName:
+                existName = True
+                count[today][i]["amount"] = count[today][i]["amount"] + 1
+        if existName == False:
+            count[today].append({"latinName": latinName, "germanName" : germanName, "amount": 1})
+    else:
+        count[today] = [{"latinName": latinName, "germanName" : germanName, "amount": 1}]
 
     box.measurements.movements= movements
-
-    box.update(measurements= box.measurements)
+    box.update(measurements= box.measurements, count=count)
 
     for mail in box.mail.adresses:
         try:
@@ -337,6 +383,55 @@ def getAudios(filename):
 @app.route('/api/uploads/videos/<filename>')
 def getVideos(filename):
     return send_from_directory(app.config['UPLOADED_VIDEOS_DEST'], filename)
+
+@app.route('/api/transfer/<box_id>')
+def transfer(box_id):
+    box = Box.objects(box_id=box_id).first_or_404()
+
+    movements = box.measurements.movements
+
+    for i, movement in enumerate(movements):
+
+        birds = []
+
+        for key, value in movement.items():
+            germanName = ""
+            try:
+                germanName = birdJSON[key]
+            except:
+                germanName = ""
+            birds.append({"latinName":key, "germanName": germanName, "score" : value})
+        print(birds)
+
+        movements[i].detections = birds
+
+        count = {}
+        if "count" in box: 
+            count = box.count
+
+        today = movement.start_date.split()[0]
+
+        latinName=birds[0]['latinName']
+        germanName=birds[0]["germanName"]
+        
+
+        if today in count:
+            existName = False
+            for i, det in enumerate(count[today]):
+                if det["latinName"] == latinName:
+                    existName = True
+                    count[today][i]["amount"] = count[today][i]["amount"] + 1
+            if existName == False:
+                count[today].append({"latinName": latinName, "germanName" : germanName, "amount": 1})
+        else:
+            count[today] = [{"latinName": latinName, "germanName" : germanName, "amount": 1}]
+
+
+
+    box.measurements.movements= movements
+
+
+    box.update(measurements= box.measurements, count=count)
 
 #@app.route('/api')
 #def api():

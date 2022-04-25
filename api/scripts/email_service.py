@@ -21,9 +21,9 @@ def send_email (receiver_email, imageName, imagePath, count, pw):
     #message["Bcc"] = receiver_email  # Recommended for mass emails
 
     textString= "Hey, there were birds at your bird feeder: \n"
-    for item in count.items():
+    for item in count:
         print(item, flush=True)
-        textString= textString+ "There bird was with "+ count[item] + "% of the species \"" + item +"\".\n"
+        textString= textString+ "The bird was with "+ item.score + "% of the species \"" + item.latinName +"\" ("+item.germanName +").\n"
 
     text = MIMEText(textString)
     message.attach(text)

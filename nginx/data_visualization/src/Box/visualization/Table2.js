@@ -10,7 +10,7 @@ import { Button } from '@mui/material';
 
 
 
-export default function BasicTable(props) {
+export default function AmountTable(props) {
     const [rows, setRows] =React.useState([])
 
 
@@ -18,17 +18,19 @@ export default function BasicTable(props) {
         var birdList= props.birds
         let rows2 =[]
         setRows(rows2)
-        for (let i = 0; i < birdList.length  && i < 3 ; i++) {
-            rows2.push({name: birdList[i].latinName, prop:  (birdList[i].score*100).toFixed(2), germanName: birdList[i].germanName})
+        if(birdList){
+          for (let i = 0; i < birdList.length; i++) {
+            rows2.push({name: birdList[i].latinName, amount:  birdList[i].amount, germanName: birdList[i].germanName})
             setRows(rows2)
           }
+        }
           
       }, [props.birds])
 
 
   return (
 <div>
-    {rows.length == 0 ? < div><p>Das Video wird gerade verabeitet und die Art bestimmt! Bitte warte einen kurzen Moment und klicke dann auf den Refresh Button </p> <Button variant="contained" onClick={() => { props.getBox() }} style={{ float: "right", margin: "15px" }}>Refresh</Button></div>
+    {rows.length == 0? < div><p>An diesem Tag wurde kein Vogel bestimmt</p></div>
     :
     <TableContainer component={Paper}>
       <Table  aria-label="simple table">
@@ -36,7 +38,7 @@ export default function BasicTable(props) {
           <TableRow>
             <TableCell>Art</TableCell>
             <TableCell>Deutscher Name</TableCell>
-            <TableCell align="right">Wahrscheinlichkeit</TableCell>
+            <TableCell align="right">Anzahl</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -49,7 +51,7 @@ export default function BasicTable(props) {
                 {row.name}
               </TableCell>
               {row.germanName == "" ?  <TableCell>  </TableCell>: <TableCell><a href={"https://www.nabu.de/tiere-und-pflanzen/voegel/portraets/" + row.germanName} target="_blank">{row.germanName} </a> </TableCell>}
-              <TableCell align="right">{row.prop}</TableCell>
+              <TableCell align="right">{row.amount}</TableCell>
               
             </TableRow>
           ))}

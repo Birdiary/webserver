@@ -22,8 +22,8 @@ const Header = ( props ) => {
         <Button rel="noopener" color="inherit" component={Link} to="/view/createBox">
           Erstelle Box
         </Button>
-        <Button rel="noopener" color="inherit" component={Link} to="/" >
-          Learn more about our Project
+        <Button rel="noopener" color="inherit"  href="/" >
+          Erfahre mehr über unser Projekt
         </Button>
         
       </Toolbar>

@@ -6,6 +6,7 @@ const _env = {
 
 function getBox(id) {
     var _url = _env.api + '/box/' + id;
+    //var _url = "https://wiediversistmeingarten.org/api/box/4a936912-65db-475d-bcd6-9ee292079830"
     return axios.get(_url);
 }
 

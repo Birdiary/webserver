@@ -196,10 +196,10 @@ class CreateBox extends React.Component {
           />
         )}
       </Box>
-        {this.state.finished? <DialogContentText id="alert-dialog-description">
-            Die Box wurde erfolgreich erstellt und hat die ID: {this.state.id} 
+        {this.state.finished? <DialogContentText id="alert-dialog-description" style={{"padding": "10px"}}>
+            Die Box wurde erfolgreich erstellt und hat die ID: <br></br>{this.state.id} 
           </DialogContentText> :
-          <DialogContentText id="alert-dialog-description">
+          <DialogContentText id="alert-dialog-description" style={{"padding": "10px"}}>
           Die Box wird gerade erstellt
         </DialogContentText> }
         </DialogContent>
