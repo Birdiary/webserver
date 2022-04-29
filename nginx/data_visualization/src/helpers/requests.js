@@ -4,26 +4,26 @@ const _env = {
     api: config.apiUrl // eslint-disable-line
 }
 
-function getBox(id) {
-    var _url = _env.api + '/box/' + id;
-    //var _url = "https://wiediversistmeingarten.org/api/box/4a936912-65db-475d-bcd6-9ee292079830"
+function getStation(id) {
+    var _url = _env.api + '/station/' + id;
+    //var _url = "https://wiediversistmeingarten.org/api/station/4a936912-65db-475d-bcd6-9ee292079830"
     return axios.get(_url);
 }
 
-function getBoxes() {
-    return axios.get(_env.api + '/box');
+function getStations() {
+    return axios.get(_env.api + '/station');
 }
 
-function sendBox(body) {
-    var _url = _env.api + '/box';
+function sendStation(body) {
+    var _url = _env.api + '/station';
     return axios.post(_url, body);
 }
 
 
 
 module.exports = {
-    getBox : getBox,
-    sendBox : sendBox,
-    getBoxes : getBoxes
+    getStation : getStation,
+    sendStation : sendStation,
+    getStations : getStations
     
 };

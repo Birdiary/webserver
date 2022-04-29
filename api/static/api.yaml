@@ -10,10 +10,10 @@ servers:
   - url: 'http://10.14.29.24:5000'
     description: Nick Jakuschona
 paths:
-  /box:
+  /station:
     post:
-      summary: Create Box
-      operationId: post-box
+      summary: Create station
+      operationId: post-station
       responses:
         '201':
           description: Created
@@ -86,17 +86,17 @@ paths:
                   mail:
                     adresses:
                       - e-mail@test.de
-      description: 'Endpoint to create a new box. Example '
+      description: 'Endpoint to create a new station. Example '
       parameters: []
-  '/box/{box_id}':
+  '/station/{station_id}':
     parameters:
       - schema:
           type: string
-        name: box_id
+        name: station_id
         in: path
         required: true
     get:
-      summary: Get Measurements of one Box
+      summary: Get Measurements of one station
       tags: []
       responses:
         '200':
@@ -110,7 +110,7 @@ paths:
                   example-1:
                     _id:
                       $oid: 61f90dee49c53fcca2a06580
-                    box_id: 5dba702d-ccff-4095-8c0a-f5cbe2e1baf6
+                    station_id: 5dba702d-ccff-4095-8c0a-f5cbe2e1baf6
                     location:
                       lat: 51.399206
                       lon: 9.688879
@@ -153,10 +153,10 @@ paths:
                       $oid:
                         type: string
                         minLength: 1
-                  box_id:
+                  station_id:
                     type: string
                     minLength: 1
-                    description: box id which can be used for further requests
+                    description: station id which can be used for further requests
                   location:
                     type: object
                     required:
@@ -273,7 +273,7 @@ paths:
                     minLength: 1
                 required:
                   - _id
-                  - box_id
+                  - station_id
                   - location
                   - mail
                   - measurements
@@ -283,7 +283,7 @@ paths:
                   value:
                     _id:
                       $oid: 61f90dee49c53fcca2a06580
-                    box_id: 5dba702d-ccff-4095-8c0a-f5cbe2e1baf6
+                    station_id: 5dba702d-ccff-4095-8c0a-f5cbe2e1baf6
                     location:
                       lat: 51.399206
                       lon: 9.688879
@@ -317,20 +317,20 @@ paths:
                           start_date: '123'
                     name: Peter Lustigs Station
         '404':
-          description: Box not Found
-      operationId: get-box-box_id
+          description: station not Found
+      operationId: get-station-station_id
       parameters: []
-      description: 'Endpoint to get one box, with all measurements'
-  '/environment/{box_id}':
+      description: 'Endpoint to get one station, with all measurements'
+  '/environment/{station_id}':
     parameters:
       - schema:
           type: string
-        name: box_id
+        name: station_id
         in: path
         required: true
     post:
       summary: Send environment
-      operationId: post-environment-box_id
+      operationId: post-environment-station_id
       responses:
         '200':
           description: OK
@@ -348,7 +348,7 @@ paths:
                 required:
                   - id
         '404':
-          description: Box not found
+          description: station not found
       requestBody:
         content:
           application/json:
@@ -373,17 +373,17 @@ paths:
                 value:
                   date: string
                   temp: 0
-      description: 'Endpoint to send values of environment sensors from the box to the server '
-  '/movement/{box_id}':
+      description: 'Endpoint to send values of environment sensors from the station to the server '
+  '/movement/{station_id}':
     parameters:
       - schema:
           type: string
-        name: box_id
+        name: station_id
         in: path
         required: true
     post:
       summary: Send movement
-      operationId: post-movement-box_id
+      operationId: post-movement-station_id
       responses:
         '200':
           description: OK
@@ -402,7 +402,7 @@ paths:
                   example-1:
                     id: 123
         '404':
-          description: Box Not Found
+          description: station Not Found
       requestBody:
         content:
           multipart/form-data:
@@ -513,7 +513,7 @@ paths:
                   imageKey1: {}
                   imageKey2: {}
       x-code_example: null
-      description: 'Endpoint to send a new movement to the box. Example Pythorn request can be found here: https://github.com/CountYourBirds/webserver/blob/bdc7814753ad3db087c9c3b27010d7bef2b86966/request.py#L4'
+      description: 'Endpoint to send a new movement to the station. Example Pythorn request can be found here: https://github.com/CountYourBirds/webserver/blob/bdc7814753ad3db087c9c3b27010d7bef2b86966/request.py#L4'
   /image:
     post:
       summary: Identify bird on image
@@ -602,14 +602,14 @@ paths:
       description: Get the uploaded image
 components:
   schemas:
-    box:
+    station:
       description: ''
       type: object
       x-examples:
         example-1:
           _id:
             $oid: 61f90dee49c53fcca2a06580
-          box_id: 5dba702d-ccff-4095-8c0a-f5cbe2e1baf6
+          station_id: 5dba702d-ccff-4095-8c0a-f5cbe2e1baf6
           location:
             lat: 51.399206
             lon: 9.688879
@@ -643,7 +643,7 @@ components:
                 start_date: '123'
           name: Peter Lustigs Station
       properties:
-        box_id:
+        station_id:
           type: string
           minLength: 1
         location:
@@ -763,7 +763,7 @@ components:
       examples:
         - _id:
             $oid: 61f90dee49c53fcca2a06580
-          box_id: 5dba702d-ccff-4095-8c0a-f5cbe2e1baf6
+          station_id: 5dba702d-ccff-4095-8c0a-f5cbe2e1baf6
           location:
             lat: 51.399206
             lon: 9.688879

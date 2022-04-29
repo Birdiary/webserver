@@ -16,7 +16,9 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import './CreateBox.css';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
+import './CreateStation.css';
 import { Link } from 'react-router-dom'; 
 
 const center = {
@@ -61,7 +63,7 @@ function DraggableMarker({ position, handler }) {
   )
 }
 
-class CreateBox extends React.Component {
+class CreateStation extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -69,6 +71,8 @@ class CreateBox extends React.Component {
       mail:[],
       open: false,
       finished:false,
+      checked: false,
+      name: ""
     };
     this.handler = this.handler.bind(this)
   }
@@ -95,6 +99,10 @@ class CreateBox extends React.Component {
     this.setState({ mail : value});
   };
 
+  handleChecked = (event) => {
+    this.setState({checked: event.target.checked});
+  };
+
   sendData = () => {
     const self=this;
     self.setState({ open: true })
@@ -104,7 +112,7 @@ class CreateBox extends React.Component {
       "location" : this.state.position,
       "mail": {"adresses": this.state.mail}
   }
-  requests.sendBox(payload)
+  requests.sendStation(payload)
     .then(function (res) {
       var id =res.data.id
       console.log(res)
@@ -117,7 +125,7 @@ class CreateBox extends React.Component {
   render() {
     return (
       <div style={{ textAlign: "center" }}>
-        <h1>Create a Box: </h1>
+        <h1>Create a Station: </h1>
         <TextField style={{width:"50vw"}}
           id="name"
           name="name"
@@ -149,6 +157,7 @@ class CreateBox extends React.Component {
         <br />
         <br />
 
+
         <div >
           <MapContainer center={center} zoom={13} style={{ height: "50vh", width: "50vw", display: "inline-block" }}>
             <TileLayer
@@ -162,9 +171,15 @@ class CreateBox extends React.Component {
         </div>
         <br/>
         <br/>
-        <Button color="primary" variant="contained" type="submit" onClick={this.sendData}>
+        <FormControlLabel style={{"max-width" : "45vw", textAlign: "left"}}control={<Checkbox  checked={this.state.checked} onChange={this.handleChecked}/>} label="Ich akzeptiere, dass die hier bei diesem Formular und durch die Station gesammelten Daten auf unserer Website veröffentlicht werden. Die Mail-Adressen werden nicht veröffentlicht, sondern nur genutzt um euch zu benachrichtigen. Alle Daten können auf Anfrage gelöscht oder geändert werden." />
+        <br></br>
+        <br/>
+        <Button color="primary" variant="contained" type="submit" onClick={this.sendData} disabled={!this.state.checked}>
           Submit
         </Button>
+        <br></br>
+        {this.state.checked? "" : <p>Ihr müsst der Datenschutzerklärung zustimmen</p>}
+
         <br />
         <br />
         <Dialog
@@ -173,7 +188,7 @@ class CreateBox extends React.Component {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          {"Erstellen einer Box"}
+          {"Erstellen einer Station"}
         </DialogTitle>
         <DialogContent>
         <Box sx={{ m: 1, position: 'relative' }} >
@@ -197,16 +212,16 @@ class CreateBox extends React.Component {
         )}
       </Box>
         {this.state.finished? <DialogContentText id="alert-dialog-description" style={{"padding": "10px"}}>
-            Die Box wurde erfolgreich erstellt und hat die ID: <br></br>{this.state.id} 
+            Die Station wurde erfolgreich erstellt und hat die ID: <br></br>{this.state.id} 
           </DialogContentText> :
           <DialogContentText id="alert-dialog-description" style={{"padding": "10px"}}>
-          Die Box wird gerade erstellt
+          Die Station wird gerade erstellt
         </DialogContentText> }
         </DialogContent>
         <DialogActions>
-          <Button component={Link} to="/view" >Go to overview</Button>
-          <Button component={Link} to={"/view/box/" + this.state.id}>
-            Inspect Box
+          <Button component={Link} to="/view" >Gehe zum Überblick</Button>
+          <Button component={Link} to={"/view/station/" + this.state.id}>
+            Beobachte Station
           </Button>
         </DialogActions>
       </Dialog>
@@ -220,4 +235,4 @@ class CreateBox extends React.Component {
   }
 }
 
-export default CreateBox
+export default CreateStation

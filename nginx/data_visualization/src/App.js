@@ -1,7 +1,7 @@
 import React from 'react'
 import OwnMap from './Map/Map'
-import CreateBox from './CreateBox/CreateBox';
-import BoxView from './Box/Box'
+import Createstation from './CreateStation/CreateStation';
+import StationView from './Station/Stations'
 import Button from '@mui/material/Button';
 import { Route, Routes, BrowserRouter } from "react-router-dom";
 import AppBar from '@mui/material/AppBar';
@@ -19,8 +19,8 @@ const Header = ( props ) => {
        <Typography variant="h4" color="inherit" style={{ flex: 1 }}>
           <Button style={{marginLeft: "120px", fontWeight : "bold"}} color="inherit" component={Link} to="/view" >HOME</Button>
         </Typography>
-        <Button rel="noopener" color="inherit" component={Link} to="/view/createBox">
-          Erstelle Box
+        <Button rel="noopener" color="inherit" component={Link} to="/view/createstation">
+          Erstelle Station
         </Button>
         <Button rel="noopener" color="inherit"  href="/" >
           Erfahre mehr über unser Projekt
@@ -68,8 +68,8 @@ class App extends React.Component {
         <div className="content" id="mainView">
           <Routes>
           <Route exact path="/view" element={<OwnMap ></OwnMap>} />
-          <Route exact path="/view/box/:id" element={<BoxView />}></Route>
-          <Route path="/view/createBox" element={<CreateBox/>}></Route>
+          <Route exact path="/view/station/:id" element={<StationView />}></Route>
+          <Route path="/view/createStation" element={<Createstation/>}></Route>
           </Routes>
         </div>
       </div>

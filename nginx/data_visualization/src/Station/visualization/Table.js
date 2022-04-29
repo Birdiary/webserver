@@ -28,7 +28,7 @@ export default function BasicTable(props) {
 
   return (
 <div>
-    {rows.length == 0 ? < div><p>Das Video wird gerade verabeitet und die Art bestimmt! Bitte warte einen kurzen Moment und klicke dann auf den Refresh Button </p> <Button variant="contained" onClick={() => { props.getBox() }} style={{ float: "right", margin: "15px" }}>Refresh</Button></div>
+    {rows.length == 0 ? < div><p>Das Video wird gerade verabeitet und die Art bestimmt! Bitte warte einen kurzen Moment und klicke dann auf den Refresh Button </p> <Button variant="contained" onClick={() => { props.getStation() }} style={{ float: "right", margin: "15px" }}>Refresh</Button></div>
     :
     <TableContainer component={Paper}>
       <Table  aria-label="simple table">

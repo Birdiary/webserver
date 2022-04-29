@@ -17,10 +17,11 @@ import BasicTable from "./visualization/Table";
 import AmountTable from "./visualization/Table2";
 import IconButton from '@mui/material/IconButton';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import zIndex from "@mui/material/styles/zIndex";
 
 
 
-function BoxView(props) {
+function StationView(props) {
   const { id } = useParams()
   const [data, setData] = useState("");
   const [temperatue, setTemperature] = useState(
@@ -42,14 +43,14 @@ function BoxView(props) {
   const [date, setDate] = useState(new Date(Date.now()))
 
   useEffect(() => {
-    getBox();
+    getStation();
 
 
   }, [])
 
 
-  const getBox = () => {
-    requests.getBox(id)
+  const getStation = () => {
+    requests.getStation(id)
       .then((res) => { setData(res.data); console.log(res); createSeries(res.data) })
   }
 
@@ -73,11 +74,24 @@ function BoxView(props) {
       date = new Date(dateArray[0])
       var hum = environment.humidity
       var temp = environment.temperature
-      if (temp > -35){
-        tempSeries[0].data.push([date, temp])
-      humSeries[0].data.push([date, hum])
+      try{
+      var lastDate = tempSeries[0].data[tempSeries[0].data.length -1][0]
+      var  diffTime = Math.abs(date - lastDate);
+      if(diffTime > 1000 * 60 * 60 ){
+        var middleDate = new Date(lastDate + 1000 * 60 * 60)
+        tempSeries[0].data.push([middleDate, null])
+        humSeries[0].data.push([middleDate, null])
       }
     }
+    catch (e){
+      console.log(e)
+    }
+      if (temp > -35){
+        tempSeries[0].data.push([date, temp])
+        humSeries[0].data.push([date, hum])
+      }
+    }
+
     setTemperature(tempSeries)
     setHumidity(humSeries)
 
@@ -112,8 +126,8 @@ function BoxView(props) {
 
   return <div>
 
-    <Button variant="contained" onClick={() => { getBox() }} style={{  margin: "15px", position: "absolute", right: "25px" }}>Refresh</Button>
-    <h1 style={{textAlign: "center"}}>Box: {data ? data.name : id}</h1>
+    <Button variant="contained" onClick={() => { getStation() }} style={{  margin: "15px", position: "absolute", right: "25px", zIndex : "10000" }}>Refresh</Button>
+    <h1 style={{textAlign: "center"}}>Station: {data ? data.name : id}</h1>
     {data ?
       <div>
         {data.measurements.movements && data.measurements.movements.length > 0 ?
@@ -130,7 +144,7 @@ function BoxView(props) {
                 <TabPanel value="1">
                   <Grid container spacing={4}>
                     <Grid item xs={8}>
-                      {data.measurements.movements[0].video == "pending" ? < div><p>Das Video wird gerade verabeitet und die Art bestimmt! <br/> Bitte warte einen kurzen Moment und klicke dann auf den Refresh Button </p> <Button variant="contained" onClick={() => { getBox() }} style={{ margin: "15px" }}>Refresh</Button></div>
+                      {data.measurements.movements[0].video == "pending" ? < div><p>Das Video wird gerade verabeitet und die Art bestimmt! <br/> Bitte warte einen kurzen Moment und klicke dann auf den Refresh Button </p> <Button variant="contained" onClick={() => { getStation() }} style={{ margin: "15px" }}>Refresh</Button></div>
                       :
                       <ReactPlayer url={data.measurements.movements[0].video} loop={true} controls={true} width={"100%"} height="70vh" /> }
                     </Grid>
@@ -144,13 +158,13 @@ function BoxView(props) {
                       <InfoOutlinedIcon />
                    </IconButton>
                       <h4>Erkannte Arten:</h4>
-                      <BasicTable birds={data.measurements.movements[0].detections} getBox={event => getBox(event)}></BasicTable>
+                      <BasicTable birds={data.measurements.movements[0].detections} getStation={event => getStation(event)}></BasicTable>
                     </Grid>
                   </Grid>
                 </TabPanel>
                 {data.measurements.movements.length > 1 ? <TabPanel value="2">                  <Grid container spacing={2}>
                   <Grid item xs={8}>
-                  {data.measurements.movements[1].video == "pending" ? < div><p>Das Video wird gerade verabeitet und die Art bestimmt! <br/> Bitte warte einen kurzen Moment und klicke dann auf den Refresh Button </p> <Button variant="contained" onClick={() => { getBox() }} style={{  margin: "15px" }}>Refresh</Button></div>
+                  {data.measurements.movements[1].video == "pending" ? < div><p>Das Video wird gerade verabeitet und die Art bestimmt! <br/> Bitte warte einen kurzen Moment und klicke dann auf den Refresh Button </p> <Button variant="contained" onClick={() => { getStation() }} style={{  margin: "15px" }}>Refresh</Button></div>
                       :
                     <ReactPlayer url={data.measurements.movements[1].video} loop={true} controls={true} width={"100%"} height="70vh" /> }
                   </Grid>
@@ -168,7 +182,7 @@ function BoxView(props) {
                 </Grid></TabPanel> : ""}
                 {data.measurements.movements.length > 2 ? <TabPanel value="3">                  <Grid container spacing={2}>
                   <Grid item xs={8}>
-                  {data.measurements.movements[2].video == "pending" ? < div><p>Das Video wird gerade verabeitet und die Art bestimmt! <br/>  Bitte warte einen kurzen Moment und klicke dann auf den Refresh Button </p> <Button variant="contained" onClick={() => { getBox() }} style={{ margin: "15px" }}>Refresh</Button></div>
+                  {data.measurements.movements[2].video == "pending" ? < div><p>Das Video wird gerade verabeitet und die Art bestimmt! <br/>  Bitte warte einen kurzen Moment und klicke dann auf den Refresh Button </p> <Button variant="contained" onClick={() => { getStation() }} style={{ margin: "15px" }}>Refresh</Button></div>
                       :
                     <ReactPlayer url={data.measurements.movements[2].video} loop={true} controls={true} width={"100%"} height="70vh" /> }
                   </Grid>
@@ -290,4 +304,4 @@ function BoxView(props) {
 }
 
 
-export default BoxView
+export default StationView

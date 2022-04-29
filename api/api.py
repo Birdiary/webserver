@@ -92,6 +92,13 @@ class Measurement(db.EmbeddedDocument):
 class Mail(db.DynamicEmbeddedDocument):
     adresses = db.ListField(db.StringField())
     
+class Station(db.DynamicDocument):
+    station_id = db.StringField()
+    name = db.StringField()
+    location = db.EmbeddedDocumentField(Location)
+    measurements = db.EmbeddedDocumentField(Measurement)
+    mail = db.EmbeddedDocumentField(Mail)
+
 class Box(db.DynamicDocument):
     box_id = db.StringField()
     name = db.StringField()
@@ -106,7 +113,7 @@ def enqueueable(func):
 
 @enqueueable
 # Create a working task queue  
-def videoAnalysis(filename, movement_id, box_id):
+def videoAnalysis(filename, movement_id, station_id):
     if  os.path.splitext(filename)[1] == ".h264":
         command = "MP4Box -add {} {}.mp4".format("./uploads/videos/" + filename, "./uploads/videos/" + os.path.splitext(filename)[0])
         try:
@@ -147,9 +154,9 @@ def videoAnalysis(filename, movement_id, box_id):
         birds.append({"latinName":key, "germanName": germanName, "score" : value})
     print(birds)
 
-    box = Box.objects(box_id=box_id).first_or_404()
+    station = Station.objects(station_id=station_id).first_or_404()
 
-    movements= box.measurements.movements
+    movements= station.measurements.movements
     selectedMovement = {}
 
     for i, movement in enumerate(movements):
@@ -159,35 +166,39 @@ def videoAnalysis(filename, movement_id, box_id):
             selectedMovement = movements[i]
 
     count = {}
-    if "count" in box: 
-        count = box.count
+    if "count" in station: 
+        count = station.count
 
 
-    today = selectedMovement.start_date.split()[0]
-    print(today)
-    latinName=birds[0]['latinName']
-    germanName=birds[0]["germanName"]
-        
+    if len(birds) > 0:
+        today = selectedMovement.start_date.split()[0]
+        print(today)
+        latinName=birds[0]['latinName']
+        germanName=birds[0]["germanName"]
+            
 
-    if today in count:
-        existName = False
-        for i, det in enumerate(count[today]):
-            if det["latinName"] == latinName:
-                existName = True
-                count[today][i]["amount"] = count[today][i]["amount"] + 1
-        if existName == False:
-            count[today].append({"latinName": latinName, "germanName" : germanName, "amount": 1})
-    else:
-        count[today] = [{"latinName": latinName, "germanName" : germanName, "amount": 1}]
+        if today in count:
+            existName = False
+            for i, det in enumerate(count[today]):
+                if det["latinName"] == latinName:
+                    existName = True
+                    count[today][i]["amount"] = count[today][i]["amount"] + 1
+            if existName == False:
+                count[today].append({"latinName": latinName, "germanName" : germanName, "amount": 1})
+        else:
+            count[today] = [{"latinName": latinName, "germanName" : germanName, "amount": 1}]
 
-    box.measurements.movements= movements
-    box.update(measurements= box.measurements, count=count)
+        for mail in station.mail.adresses:
+            try:
+                send_email(mail, filename, str(host)+ "/api/uploads/videos/" + filename, birds, pwd, str(host) +"/view/station/" +station_id )
+            except (e):
+                print(e)
+                print("mail to " + mail + " failed") 
 
-    for mail in box.mail.adresses:
-        try:
-            send_email(mail, filename, 'uploads/videos/' + filename, birds, pwd )
-        except:
-            print("mail to " + mail + " failed")  
+    station.measurements.movements= movements
+    station.update(measurements= station.measurements, count=count)
+
+ 
  
  
     return birds
@@ -263,8 +274,8 @@ def audio():
         return filename
     return render_template('./index.html')
 
-@app.route('/api/box', methods=['GET', 'POST'])
-def add_box():
+@app.route('/api/station', methods=['GET', 'POST'])
+def add_station():
     if request.method=="POST":
         body = request.get_json()
         location = Location()
@@ -286,22 +297,22 @@ def add_box():
 
         print(mail)
         # Add object to movie and save
-        box = Box(box_id = id, location=location, name=body['name'], measurements = measurement, mail=mail).save()
+        station = Station(station_id = id, location=location, name=body['name'], measurements = measurement, mail=mail).save()
         return {"id": id}, 201
-    boxes = Box.objects.only('box_id', "location", "name" ).exclude('_id')
-    return  jsonify(boxes), 200
+    stations = Station.objects.only('station_id', "location", "name" ).exclude('_id')
+    return  jsonify(stations), 200
 
-@app.route('/api/box/<box_id>', methods=['GET'])
-def get_one_box(box_id: str):
-    box = Box.objects(box_id=box_id).first_or_404()
-    return jsonify(box), 200
+@app.route('/api/station/<station_id>', methods=['GET'])
+def get_one_station(station_id: str):
+    station = Station.objects(station_id=station_id).exclude('_id', 'mail').first_or_404()
+    return jsonify(station), 200
 
-@app.route('/api/environment/<box_id>', methods=['POST'])
-def add_environment(box_id: str):
+@app.route('/api/environment/<station_id>', methods=['POST'])
+def add_environment(station_id: str):
     content_type = request.headers.get('Content-Type')
     print(content_type, flush=True)
     
-    box = Box.objects(box_id=box_id).first_or_404()
+    station = Station.objects(station_id=station_id).first_or_404()
 
     body = request.get_json()
     print(body, flush=True)
@@ -312,20 +323,20 @@ def add_environment(box_id: str):
     env_id = str(uuid.uuid4())
     environmentClass.env_id = env_id
 
-    environmentList = box.measurements.environment
+    environmentList = station.measurements.environment
     environmentList.insert(0, environmentClass)
-    box.measurements.environment = environmentList
-    box.update(measurements = box.measurements)
+    station.measurements.environment = environmentList
+    station.update(measurements = station.measurements)
 
 #TODO send E-Mail
 
     return jsonify(id = env_id), 200
 
-@app.route('/api/movement/<box_id>', methods=['POST'])
-def add_movement(box_id: str):
+@app.route('/api/movement/<station_id>', methods=['POST'])
+def add_movement(station_id: str):
     content_type = request.headers.get('Content-Type')
     print(content_type, flush=True)
-    box = Box.objects(box_id=box_id).first_or_404()
+    station = Station.objects(station_id=station_id).first_or_404()
 
 
     ##TODO: Count Birds in image and Crop images to bird onyl 
@@ -363,11 +374,11 @@ def add_movement(box_id: str):
     movementsClass.detections = {}
 
     
-    movementList = box.measurements.movements
+    movementList = station.measurements.movements
     movementList.insert(0, movementsClass)
-    box.measurements.movements = movementList
-    box.update(measurements = box.measurements)
-    job= q.enqueue(videoAnalysis, filename, mov_id, box_id)  
+    station.measurements.movements = movementList
+    station.update(measurements = station.measurements)
+    job= q.enqueue(videoAnalysis, filename, mov_id, station_id)  
     #print(movementList)
 
     return jsonify(id = mov_id), 200
@@ -383,6 +394,19 @@ def getAudios(filename):
 @app.route('/api/uploads/videos/<filename>')
 def getVideos(filename):
     return send_from_directory(app.config['UPLOADED_VIDEOS_DEST'], filename)
+
+@app.route('/api/transfer')
+def transfer():
+
+    boxes = Box.objects
+    for box in boxes:
+        id= box.box_id
+        location=box.location
+        name= box.name
+        measurement = box.measurements
+        mail =box.mail
+        station = Station(station_id = id, location=location, name= name, measurements = measurement, mail=mail).save()
+
 
 #@app.route('/api')
 #def api():

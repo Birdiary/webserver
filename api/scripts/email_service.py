@@ -7,9 +7,9 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 
-def send_email (receiver_email, imageName, imagePath, count, pw):
-    subject = "New Bird detected"
-    sender_email = "info@countyourbirds.org"
+def send_email (receiver_email, imageName, imagePath, count, pw, stationPath):
+    subject = "Vogel an deiner Fütterungsstation"
+    sender_email = "info@wiediversistmeingarten.org"
     password= pw
 
     # Create a multipart message and set headers
@@ -20,18 +20,17 @@ def send_email (receiver_email, imageName, imagePath, count, pw):
     context = ssl.create_default_context()
     #message["Bcc"] = receiver_email  # Recommended for mass emails
 
-    textString= "Hey, there were birds at your bird feeder: \n"
-    for item in count:
-        print(item, flush=True)
-        textString= textString+ "The bird was with "+ item.score + "% of the species \"" + item.latinName +"\" ("+item.germanName +").\n"
+    textString= "Hey, da war ein neuer Vogel an deiner Fütterungsstation: \n"
+
+    textString= textString+ "Der Vogel war miet einer Wahrscheinlicketi von "+ str(round(count[0]['score']*100,2)) + "% ein Vogel der Art \"" + count[0]['latinName'] +"\" ("+count[0]['germanName'] +").\n"
+
+    textString= textString + "Das Video vom Vogel kann unter folgendem Link angeschaut werden: " + imagePath + "\n \n"
+
+    textString= textString + "Die gesammelten Daten der Station können unter folgenem Link angeschaut werden: " + stationPath
 
     text = MIMEText(textString)
     message.attach(text)
-    im_data = open(imagePath, "rb").read()
-    image = MIMEImage(im_data, name= imageName)
 
-    # Add attachment to message and convert message to string
-    message.attach(image)
     text = message.as_string()
     print("E-Mail send")
     with smtplib.SMTP_SSL("smtp.strato.de", 465, context=context) as server:

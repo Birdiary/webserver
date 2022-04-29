@@ -15,26 +15,26 @@ class OwnMap extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            boxes :[]
+            stations :[]
         };
     };
 
     componentDidMount(){
         map= this.refs.map;
-        this.getBoxes()
+        this.getStations()
     };
 
 
-    getBoxes () {
+    getStations () {
         let self = this;
-        let boxes = [];
-        requests.getBoxes()
+        let stations = [];
+        requests.getStations()
         .then ( ( res ) => {
            
-            boxes= res.data;            
-            console.log(boxes)
+            stations= res.data;            
+            console.log(stations)
             this.setState({
-                            boxes: boxes
+                            stations: stations
                         })
 
         })
@@ -52,7 +52,7 @@ class OwnMap extends React.Component {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 {/* Map markers on the Map,if marker was clicked turn green */}
-                {this.state.boxes.map((marker, i) => {
+                {this.state.stations.map((marker, i) => {
                     return <Marker  key={"marker" + i}
                         position={[marker.location.lat, marker.location.lng ? marker.location.lng : marker.location.lon]}>                 
                         <Popup minWidth={90}>
@@ -60,7 +60,7 @@ class OwnMap extends React.Component {
                           Name der Station: {marker.name}
                         </span>
                         <br/>
-                        <Button component={Link} to={"/view/box/"+ marker.box_id}>Beobachte Box</Button>
+                        <Button component={Link} to={"/view/station/"+ marker.station_id}>Beobachte Station</Button>
                       </Popup> </Marker>
                 })}
 
