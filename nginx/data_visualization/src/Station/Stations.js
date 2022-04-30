@@ -51,7 +51,19 @@ function StationView(props) {
 
   const getStation = () => {
     requests.getStation(id)
-      .then((res) => { setData(res.data); console.log(res); createSeries(res.data) })
+      .then((res) => { 
+        var data=res.data
+        var movementData = []
+        var movements= res.data.measurements.movements; 
+        movements.slice([0], [3]).map((item, i) => {
+        movementData.push(item);
+        });
+
+        data.measurements.movements= movementData
+
+      setData(data); 
+      //console.log(res); 
+      createSeries(res.data) })
   }
 
   const createSeries = (data) => {
@@ -67,33 +79,39 @@ function StationView(props) {
       data: [
       ]
     }]
-    for (var environment of data.measurements.environment) {
+    for (var i =0; i < data.measurements.environment.length; i = i+5) {
+
+      var environment = data.measurements.environment[i]
 
       let date = environment.date;
       const dateArray = date.split(".");
       date = new Date(dateArray[0])
       var hum = environment.humidity
       var temp = environment.temperature
-      try{
+      /**try{
       var lastDate = tempSeries[0].data[tempSeries[0].data.length -1][0]
       var  diffTime = Math.abs(date - lastDate);
-      if(diffTime > 1000 * 60 * 60 ){
-        var middleDate = new Date(lastDate + 1000 * 60 * 60)
+      if(diffTime > 1000 * 60 * 240 ){
+        var middleDate = new Date(lastDate + 1000*60*120)
         tempSeries[0].data.push([middleDate, null])
         humSeries[0].data.push([middleDate, null])
+
       }
     }
     catch (e){
       console.log(e)
-    }
+    }*/
       if (temp > -35){
         tempSeries[0].data.push([date, temp])
         humSeries[0].data.push([date, hum])
       }
+
     }
 
     setTemperature(tempSeries)
     setHumidity(humSeries)
+
+
 
   }
 
@@ -158,7 +176,7 @@ function StationView(props) {
                       <InfoOutlinedIcon />
                    </IconButton>
                       <h4>Erkannte Arten:</h4>
-                      <BasicTable birds={data.measurements.movements[0].detections} getStation={event => getStation(event)}></BasicTable>
+                      <BasicTable birds={data.measurements.movements[0].detections} finished={data.measurements.movements[0].video} getStation={event => getStation(event)}></BasicTable>
                     </Grid>
                   </Grid>
                 </TabPanel>
@@ -177,7 +195,7 @@ function StationView(props) {
                       <InfoOutlinedIcon />
                    </IconButton>
                     <h4>Erkannte Arten:</h4> 
-                    <BasicTable birds={data.measurements.movements[1].detections}></BasicTable>
+                    <BasicTable birds={data.measurements.movements[1].detections} finished={data.measurements.movements[1].video} getStation={event => getStation(event)}></BasicTable>
                   </Grid>
                 </Grid></TabPanel> : ""}
                 {data.measurements.movements.length > 2 ? <TabPanel value="3">                  <Grid container spacing={2}>
@@ -195,7 +213,7 @@ function StationView(props) {
                       <InfoOutlinedIcon />
                    </IconButton>
                     <h4>Erkannte Arten:</h4>
-                    <BasicTable birds={data.measurements.movements[2].detections}></BasicTable>
+                    <BasicTable birds={data.measurements.movements[2].detections} finished={data.measurements.movements[2].video} getStation={event => getStation(event)} ></BasicTable>
                   </Grid>
                 </Grid></TabPanel> : ""}
               </TabContext>

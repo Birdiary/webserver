@@ -28,8 +28,9 @@ export default function BasicTable(props) {
 
   return (
 <div>
-    {rows.length == 0 ? < div><p>Das Video wird gerade verabeitet und die Art bestimmt! Bitte warte einen kurzen Moment und klicke dann auf den Refresh Button </p> <Button variant="contained" onClick={() => { props.getStation() }} style={{ float: "right", margin: "15px" }}>Refresh</Button></div>
+    {rows.length == 0 && props.finished=="pending" ? < div><p>Das Video wird gerade verabeitet und die Art bestimmt! Bitte warte einen kurzen Moment und klicke dann auf den Refresh Button </p> <Button variant="contained" onClick={() => { props.getStation() }} style={{ float: "right", margin: "15px" }}>Refresh</Button></div>
     :
+    rows.length == 0 ?  <p> Es wurde kein Vogel auf dem Video erkannt</p>  :
     <TableContainer component={Paper}>
       <Table  aria-label="simple table">
         <TableHead>
@@ -55,7 +56,7 @@ export default function BasicTable(props) {
           ))}
         </TableBody>
       </Table>
-    </TableContainer>}
+    </TableContainer>} 
     </div>   
   );
 }
