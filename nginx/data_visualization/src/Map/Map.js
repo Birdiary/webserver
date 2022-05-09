@@ -44,9 +44,17 @@ class OwnMap extends React.Component {
 
 
     render() {
-        const position = [51.9688129, 7.5922197];
+        const bounds = [[
+            48.87194147722911,
+            5.943603515625
+
+          ],
+          [52.415822612378776,
+            9.810791015625,
+            
+          ]]
         return (
-            <MapContainer style={{ height: "90vh" }} center={position} zoom={15} ref="map" >
+            <MapContainer style={{ height: "90vh" }} bounds={bounds} zoom={15} ref="map" >
                 <TileLayer
                     attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

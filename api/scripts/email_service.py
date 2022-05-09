@@ -20,9 +20,9 @@ def send_email (receiver_email, imageName, imagePath, count, pw, stationPath):
     context = ssl.create_default_context()
     #message["Bcc"] = receiver_email  # Recommended for mass emails
 
-    textString= "Hey, da war ein neuer Vogel an deiner Fütterungsstation: \n"
+    textString= "Hallo, da war ein neuer Vogel an deiner Fütterungsstation: \n"
 
-    textString= textString+ "Der Vogel war miet einer Wahrscheinlicketi von "+ str(round(count[0]['score']*100,2)) + "% ein Vogel der Art \"" + count[0]['latinName'] +"\" ("+count[0]['germanName'] +").\n"
+    textString= textString+ "Der Vogel war mit einer Wahrscheinlichkeit von "+ str(round(count[0]['score']*100,2)) + "% ein Vogel der Art \"" + count[0]['latinName'] +"\" ("+count[0]['germanName'] +").\n"
 
     textString= textString + "Das Video vom Vogel kann unter folgendem Link angeschaut werden: " + imagePath + "\n \n"
 

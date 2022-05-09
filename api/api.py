@@ -7,6 +7,7 @@ from scripts.classify_birds import classify
 from scripts.email_service import send_email
 from sys import modules
 from os.path import basename, splitext
+from datetime import datetime
 
 import subprocess
 import uuid
@@ -394,6 +395,16 @@ def getAudios(filename):
 @app.route('/api/uploads/videos/<filename>')
 def getVideos(filename):
     return send_from_directory(app.config['UPLOADED_VIDEOS_DEST'], filename)
+
+@app.route('/api/bird')
+def getLastBird():
+  station=  Station.objects()
+  print(jsonify(station), flush=True)
+  station = list(station)
+  print(jsonify(station), flush=True)
+  sortedStations = station.sort( key=lambda x: datetime.fromisoformat(x['measurements']['movements'][0]['start_date']))
+  print(jsonify(station), flush=True)
+  return jsonify(station)
 
 @app.route('/api/transfer')
 def transfer():
