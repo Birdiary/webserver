@@ -36,7 +36,6 @@ This project contains one `docker-compose` configuration (file `docker-compose-d
 If you see an error related to the MongoDB or HTTP request timeouts during the first "up", abort the execution, then try again.
 
 ```bash
-cd ui/
 docker-compose --file docker-compose-dev.yml up
 ```
 
@@ -50,7 +49,6 @@ This configuration has no `ui` container. Instead the webserver container create
 To start the platform with the production build:
 
 ```bash
-cd ui/
 
 docker-compose up 
 
