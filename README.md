@@ -15,7 +15,7 @@ CountYourBirds is a project by a group of students at the Institute for Geoinfor
 If you got any questions contact us via: [info@countyourbirds.org](mailto:info@countyourbirds.org).
 
 ## Installtion
-To run the platform you first have to install docker, which then installs all further needed packages and programs. After the installation you can run the platform in development or production environment.
+To run the platform you first have to install docker, which then installs all further needed packages and programs. After the installation you can clone and run the platform in development or production environment.
 
 ### Docker
 
@@ -25,6 +25,10 @@ Linux Users can also use the Installation of a seperate docker engine and compos
  * Install docker engine: https://docs.docker.com/engine/install/
  * Install docker-compose: https://docs.docker.com/compose/install/
 
+### Clone Project 
+```bash
+git clone https://github.com/Birdiary/webserver.git
+```
 
 ### Development environment with docker-compose
 
