@@ -25,6 +25,10 @@ Linux Users can also use the Installation of a seperate docker engine and compos
  * Install docker engine: https://docs.docker.com/engine/install/
  * Install docker-compose: https://docs.docker.com/compose/install/
 
+### Git
+
+ * Install Git: https://git-scm.com/downloads
+
 ### Clone Project 
 ```bash
 git clone https://github.com/Birdiary/webserver.git
