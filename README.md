@@ -32,6 +32,7 @@ Linux Users can also use the Installation of a seperate docker engine and compos
 ### Clone Project 
 ```bash
 git clone https://github.com/Birdiary/webserver.git
+cd webserver
 ```
 
 ### Development environment with docker-compose
