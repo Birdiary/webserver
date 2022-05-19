@@ -30,7 +30,7 @@ with open("static/data/birdlist1.csv", encoding='utf-8') as csvf:
 
     #convert each csv row into python dict
     for row in csvReader: 
-        print(row, flush=True)
+        #print(row, flush=True)
         #add this python dict to json array
         key = row['latinName']
         birdJSON[key] = row['germanName']
@@ -47,9 +47,9 @@ redis = Redis(host='redis', port=6379)
 q = Queue(connection=redis)
 app.config['SECRET_KEY'] = 'thisisasecret'
 app.config['JSON_SORT_KEYS'] = False
-app.config['UPLOADED_IMAGES_DEST'] = 'uploads/images'
-app.config['UPLOADED_AUDIOS_DEST'] = 'uploads/audios'
-app.config['UPLOADED_VIDEOS_DEST'] = 'uploads/videos'
+app.config['UPLOADED_IMAGES_DEST'] = 'uploads/disk/images'
+app.config['UPLOADED_AUDIOS_DEST'] = 'uploads/disk/audios'
+app.config['UPLOADED_VIDEOS_DEST'] = 'uploads/disk/videos'
 app.config['MONGODB_SETTINGS'] = {
     'db': 'your_database',
     'host': 'mongodb',
@@ -116,14 +116,14 @@ def enqueueable(func):
 # Create a working task queue  
 def videoAnalysis(filename, movement_id, station_id):
     if  os.path.splitext(filename)[1] == ".h264":
-        command = "MP4Box -add {} {}.mp4".format("./uploads/videos/" + filename, "./uploads/videos/" + os.path.splitext(filename)[0])
+        command = "MP4Box -add {} {}.mp4".format("./uploads/disk/videos/" + filename, "./uploads/disk/videos/" + os.path.splitext(filename)[0])
         try:
             output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
             filename = os.path.splitext(filename)[0] +".mp4"
         except subprocess.CalledProcessError as e:
             print('FAIL:\ncmd:{}\noutput:{}'.format(e.cmd, e.output))
 
-    cap = cv2.VideoCapture('uploads/videos/' + filename)
+    cap = cv2.VideoCapture('uploads/disk/videos/' + filename)
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     print(total_frames)
     result=[]
@@ -138,7 +138,7 @@ def videoAnalysis(filename, movement_id, station_id):
             if key in output:
                 if result[i][key] > output[key]:
                     output[key]=result[i][key]
-            else:
+            elif key!= "None":
                 if result[i][key] > 0.3:
                     output[key]=result[i][key]
     print(output)
@@ -216,7 +216,7 @@ def image():
         data = request.files['image']
         print (data)
         filename = images.save(data)
-        result = classify('uploads/images/' + filename)
+        result = classify('uploads/disk/images/' + filename)
 
         return jsonify(
             result=result
@@ -229,12 +229,12 @@ def video():
         data = request.files['video']
         print (data, flush=True)
         filename = videos.save(data)
-        command = "MP4Box -add {} {}.mp4".format("./uploads/videos/" + filename, "./uploads/videos/" + os.path.splitext(filename)[0])
+        command = "MP4Box -add {} {}.mp4".format("./uploads/disk/videos/" + filename, "./uploads/disk/videos/" + os.path.splitext(filename)[0])
         try:
             output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
         except subprocess.CalledProcessError as e:
              print('FAIL:\ncmd:{}\noutput:{}'.format(e.cmd, e.output))
-        cap = cv2.VideoCapture('uploads/videos/' + os.path.splitext(filename)[0] +".mp4")
+        cap = cv2.VideoCapture('uploads/disk/videos/' + os.path.splitext(filename)[0] +".mp4")
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         print(total_frames)
         result=[]
@@ -303,10 +303,21 @@ def add_station():
     stations = Station.objects.only('station_id', "location", "name" ).exclude('_id')
     return  jsonify(stations), 200
 
-@app.route('/api/station/<station_id>', methods=['GET'])
-def get_one_station(station_id: str):
-    station = Station.objects(station_id=station_id).exclude('_id', 'mail').first_or_404()
-    return jsonify(station), 200
+@app.route('/api/station/<station_id>', methods=['GET', 'PUT', 'DELETE'])
+def station(station_id: str):
+    if request.method=="GET":
+        station = Station.objects(station_id=station_id).exclude('_id', 'mail').first_or_404()
+        return jsonify(station), 200
+    if request.method=="PUT":
+        body = request.get_json()
+        station = Station.objects.get_or_404(station_id=station_id)
+        station.update(**body)
+        return jsonify(station), 200
+    if request.method=="DELETE":
+        station = Station.objects.get_or_404(station_id)
+        station.delete()
+        return jsonify(str(station.station_id)), 200
+
 
 @app.route('/api/environment/<station_id>', methods=['POST'])
 def add_environment(station_id: str):
@@ -395,6 +406,7 @@ def getAudios(filename):
 @app.route('/api/uploads/videos/<filename>')
 def getVideos(filename):
     return send_from_directory(app.config['UPLOADED_VIDEOS_DEST'], filename)
+
 
 @app.route('/api/bird')
 def getLastBird():
