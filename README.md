@@ -7,12 +7,12 @@ Therefore, we built a prototypical bird feeder equipped with several sensors and
 The feeder is easy to reproduce at a reasonable price by following an open available manual. This allows anyone to build the feeder on their own, enabling a large distribution at many locations. The feeder automatically detects when a bird is visiting it, takes an image of the bird, determines the species and connects the observation with environmental data like the temperature or light intensity. All the collected data are published on a developed open access platform. Incorporating other surrounding factors like the proximity of the feeder station to the next forest or a large street allows it to pursue various questions regarding the occurrence of birds. One of them might ask, how does the immediate environment affect bird abundance? Or do sealed surfaces have a negative effect compared to a flowering garden?
 
 This repository contains the code to run the webserver. 
-All the collected data is send by a feeder which is based on this [repository](https://github.com/CountYourBirds/station). 
+All the collected data is send by a feeder which is based on this [repository](https://github.com/Birdiary/station). 
 The repositories are currently still under development, the code for the operation of the feeder as well as for the web server are continuously updated. 
 A corresponding manual for the operation of the system including open source instructions for building the feeder will follow soon. 
 
 CountYourBirds is a project by a group of students at the Institute for Geoinformatics at the University of Münster. 
-If you got any questions contact us via: [info@countyourbirds.org](mailto:info@countyourbirds.org).
+If you got any questions contact us via: [info@birdiary.de](mailto:info@birdiary.de).
 
 ## Installtion
 To run the platform you first have to install docker, which then installs all further needed packages and programs. After the installation you can clone and run the platform in development or production environment.
