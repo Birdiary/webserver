@@ -50,12 +50,12 @@ function StationView(props) {
 
 
   const getStation = () => {
-    requests.getStation(id)
+    requests.getStation(id, 3)
       .then((res) => { 
         var data=res.data
         var movementData = []
         var movements= res.data.measurements.movements; 
-        movements.slice([0], [3]).map((item, i) => {
+        movements.map((item, i) => {
         movementData.push(item);
         });
 

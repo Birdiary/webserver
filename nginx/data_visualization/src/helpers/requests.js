@@ -4,8 +4,8 @@ const _env = {
     api: config.apiUrl // eslint-disable-line
 }
 
-function getStation(id) {
-    var _url = _env.api + '/station/' + id;
+function getStation(id, movements) {
+    var _url = _env.api + '/station/' + id + "?movements=" + movements;
     //var _url = "https://wiediversistmeingarten.org/api/station/4a936912-65db-475d-bcd6-9ee292079830"
     return axios.get(_url);
 }

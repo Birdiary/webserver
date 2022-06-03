@@ -306,7 +306,10 @@ def add_station():
 @app.route('/api/station/<station_id>', methods=['GET', 'PUT', 'DELETE'])
 def station(station_id: str):
     if request.method=="GET":
+        movements = request.args.get('movements')
         station = Station.objects(station_id=station_id).exclude('_id', 'mail').first_or_404()
+        if movements and int(movements) > 0:
+            station.measurements.movements = station.measurements.movements[:int(movements)]
         return jsonify(station), 200
     if request.method=="PUT":
         body = request.get_json()
@@ -314,7 +317,7 @@ def station(station_id: str):
         station.update(**body)
         return jsonify(station), 200
     if request.method=="DELETE":
-        station = Station.objects.get_or_404(station_id)
+        station = Station.objects.get_or_404(station_id=station_id)
         station.delete()
         return jsonify(str(station.station_id)), 200
 
@@ -408,13 +411,13 @@ def getVideos(filename):
     return send_from_directory(app.config['UPLOADED_VIDEOS_DEST'], filename)
 
 
-@app.route('/api/bird')
+@app.route('/api/all')
 def getLastBird():
-  station=  Station.objects()
-  print(jsonify(station), flush=True)
+  station=  Station.objects.exclude('_id', 'mail')
+  #print(jsonify(station), flush=True)
   station = list(station)
-  print(jsonify(station), flush=True)
-  sortedStations = station.sort( key=lambda x: datetime.fromisoformat(x['measurements']['movements'][0]['start_date']))
+  #print(jsonify(station), flush=True)
+  #sortedStations = station.sort( key=lambda x: datetime.fromisoformat(x['measurements']['movements'][0]['start_date']))
   print(jsonify(station), flush=True)
   return jsonify(station)
 
@@ -430,6 +433,34 @@ def transfer():
         mail =box.mail
         station = Station(station_id = id, location=location, name= name, measurements = measurement, mail=mail).save()
 
+@app.route('/api/count')
+def count():
+
+    station=  Station.objects.only("count")
+    counts= list(station)
+    count = {}
+    for countObjects in counts:
+        try:
+            countObjects = dict(countObjects["count"])
+            for date  in countObjects:
+                print(date, flush=True) 
+                for detections in countObjects[date]: 
+                    print(detections, flush=True)
+                    latinName = detections["latinName"]
+                    germanName = detections["germanName"]
+                    if date in count:
+                        existName = False
+                        for i, det in enumerate(count[date]):
+                            if det["latinName"] == latinName:
+                                existName = True
+                                count[date][i]["amount"] = count[date][i]["amount"] + detections["amount"]
+                        if existName == False:
+                            count[date].append({"latinName": latinName, "germanName" : germanName, "amount": detections["amount"]})
+                    else:
+                        count[date] = [{"latinName": latinName, "germanName" : germanName, "amount": detections["amount"]}]
+        except:
+            print("No count available")
+    return count
 
 #@app.route('/api')
 #def api():

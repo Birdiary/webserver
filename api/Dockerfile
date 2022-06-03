@@ -16,6 +16,7 @@ WORKDIR /usr/src/app
 
 # add and install requirements
 RUN pip install opencv-python
+RUN pip install tensorflow
 
 
 
