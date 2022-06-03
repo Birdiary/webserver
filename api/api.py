@@ -418,7 +418,7 @@ def getLastBird():
   station = list(station)
   #print(jsonify(station), flush=True)
   #sortedStations = station.sort( key=lambda x: datetime.fromisoformat(x['measurements']['movements'][0]['start_date']))
-  print(jsonify(station), flush=True)
+  #print(jsonify(station), flush=True)
   return jsonify(station)
 
 @app.route('/api/transfer')
@@ -443,9 +443,9 @@ def count():
         try:
             countObjects = dict(countObjects["count"])
             for date  in countObjects:
-                print(date, flush=True) 
+                #print(date, flush=True) 
                 for detections in countObjects[date]: 
-                    print(detections, flush=True)
+                    #print(detections, flush=True)
                     latinName = detections["latinName"]
                     germanName = detections["germanName"]
                     if date in count:
