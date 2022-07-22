@@ -312,19 +312,19 @@ def add_station():
             header = {'content-type': 'application/json', 'Authorization': 'Bearer ' + response['token']}
             urlOpensensemap = 'https://api.opensensemap.org/boxes/'
             sensors = [{'title': 'Temperature', 'unit': '°C', 'sensorType': 'DHT22'}, {'title': 'Humidity', 'unit': '%', 'sensorType': 'DHT22'}]
-            data = {'name': name, 'exposure': 'outdoor', 'location': [location.lat, location.lng], 'sensors': sensors} 
+            data = {'name': name, 'exposure': 'outdoor', 'location': [location.lng, location.lat], 'sensors': sensors} 
             sensemapRequest = requests.post(urlOpensensemap, json=data, headers=header)
             print(sensemapRequest.json(), flush=True)
             print(sensemapRequest.status_code, flush=True)
 
-            if sensemapRequest.status_code == '201':
+            if sensemapRequest.status_code == 201:
                 sensebox_id = sensemapRequest.json()['data']['_id']
             # TODO: Error handling
 
         # Add object to movie and save
         station = Station(station_id = id, location=location, name=name, measurements = measurement, mail=mail, sensebox_id=sensebox_id).save()
         return {"id": id}, 201
-    stations = Station.objects.only('station_id', "location", "name", 'sensebox_id' ).exclude('_id')
+    stations = Station.objects.only('station_id', "location", "name", 'sensebox_id').exclude('_id')
     return  jsonify(stations), 200
 
 @app.route('/api/station/<station_id>', methods=['GET', 'PUT', 'DELETE'])
@@ -352,7 +352,6 @@ def add_environment(station_id: str):
     print(content_type, flush=True)
     
     station = Station.objects(station_id=station_id).first_or_404()
-    print(station, flush=True)
 
     body = request.get_json()
     print(body, flush=True)
@@ -368,13 +367,25 @@ def add_environment(station_id: str):
     station.measurements.environment = environmentList
     station.update(measurements = station.measurements)
     
-    # Send data to SenseBox
-    headersSendSensorValue = {'content-type': 'application/json'}
-    urlSensorValueSensebox = 'https://api.opensensemap.org/boxes/' + '61e7d172a12459001b6861a1' + '/data'
-    dataValue = [{"sensor": '61e7d172a12459001b6861a2', "value": 23}]
-    requestSensorValueSensebox = requests.post(urlSensorValueSensebox, json=dataValue, headers=headersSendSensorValue)
+    # Send Temperature and Humidity to Sensebox
+    if station.sensebox_id != '':
+        headersSendSensorValue = {'content-type': 'application/json'}
+        sensemapURL = 'https://api.opensensemap.org/boxes/' + station.sensebox_id
+        sensors = requests.get(sensemapURL).json()['sensors'] # get sensors of the sensebox
+        urlSensorValueSensebox = sensemapURL + '/data'
+        dataValue = []
+        if 'temperature' in body:
+            if body['temperature'] != -50:
+                id = [m for m in sensors if m['title'] in ['Temperature']][0]['_id']
+                dataValue.append({'sensor': id, 'value': body['temperature']})
+        if 'humidity' in body:
+            # TODO: What is the "error value" of humidity?
+            if body['humidity'] != -50:
+                id = [m for m in sensors if m['title'] in ['Humidity']][0]['_id']
+                dataValue.append({'sensor': id, 'value': body['humidity']})
+        print(dataValue, flush=True)
+        requestSensorValueSensebox = requests.post(urlSensorValueSensebox, json=dataValue, headers=headersSendSensorValue)
 
-    #r = requests.post("https://api.opensensemap.org/boxes/61e7d172a12459001b6861a1/61e7d172a12459001b6861a2", value=22)
 
 #TODO send E-Mail
 
