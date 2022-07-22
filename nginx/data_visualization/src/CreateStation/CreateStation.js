@@ -19,7 +19,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import './CreateStation.css';
-import { Link } from 'react-router-dom'; 
+import { Link } from 'react-router-dom';
 
 const center = {
   lat: 51.9606649,
@@ -40,7 +40,7 @@ function DraggableMarker({ position, handler }) {
       dragend() {
         const marker = markerRef.current
         if (marker != null) {
-          handler( marker.getLatLng())
+          handler(marker.getLatLng())
         }
       },
     }),
@@ -68,16 +68,17 @@ class CreateStation extends React.Component {
     super(props);
     this.state = {
       position: center,
-      mail:[],
+      mail: [],
       open: false,
-      finished:false,
+      finished: false,
       checked: false,
+      senseboxChecked: false,
       name: ""
     };
     this.handler = this.handler.bind(this)
   }
 
-  
+
 
   handler(value) {
     this.setState({
@@ -87,38 +88,46 @@ class CreateStation extends React.Component {
 
   handleChange = (event) => {
     var value = event.target.value
-    this.setState({ name : value});
+    this.setState({ name: value });
   };
 
   handlePositionChange = (event) => {
     var value = JSON.parse(event.target.value)
-    this.setState({ position : value});
+    this.setState({ position: value });
   };
 
   handleMailChange = (event, value) => {
-    this.setState({ mail : value});
+    this.setState({ mail: value });
   };
 
   handleChecked = (event) => {
-    this.setState({checked: event.target.checked});
+    console.log(event.target.checked)
+    this.setState({ checked: event.target.checked });
+  };
+
+  handleSenseboxChecked = (event) => {
+    console.log(event.target.checked)
+    this.setState({ senseboxChecked: event.target.checked });
   };
 
   sendData = () => {
-    const self=this;
+    const self = this;
     self.setState({ open: true })
 
-    var payload= {
-      "name" : this.state.name,
-      "location" : this.state.position,
-      "mail": {"adresses": this.state.mail}
-  }
-  requests.sendStation(payload)
-    .then(function (res) {
-      var id =res.data.id
-      console.log(res)
-      console.log(id)
-      self.setState({ id: id, finished:true })
-  })
+    var payload = {
+      "name": this.state.name,
+      "location": this.state.position,
+      "mail": { "adresses": this.state.mail },
+      "createSensebox": this.state.senseboxChecked
+    }
+    console.log(payload)
+    requests.sendStation(payload)
+      .then(function (res) {
+        var id = res.data.id
+        console.log(res)
+        console.log(id)
+        self.setState({ id: id, finished: true })
+      })
 
   }
 
@@ -126,7 +135,7 @@ class CreateStation extends React.Component {
     return (
       <div style={{ textAlign: "center" }}>
         <h1>Create a Station: </h1>
-        <TextField style={{width:"50vw"}}
+        <TextField style={{ width: "50vw" }}
           id="name"
           name="name"
           label="Name der Station"
@@ -135,19 +144,19 @@ class CreateStation extends React.Component {
         />
         <br />
         <br />
-        <Autocomplete style={{width:"50vw", display: "inline-block"}}
+        <Autocomplete style={{ width: "50vw", display: "inline-block" }}
           onChange={this.handleMailChange}
           multiple
           id="multiple-limit-tags"
           freeSolo={true}
           options={[]}
           renderInput={(params) => (
-            <TextField {...params} variant="outlined"  label="Zu Benarichtigende Mail Adressen" placeholder='Mail Adresse mit Enter bestätigen'/>
+            <TextField {...params} variant="outlined" label="Zu Benarichtigende Mail Adressen" placeholder='Mail Adresse mit Enter bestätigen' />
           )}
         />
-                <br />
         <br />
-        <TextField style={{width:"50vw"}}
+        <br />
+        <TextField style={{ width: "50vw" }}
           id="postion"
           name="position"
           label="Standort der Station (Gib die Koordinaten ein oder bewege den Marker in der Karte)"
@@ -169,62 +178,75 @@ class CreateStation extends React.Component {
 
 
         </div>
-        <br/>
-        <br/>
-        <FormControlLabel style={{"max-width" : "45vw", textAlign: "left"}}control={<Checkbox  checked={this.state.checked} onChange={this.handleChecked}/>} label="Ich akzeptiere, dass die hier bei diesem Formular und durch die Station gesammelten Daten auf unserer Website veröffentlicht werden. Die Mail-Adressen werden nicht veröffentlicht, sondern nur genutzt um euch zu benachrichtigen. Alle Daten können auf Anfrage gelöscht oder geändert werden." />
+        <br />
+        <br />
+        <FormControlLabel
+          style={{ "max-width": "45vw", textAlign: "left" }}
+          control={<Checkbox
+            checked={this.state.checked}
+            onChange={this.handleChecked} />}
+          label="Ich akzeptiere, dass die hier bei diesem Formular und durch die Station gesammelten Daten auf unserer Website veröffentlicht werden. Die Mail-Adressen werden nicht veröffentlicht, sondern nur genutzt um euch zu benachrichtigen. Alle Daten können auf Anfrage gelöscht oder geändert werden." />
         <br></br>
-        <br/>
+        <br />
+        <FormControlLabel
+          style={{ "max-width": "45vw", textAlign: "left" }}
+          control={<Checkbox
+            senseboxChecked={this.state.checked}
+            onChange={this.handleSenseboxChecked} />}
+          label="Ich stimme zu, dass die Umweltdaten (Lufttemperatur und -feuchte) und der Standort meiner Station auch auf opensensemap.org veröffentlicht werden. Die dort erstellte senseBox soll von den Betreibern der Website wiediversistmeingarten.org verwaltet werden." />
+        <br></br>
+        <br />
         <Button color="primary" variant="contained" type="submit" onClick={this.sendData} disabled={!this.state.checked}>
           Submit
         </Button>
         <br></br>
-        {this.state.checked? "" : <p>Ihr müsst der Datenschutzerklärung zustimmen</p>}
+        {this.state.checked ? "" : <p>Ihr müsst der Datenschutzerklärung zustimmen</p>}
 
         <br />
         <br />
         <Dialog
-        open={this.state.open}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">
-          {"Erstellen einer Station"}
-        </DialogTitle>
-        <DialogContent>
-        <Box sx={{ m: 1, position: 'relative' }} >
-        <Fab
-          aria-label="save"
-          color="primary"
+          open={this.state.open}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
         >
-          {this.state.finished ? <CheckIcon /> : <HourglassTopIcon />}
-        </Fab>
-        {!this.state.finished && (
-          <CircularProgress
-            size={68}
-            sx={{
-              color: blue[500],
-              position: 'absolute',
-              top: -6,
-              left: -6,
-              zIndex: 1,
-            }}
-          />
-        )}
-      </Box>
-        {this.state.finished? <DialogContentText id="alert-dialog-description" style={{"padding": "10px"}}>
-            Die Station wurde erfolgreich erstellt und hat die ID: <br></br>{this.state.id} 
-          </DialogContentText> :
-          <DialogContentText id="alert-dialog-description" style={{"padding": "10px"}}>
-          Die Station wird gerade erstellt
-        </DialogContentText> }
-        </DialogContent>
-        <DialogActions>
-          <Button component={Link} to="/view" >Gehe zum Überblick</Button>
-          <Button component={Link} to={"/view/station/" + this.state.id}>
-            Beobachte Station
-          </Button>
-        </DialogActions>
-      </Dialog>
+          <DialogTitle id="alert-dialog-title">
+            {"Erstellen einer Station"}
+          </DialogTitle>
+          <DialogContent>
+            <Box sx={{ m: 1, position: 'relative' }} >
+              <Fab
+                aria-label="save"
+                color="primary"
+              >
+                {this.state.finished ? <CheckIcon /> : <HourglassTopIcon />}
+              </Fab>
+              {!this.state.finished && (
+                <CircularProgress
+                  size={68}
+                  sx={{
+                    color: blue[500],
+                    position: 'absolute',
+                    top: -6,
+                    left: -6,
+                    zIndex: 1,
+                  }}
+                />
+              )}
+            </Box>
+            {this.state.finished ? <DialogContentText id="alert-dialog-description" style={{ "padding": "10px" }}>
+              Die Station wurde erfolgreich erstellt und hat die ID: <br></br>{this.state.id}
+            </DialogContentText> :
+              <DialogContentText id="alert-dialog-description" style={{ "padding": "10px" }}>
+                Die Station wird gerade erstellt
+              </DialogContentText>}
+          </DialogContent>
+          <DialogActions>
+            <Button component={Link} to="/view" >Gehe zum Überblick</Button>
+            <Button component={Link} to={"/view/station/" + this.state.id}>
+              Beobachte Station
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
 
 
