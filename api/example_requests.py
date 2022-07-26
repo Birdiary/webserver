@@ -4,15 +4,16 @@ import os
 def send_birddata(file, file2 ):
     print("bal")
     payload = {
-        "start_date" : "2022-04-25 16:03:10.210804",
-        "end_date" : "2022-05-24 16:03:10.210804",
+        "start_date" : "2022-04-27 16:03:10.210804",
+        "end_date" : "2022-04-27 16:03:20.210804",
         "audio" : "audioKey",
         "video" : "videoKey",
         "environment" : {
-            "date": "123",
-            "temp": 10
+            "date": "2022-04-27 16:03:10.210804",
+            "temperature": 11,
+            "humidity": 10
         },
-        "weight" : 7.6
+        "weight" : 18
     }   
     files = {
          'json': (None, json.dumps(payload), 'application/json'),
@@ -23,14 +24,14 @@ def send_birddata(file, file2 ):
     r = requests.post("http://localhost:8080/api/movement/8ee83843-8bfa-410a-bd8b-a36e730146d6", files=files)
     print(r.content)
 
-send_birddata("bird.mp4", "bird.wav")
+
 #send_birddata("bird2.mp4", "./static/data/images/bird.mp3")
 #send_birddata("bird1.mp4", "./static/data/images/bird.mp3")
 
 def send_environment(payload):
 
     payload = {
-            "date": "2022-04-27 18:16:10.210804",
+            "date": "2022-06-21 18:16:10.210804",
             "temperature": 10,
             "humidity": 10
         }
@@ -63,15 +64,15 @@ def send_video(file):
 def create_station():
 
     payload= {
-        "name" : "test",
+        "name" : "Prinzen-Garten",
         "location" : {
-            "lat": 12,
-            "lng": 12
+            "lat": 51.959004064216145,
+            "lng": 7.9898635467529298
         },
-        "mail": {"adresses": ["nick121298@outlook.de"]}
+        "mail": {"adresses": ["oliver.prinz@vfj-warendorf.de"]}
     }
 
-    r = requests.post("http://localhost:8080/api/station", json=payload)
+    r = requests.post("https://wiediversistmeingarten.org/api/station", json=payload)
     print(r.content)
 
 #create_station()

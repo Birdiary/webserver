@@ -355,8 +355,6 @@ def add_environment(station_id: str):
     env_id = str(uuid.uuid4())
     job = q.enqueue(saveEnvironment, body,env_id,station_id)
 
-#TODO send E-Mail
-
     return jsonify(id = env_id), 200
 
 @app.route('/api/movement/<station_id>', methods=['POST'])
