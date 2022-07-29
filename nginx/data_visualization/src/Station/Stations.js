@@ -144,7 +144,7 @@ function StationView(props) {
 
   return <div>
 
-    <Button variant="contained" onClick={() => { getStation() }} style={{  margin: "15px", position: "absolute", right: "25px", zIndex : "10000" }}>Refresh</Button>
+    <Button variant="contained" onClick={() => { getStation() }} sx={{ display: { xs: 'none', md: 'block' } }}style={{  margin: "15px", position: "absolute", right: "25px", zIndex : "10000" }}>Refresh</Button>
     <h1 style={{textAlign: "center"}}>Station: {data ? data.name : id}</h1>
     {data ?
       <div>
@@ -161,12 +161,12 @@ function StationView(props) {
                 </Box>
                 <TabPanel value="1">
                   <Grid container spacing={4}>
-                    <Grid item xs={8}>
+                    <Grid item lg={8}>
                       {data.measurements.movements[0].video == "pending" ? < div><p>Das Video wird gerade verabeitet und die Art bestimmt! <br/> Bitte warte einen kurzen Moment und klicke dann auf den Refresh Button </p> <Button variant="contained" onClick={() => { getStation() }} style={{ margin: "15px" }}>Refresh</Button></div>
                       :
                       <ReactPlayer url={data.measurements.movements[0].video} loop={true} controls={true} width={"100%"} height="70vh" /> }
                     </Grid>
-                    <Grid item xs={4}>
+                    <Grid item lg={4}>
 
                       <h4> Audio:</h4>
                       <ReactAudioPlayer src={data.measurements.movements[0].audio} controls />
@@ -181,12 +181,12 @@ function StationView(props) {
                   </Grid>
                 </TabPanel>
                 {data.measurements.movements.length > 1 ? <TabPanel value="2">                  <Grid container spacing={2}>
-                  <Grid item xs={8}>
+                  <Grid item lg={8}>
                   {data.measurements.movements[1].video == "pending" ? < div><p>Das Video wird gerade verabeitet und die Art bestimmt! <br/> Bitte warte einen kurzen Moment und klicke dann auf den Refresh Button </p> <Button variant="contained" onClick={() => { getStation() }} style={{  margin: "15px" }}>Refresh</Button></div>
                       :
                     <ReactPlayer url={data.measurements.movements[1].video} loop={true} controls={true} width={"100%"} height="70vh" /> }
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid item lg={4}>
                     <h4> Audio:</h4>
                     <ReactAudioPlayer src={data.measurements.movements[1].audio} controls />
                     <h4>Gewicht:</h4>
@@ -199,12 +199,12 @@ function StationView(props) {
                   </Grid>
                 </Grid></TabPanel> : ""}
                 {data.measurements.movements.length > 2 ? <TabPanel value="3">                  <Grid container spacing={2}>
-                  <Grid item xs={8}>
+                  <Grid item lg={8}>
                   {data.measurements.movements[2].video == "pending" ? < div><p>Das Video wird gerade verabeitet und die Art bestimmt! <br/>  Bitte warte einen kurzen Moment und klicke dann auf den Refresh Button </p> <Button variant="contained" onClick={() => { getStation() }} style={{ margin: "15px" }}>Refresh</Button></div>
                       :
                     <ReactPlayer url={data.measurements.movements[2].video} loop={true} controls={true} width={"100%"} height="70vh" /> }
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid item lg={4}>
                     <h4> Audio:</h4>
                     <ReactAudioPlayer src={data.measurements.movements[2].audio} controls />
                     <h4>Gewicht:</h4>
@@ -224,10 +224,10 @@ function StationView(props) {
                               <InfoOutlinedIcon />
                     </IconButton></h3>
     <Grid container spacing={2}>
-            <Grid item xs={6}>
+            <Grid item lg={6} md={12}>
               <h4>Temperatur in °C:</h4><ApexChart series={temperatue} />
             </Grid>
-            <Grid item xs={6}>
+            <Grid item lg={6} md={12}>
               <h4>Luftfeuchte in %:</h4><ApexChart series={humidity} />
             </Grid>
           </Grid> </div> : <p>No measurements yet</p>
@@ -239,11 +239,11 @@ function StationView(props) {
         </IconButton></h3>
         {data.count  ?
           <div> <Grid container spacing={2}>
-            <Grid item xs={6}>
+            <Grid item lg={6}>
               <h4>Gestern</h4>
             <AmountTable birds={data.count[new Date(date.getTime()-1000*60*60*24).toISOString().split('T')[0]]}  date={new Date(date.getTime()-1000*60*60*24).toISOString().split('T')[0]}></AmountTable>
             </Grid>
-            <Grid item xs={6}>
+            <Grid item lg={6}>
               <h4>Heute:</h4>
             <AmountTable birds={data.count[date.toISOString().split('T')[0]]} date={date.toISOString().split('T')[0]}></AmountTable>
             </Grid>
@@ -261,10 +261,10 @@ function StationView(props) {
           </Box>
           <TabPanel value="1">
             <Grid container spacing={4}>
-              <Grid item xs={8}>
+              <Grid item lg={8}>
                 <Skeleton variant="rectangular" width={"100%"} height="70vh" />
               </Grid>
-              <Grid item xs={4}>
+              <Grid item lg={4}>
 
                 <h4> Audio:</h4>
                 <Skeleton variant="rectangular" width={"300px"} height="45px" />
@@ -278,19 +278,19 @@ function StationView(props) {
           </TabPanel>
         </TabContext>
         <div> <Grid container spacing={2}>
-          <Grid item xs={6}>
+          <Grid item lg={6}>
             <h4>Temperatur in °C:</h4> <Skeleton variant="rectangular" width={"100%"} height="350px" />
           </Grid>
-          <Grid item xs={6}>
+          <Grid item lg={6}>
             <h4>Luftfeuchte in %:</h4><Skeleton variant="rectangular" width={"100%"} height="350px" />
           </Grid>
         </Grid> </div>
         <div> <Grid container spacing={2}>
-            <Grid item xs={6}>
+            <Grid item lg={6}>
               <h4>Gestern</h4>
               <Skeleton variant="rectangular" width={"100%"} height="45px" />
                           </Grid>
-            <Grid item xs={6}>
+            <Grid item lg={6}>
               <h4>Heute:</h4>
               <Skeleton variant="rectangular" width={"100%"} height="45px" /></Grid>
           </Grid> </div>

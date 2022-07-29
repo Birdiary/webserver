@@ -58,6 +58,27 @@ services:
       - redis
       - api
 
+  worker2:
+    image: api
+    command: rq worker --url redis://redis:6379
+    env_file:
+      - server.env
+    volumes:
+      - ./data/uploads:/usr/src/app/uploads
+    depends_on:
+      - redis
+      - api
+  worker3:
+    image: api
+    command: rq worker --url redis://redis:6379
+    env_file:
+      - server.env
+    volumes:
+      - ./data/uploads:/usr/src/app/uploads
+    depends_on:
+      - redis
+      - api
+
   rq-dashboard:
     image: eoranged/rq-dashboard
     ports:

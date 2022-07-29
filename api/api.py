@@ -8,6 +8,7 @@ from scripts.email_service import send_email
 from sys import modules
 from os.path import basename, splitext
 from datetime import datetime
+from datetime import date
 
 import subprocess
 import uuid
@@ -177,7 +178,12 @@ def videoAnalysis(filename, movement_id, station_id):
 
 
     if len(birds) > 0:
-        today = selectedMovement.start_date.split()[0]
+        try:
+            today = selectedMovement.start_date.split()[0]
+        except:
+            today = date.today()
+            today = today.strftime("%Y-%m-%d")
+
         print(today)
         latinName=birds[0]['latinName']
         germanName=birds[0]["germanName"]
@@ -204,10 +210,48 @@ def videoAnalysis(filename, movement_id, station_id):
     station.measurements.movements= movements
     station.update(measurements= station.measurements, count=count)
 
- 
- 
- 
     return birds
+
+@enqueueable
+def saveEnvironment(body, env_id, station_id):
+
+    station = Station.objects(station_id=station_id).first_or_404()
+    environmentClass = Environment()
+    for name,value in body.items():
+        setattr(environmentClass, name, value)
+    
+    environmentClass.env_id = env_id
+
+    environmentList = station.measurements.environment
+    environmentList.insert(0, environmentClass)
+    station.measurements.environment = environmentList
+    station.update(measurements = station.measurements)
+
+    # Send Temperature and Humidity to openSenseMap if sensebox id is defined for the station
+    # print(station.sensebox_id, flush=True)
+    try:
+        if station.sensebox_id not in ['', None]:
+            headersSendSensorValue = {'content-type': 'application/json'}
+            sensemapURL = 'https://api.opensensemap.org/boxes/' + station.sensebox_id
+            sensors = requests.get(sensemapURL).json()['sensors'] # get sensors of the sensebox
+            urlSensorValueSensebox = sensemapURL + '/data'
+            dataValue = []
+            if 'temperature' in body:
+                if body['temperature'] != -50.0:
+                    id = [m for m in sensors if m['title'] in ['Temperature']][0]['_id']
+                    dataValue.append({'sensor': id, 'value': body['temperature']})
+            if 'humidity' in body:
+                if body['humidity'] != 1.0:
+                    id = [m for m in sensors if m['title'] in ['Humidity']][0]['_id']
+                    dataValue.append({'sensor': id, 'value': body['humidity']})
+            requestSensorValueSensebox = requests.post(urlSensorValueSensebox, json=dataValue, headers=headersSendSensorValue)
+    except:
+        print('Station has no sensebox_id')
+
+    return(env_id)
+ 
+ 
+    
 
 @app.route('/')
 def index():
@@ -352,46 +396,11 @@ def station(station_id: str):
 def add_environment(station_id: str):
     content_type = request.headers.get('Content-Type')
     print(content_type, flush=True)
-    
-    station = Station.objects(station_id=station_id).first_or_404()
 
     body = request.get_json()
 
-    environmentClass = Environment()
-    for name,value in body.items():
-        setattr(environmentClass, name, value)
     env_id = str(uuid.uuid4())
-    environmentClass.env_id = env_id
-
-    environmentList = station.measurements.environment
-    environmentList.insert(0, environmentClass)
-    station.measurements.environment = environmentList
-    station.update(measurements = station.measurements)
-    
-    # Send Temperature and Humidity to openSenseMap if sensebox id is defined for the station
-    # print(station.sensebox_id, flush=True)
-    try:
-        if station.sensebox_id not in ['', None]:
-            print('has senseboxid', flush=True)
-            print(station.sensebox_id, flush=True)
-            headersSendSensorValue = {'content-type': 'application/json'}
-            sensemapURL = 'https://api.opensensemap.org/boxes/' + station.sensebox_id
-            sensors = requests.get(sensemapURL).json()['sensors'] # get sensors of the sensebox
-            urlSensorValueSensebox = sensemapURL + '/data'
-            dataValue = []
-            if 'temperature' in body:
-                if body['temperature'] != -50.0:
-                    id = [m for m in sensors if m['title'] in ['Temperature']][0]['_id']
-                    dataValue.append({'sensor': id, 'value': body['temperature']})
-            if 'humidity' in body:
-                if body['humidity'] != 1.0:
-                    id = [m for m in sensors if m['title'] in ['Humidity']][0]['_id']
-                    dataValue.append({'sensor': id, 'value': body['humidity']})
-            requestSensorValueSensebox = requests.post(urlSensorValueSensebox, json=dataValue, headers=headersSendSensorValue)
-    except:
-        print('no senseboxid', flush=True)
-
-#TODO send E-Mail
+    job = q.enqueue(saveEnvironment, body,env_id,station_id)
 
     return jsonify(id = env_id), 200
 
@@ -462,24 +471,8 @@ def getVideos(filename):
 @app.route('/api/all')
 def getLastBird():
   station=  Station.objects.exclude('_id', 'mail')
-  #print(jsonify(station), flush=True)
   station = list(station)
-  #print(jsonify(station), flush=True)
-  #sortedStations = station.sort( key=lambda x: datetime.fromisoformat(x['measurements']['movements'][0]['start_date']))
-  #print(jsonify(station), flush=True)
   return jsonify(station)
-
-@app.route('/api/transfer')
-def transfer():
-
-    boxes = Box.objects
-    for box in boxes:
-        id= box.box_id
-        location=box.location
-        name= box.name
-        measurement = box.measurements
-        mail =box.mail
-        station = Station(station_id = id, location=location, name= name, measurements = measurement, mail=mail).save()
 
 @app.route('/api/count')
 def count():
