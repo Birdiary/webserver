@@ -7,6 +7,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { Button } from '@mui/material';
+import language from '../../languages/languages';
 
 
 
@@ -28,16 +29,16 @@ export default function BasicTable(props) {
 
   return (
 <div>
-    {rows.length == 0 && props.finished=="pending" ? < div><p>Das Video wird gerade verabeitet und die Art bestimmt! Bitte warte einen kurzen Moment und klicke dann auf den Refresh Button </p> <Button variant="contained" onClick={() => { props.getStation() }} style={{ float: "right", margin: "15px" }}>Refresh</Button></div>
+    {rows.length == 0 && props.finished=="pending" ? < div><p> {language[props.language]["stations"]["wait1"]} {language[props.language]["stations"]["wait2"]} </p> <Button variant="contained" onClick={() => { props.getStation() }} style={{ float: "right", margin: "15px" }}>Refresh</Button></div>
     :
-    rows.length == 0 ?  <p> Es wurde kein Vogel auf dem Video erkannt</p>  :
+    rows.length == 0 ?  <p> {language[props.language]["table"]["noBird"]} </p>  :
     <TableContainer component={Paper}>
       <Table  aria-label="simple table">
         <TableHead>
           <TableRow>
-            <TableCell>Art</TableCell>
-            <TableCell>Deutscher Name</TableCell>
-            <TableCell align="right">Wahrscheinlichkeit</TableCell>
+            <TableCell>{language[props.language]["table"]["species"]}</TableCell>
+            <TableCell>{language[props.language]["table"]["name"]}</TableCell>
+            <TableCell align="right">{language[props.language]["table"]["propability"]}</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

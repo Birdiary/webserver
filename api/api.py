@@ -40,7 +40,7 @@ with open("static/data/birdlist1.csv", encoding='utf-8') as csvf:
 
 host= os.getenv('HOST', "localhost")
 pwd = os.getenv('Mail_PWD', "ABC")
-
+API_KEY = os.getenv('API_KEY', "ABC")
 
 
 app = Flask(__name__)
@@ -233,7 +233,7 @@ def index():
 
 
 
-@app.route('/api/image', methods=['Get', 'POST'])
+@app.route('/api/image', methods=['POST'])
 def image():
     if request.method=="POST":
         data = request.files['image']
@@ -244,7 +244,6 @@ def image():
         return jsonify(
             result=result
     )
-    return render_template('./index.html')
 
 @app.route('/api/video', methods=['Get', 'POST'])
 def video():
@@ -335,11 +334,21 @@ def station(station_id: str):
             station.measurements.movements = station.measurements.movements[:int(movements)]
         return jsonify(station), 200
     if request.method=="PUT":
+        apikey= request.args.get("apikey")
         body = request.get_json()
+        print(apikey, flush=True)
+        print(API_KEY, flush=True)
+        if API_KEY != apikey:
+            return "Not authorized", 401
         station = Station.objects.get_or_404(station_id=station_id)
         station.update(**body)
         return jsonify(station), 200
     if request.method=="DELETE":
+        apikey= request.args.get("apikey")
+        print(apikey, flush=True)
+        print(API_KEY, flush=True)
+        if API_KEY != apikey:
+            return "Not authorized", 401
         station = Station.objects.get_or_404(station_id=station_id)
         station.delete()
         return jsonify(str(station.station_id)), 200

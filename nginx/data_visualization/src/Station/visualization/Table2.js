@@ -7,6 +7,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { Button } from '@mui/material';
+import language from '../../languages/languages';
 
 
 
@@ -31,15 +32,15 @@ export default function AmountTable(props) {
 
   return (
 <div>
-    {rows.length == 0? < div><p>An diesem Tag wurde kein Vogel bestimmt</p></div>
+    {rows.length == 0? < div><p>{language[props.language]["table"]["noBirdDay"]}</p></div>
     :
     <TableContainer component={Paper}>
       <Table  aria-label="simple table">
         <TableHead>
           <TableRow>
-            <TableCell>Art</TableCell>
-            <TableCell>Deutscher Name</TableCell>
-            <TableCell align="right">Anzahl</TableCell>
+            <TableCell>{language[props.language]["table"]["species"]}</TableCell>
+            <TableCell>{language[props.language]["table"]["name"]}</TableCell>
+            <TableCell align="right">{language[props.language]["table"]["count"]}</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

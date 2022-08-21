@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import requests from '../helpers/requests'
 import { Button } from '@mui/material';
+import language from '../languages/languages';
 
 
 import { useNavigate, Link } from 'react-router-dom'; 
@@ -65,10 +66,10 @@ class OwnMap extends React.Component {
                         position={[marker.location.lat, marker.location.lng ? marker.location.lng : marker.location.lon]}>                 
                         <Popup minWidth={90}>
                         <span >
-                          Name der Station: {marker.name}
+                          {language[this.props.language]["map"]["stationName"]}{marker.name}
                         </span>
                         <br/>
-                        <Button component={Link} to={"/view/station/"+ marker.station_id}>Beobachte Station</Button>
+                        <Button component={Link} to={"/view/station/"+ marker.station_id}>{language[this.props.language]["map"]["inspect"]}</Button>
                       </Popup> </Marker>
                 })}
 

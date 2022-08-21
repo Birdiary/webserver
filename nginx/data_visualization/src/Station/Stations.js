@@ -18,6 +18,7 @@ import AmountTable from "./visualization/Table2";
 import IconButton from '@mui/material/IconButton';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import zIndex from "@mui/material/styles/zIndex";
+import language from "../languages/languages";
 
 
 
@@ -123,13 +124,13 @@ function StationView(props) {
   const handleClickOpen = (area) => {
     console.log(area)
     if(area == "species"){
-      setText("Ein Video besteht aus mehreren Bilder. Für eine Sekunde werden bei uns 30 Bilder gespeichert. Unser Artenerkennungsalgorithmus analysiert jedes 10. Bild aus dem Video. Für das Bild werden die Arten bestimmt z.B. Pyrhulla pyrhulla mit 70% für das Erste analysierte Bild. Für das zweite dann Cardinalis Cardinal mit einer Wahrscheinlichkeit von 60% usw. Am Ende werden die höchsten Wahrscheinlichkeiten für jede Art bestimmt und gespeichert. So kann es vorkommen, wie in diesem Beispiel, dass Insgesamt über 100% angezeigt werden. \n Unsere Datenbank besitzt die Deutschen Namen für die meisten deutschen Vögel. Wenn neben der Bestimmung kein Deutscher Name steht, kann dies ein Indiez dafür sein, dass der Vogel normalerweise nicht in Deutschland vorkommt. Hinter dem Deutschen Namen ist die Website vom NABU verlinkt, welche weitere Informationen über den Vogel liefert. Wir haben nicht alle Links überprüfen können. Daher kann es vorkommen, dass einige Links nicht funktionieren ")
+      setText(language[props.language]["stations"]["infospecies"])
     }
     else if(area == "count"){
-      setText("Hier findet Ihr eine Übersicht über die gezählten Vögel gestern und heute. Hierbei wird jeweils der Vogel mit der höchsten Bestimmung gezählt. Unser Algorithmus kann zum jetzigen Zeitpunkt nicht erkennen, ob ein Vogel zum zweiten mal die Station besucht. Der Vogel wird erneut gezählt.\n Unsere Datenbank besitzt die Deutschen Namen für die meisten deutschen Vögel. Wenn neben der Bestimmung kein Deutscher Name steht, kann dies ein Indiez dafür sein, dass der Vogel normalerweise nicht in Deutschland vorkommt. Hinter dem Deutschen Namen ist die Website vom NABU verlinkt, welche weitere Informationen über den Vogel liefert. Wir haben nicht alle Links überprüfen können. Daher kann es vorkommen, dass einige Links nicht funktionieren ")
+      setText(language[props.language]["stations"]["infocount"])
     }
     else if(area == "environment"){
-      setText("Die gemssennen Werte werden von einem DHT Luftfeuchte und Temperatur Sensor gemessen. Wenn der Sensor zum ersten mal ausgelesen wird, kann es vorkommen, dass falsche Werte ausgelesen werden. Daher werden Messungen, bei denen die Temperatur unter -35°C beträgt.")
+      setText(language[props.language]["stations"]["infoenvironment"])
     }
 
     setOpen(true);
@@ -162,92 +163,92 @@ function StationView(props) {
                 <TabPanel value="1">
                   <Grid container spacing={4}>
                     <Grid item lg={8}>
-                      {data.measurements.movements[0].video == "pending" ? < div><p>Das Video wird gerade verabeitet und die Art bestimmt! <br/> Bitte warte einen kurzen Moment und klicke dann auf den Refresh Button </p> <Button variant="contained" onClick={() => { getStation() }} style={{ margin: "15px" }}>Refresh</Button></div>
+                      {data.measurements.movements[0].video == "pending" ? < div><p>{language[props.language]["stations"]["wait1"]}<br/>  </p> <Button variant="contained" onClick={() => { getStation() }} style={{ margin: "15px" }}>Refresh</Button></div>
                       :
                       <ReactPlayer url={data.measurements.movements[0].video} loop={true} controls={true} width={"100%"} height="70vh" /> }
                     </Grid>
                     <Grid item lg={4}>
 
-                      <h4> Audio:</h4>
+                      <h4>{language[props.language]["stations"]["audio"]}</h4>
                       <ReactAudioPlayer src={data.measurements.movements[0].audio} controls />
-                      <h4>Gewicht:</h4>
+                      <h4>{language[props.language]["stations"]["weight"]}</h4>
                       <p> {data.measurements.movements[0].weight.toFixed(0) + " gramm"} </p>
                       <IconButton color="primary" aria-label="upload picture" component="span" onClick={() => {handleClickOpen("species")}} style={{float : "right"}}>
                       <InfoOutlinedIcon />
                    </IconButton>
-                      <h4>Erkannte Arten:</h4>
-                      <BasicTable birds={data.measurements.movements[0].detections} finished={data.measurements.movements[0].video} getStation={event => getStation(event)}></BasicTable>
+                      <h4>{language[props.language]["stations"]["species"]}</h4>
+                      <BasicTable birds={data.measurements.movements[0].detections} finished={data.measurements.movements[0].video} getStation={event => getStation(event)} language={props.language}></BasicTable>
                     </Grid>
                   </Grid>
                 </TabPanel>
                 {data.measurements.movements.length > 1 ? <TabPanel value="2">                  <Grid container spacing={2}>
                   <Grid item lg={8}>
-                  {data.measurements.movements[1].video == "pending" ? < div><p>Das Video wird gerade verabeitet und die Art bestimmt! <br/> Bitte warte einen kurzen Moment und klicke dann auf den Refresh Button </p> <Button variant="contained" onClick={() => { getStation() }} style={{  margin: "15px" }}>Refresh</Button></div>
+                  {data.measurements.movements[1].video == "pending" ? < div><p>{language[props.language]["stations"]["wait1"]}<br/> {language[props.language]["stations"]["wait2"]} </p> <Button variant="contained" onClick={() => { getStation() }} style={{  margin: "15px" }}>Refresh</Button></div>
                       :
                     <ReactPlayer url={data.measurements.movements[1].video} loop={true} controls={true} width={"100%"} height="70vh" /> }
                   </Grid>
                   <Grid item lg={4}>
-                    <h4> Audio:</h4>
+                    <h4> {language[props.language]["stations"]["audio"]}</h4>
                     <ReactAudioPlayer src={data.measurements.movements[1].audio} controls />
-                    <h4>Gewicht:</h4>
+                    <h4>{language[props.language]["stations"]["weight"]}</h4>
                     <p> {data.measurements.movements[1].weight.toFixed(0) + " gramm"} </p>
                     <IconButton color="primary" aria-label="upload picture" component="span" onClick={() => {handleClickOpen("species")}} style={{float : "right"}}>
                       <InfoOutlinedIcon />
                    </IconButton>
-                    <h4>Erkannte Arten:</h4> 
-                    <BasicTable birds={data.measurements.movements[1].detections} finished={data.measurements.movements[1].video} getStation={event => getStation(event)}></BasicTable>
+                    <h4>{language[props.language]["stations"]["species"]}</h4> 
+                    <BasicTable birds={data.measurements.movements[1].detections} finished={data.measurements.movements[1].video} getStation={event => getStation(event)} language={props.language}></BasicTable>
                   </Grid>
                 </Grid></TabPanel> : ""}
                 {data.measurements.movements.length > 2 ? <TabPanel value="3">                  <Grid container spacing={2}>
                   <Grid item lg={8}>
-                  {data.measurements.movements[2].video == "pending" ? < div><p>Das Video wird gerade verabeitet und die Art bestimmt! <br/>  Bitte warte einen kurzen Moment und klicke dann auf den Refresh Button </p> <Button variant="contained" onClick={() => { getStation() }} style={{ margin: "15px" }}>Refresh</Button></div>
+                  {data.measurements.movements[2].video == "pending" ? < div><p>{language[props.language]["stations"]["wait1"]}<br/>  {language[props.language]["stations"]["wait2"]} </p> <Button variant="contained" onClick={() => { getStation() }} style={{ margin: "15px" }}>Refresh</Button></div>
                       :
                     <ReactPlayer url={data.measurements.movements[2].video} loop={true} controls={true} width={"100%"} height="70vh" /> }
                   </Grid>
                   <Grid item lg={4}>
-                    <h4> Audio:</h4>
+                    <h4> {language[props.language]["stations"]["audio"]}</h4>
                     <ReactAudioPlayer src={data.measurements.movements[2].audio} controls />
-                    <h4>Gewicht:</h4>
+                    <h4>{language[props.language]["stations"]["weight"]}</h4>
                     <p> {data.measurements.movements[2].weight.toFixed(0) + " gramm"} </p>
                     <IconButton color="primary" aria-label="upload picture" component="span" onClick={() => {handleClickOpen("species")}} style={{float : "right"}}>
                       <InfoOutlinedIcon />
                    </IconButton>
-                    <h4>Erkannte Arten:</h4>
-                    <BasicTable birds={data.measurements.movements[2].detections} finished={data.measurements.movements[2].video} getStation={event => getStation(event)} ></BasicTable>
+                    <h4>{language[props.language]["stations"]["species"]}</h4>
+                    <BasicTable birds={data.measurements.movements[2].detections} finished={data.measurements.movements[2].video} getStation={event => getStation(event)} language={props.language}></BasicTable>
                   </Grid>
                 </Grid></TabPanel> : ""}
               </TabContext>
-            </Box> </div> : <p>No movements yet</p>}
+            </Box> </div> : <p>{language[props.language]["stations"]["noData1"]}</p>}
         {data.measurements.environment && data.measurements.environment.length > 0 ?
-                      <div>     <h3 style={{"marginBlockEnd" : "0px"}}>Umweltsensoren:
+                      <div>     <h3 style={{"marginBlockEnd" : "0px"}}>{language[props.language]["stations"]["environment"]}
                     <IconButton color="primary" aria-label="upload picture" component="span" onClick={() => {handleClickOpen("environment")}} >
                               <InfoOutlinedIcon />
                     </IconButton></h3>
     <Grid container spacing={2}>
             <Grid item lg={6} md={12}>
-              <h4>Temperatur in °C:</h4><ApexChart series={temperatue} />
+              <h4>{language[props.language]["stations"]["temperature"]}</h4><ApexChart series={temperatue} />
             </Grid>
             <Grid item lg={6} md={12}>
-              <h4>Luftfeuchte in %:</h4><ApexChart series={humidity} />
+              <h4>{language[props.language]["stations"]["humidity"]}</h4><ApexChart series={humidity} />
             </Grid>
-          </Grid> </div> : <p>No measurements yet</p>
+          </Grid> </div> : <p>{language[props.language]["stations"]["noData2"]}</p>
         }
 
-        <h3 style={{"marginBlockEnd" : "0px"}}>Gezählte Vögel:         
+        <h3 style={{"marginBlockEnd" : "0px"}}>{language[props.language]["stations"]["birdsCount"]}     
           <IconButton color="primary" aria-label="upload picture" component="span" onClick={() => {handleClickOpen("count")}} >
                       <InfoOutlinedIcon />
         </IconButton></h3>
         {data.count  ?
           <div> <Grid container spacing={2}>
             <Grid item lg={6}>
-              <h4>Gestern</h4>
-            <AmountTable birds={data.count[new Date(date.getTime()-1000*60*60*24).toISOString().split('T')[0]]}  date={new Date(date.getTime()-1000*60*60*24).toISOString().split('T')[0]}></AmountTable>
+              <h4>{language[props.language]["stations"]["yesterday"]} </h4>
+            <AmountTable birds={data.count[new Date(date.getTime()-1000*60*60*24).toISOString().split('T')[0]]}  date={new Date(date.getTime()-1000*60*60*24).toISOString().split('T')[0]} language={props.language}></AmountTable>
             </Grid>
             <Grid item lg={6}>
-              <h4>Heute:</h4>
-            <AmountTable birds={data.count[date.toISOString().split('T')[0]]} date={date.toISOString().split('T')[0]}></AmountTable>
+              <h4>{language[props.language]["stations"]["today"]}</h4>
+            <AmountTable birds={data.count[date.toISOString().split('T')[0]]} date={date.toISOString().split('T')[0]} language={props.language}></AmountTable>
             </Grid>
-          </Grid> </div> : <p>No measurements yet</p>
+          </Grid> </div> : <p>{language[props.language]["stations"]["noData2"]}</p>
         }
          <br></br>
          <br></br>
@@ -266,11 +267,11 @@ function StationView(props) {
               </Grid>
               <Grid item lg={4}>
 
-                <h4> Audio:</h4>
+                <h4> {language[props.language]["stations"]["audio"]}</h4>
                 <Skeleton variant="rectangular" width={"300px"} height="45px" />
-                <h4>Gewicht:</h4>
+                <h4>{language[props.language]["stations"]["weight"]}</h4>
                 <Skeleton variant="text" />
-                <h4>Erkannte Arten:</h4>
+                <h4>{language[props.language]["stations"]["species"]}</h4>
                 <Skeleton variant="rectangular" width={"100%"} height="45px" />
 
               </Grid>
@@ -279,19 +280,19 @@ function StationView(props) {
         </TabContext>
         <div> <Grid container spacing={2}>
           <Grid item lg={6}>
-            <h4>Temperatur in °C:</h4> <Skeleton variant="rectangular" width={"100%"} height="350px" />
+            <h4>{language[props.language]["stations"]["temperature"]}:</h4> <Skeleton variant="rectangular" width={"100%"} height="350px" />
           </Grid>
           <Grid item lg={6}>
-            <h4>Luftfeuchte in %:</h4><Skeleton variant="rectangular" width={"100%"} height="350px" />
+            <h4>{language[props.language]["stations"]["humidity"]}</h4><Skeleton variant="rectangular" width={"100%"} height="350px" />
           </Grid>
         </Grid> </div>
         <div> <Grid container spacing={2}>
             <Grid item lg={6}>
-              <h4>Gestern</h4>
+              <h4>{language[props.language]["stations"]["yesterday"]}</h4>
               <Skeleton variant="rectangular" width={"100%"} height="45px" />
                           </Grid>
             <Grid item lg={6}>
-              <h4>Heute:</h4>
+              <h4>{language[props.language]["stations"]["today"]}</h4>
               <Skeleton variant="rectangular" width={"100%"} height="45px" /></Grid>
           </Grid> </div>
         <br></br>

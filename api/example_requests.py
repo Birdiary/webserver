@@ -4,8 +4,8 @@ import os
 def send_birddata(file, file2 ):
     print("bal")
     payload = {
-        "start_date" : "2022-04-27 16:03:10.210804",
-        "end_date" : "2022-04-27 16:03:20.210804",
+        "start_date" : "2022-08-21 16:03:10.210804",
+        "end_date" : "2022-08-21 16:03:20.210804",
         "audio" : "audioKey",
         "video" : "videoKey",
         "environment" : {
@@ -21,11 +21,11 @@ def send_birddata(file, file2 ):
          'audioKey': (os.path.basename(file2), open(file2, 'rb'), 'audio/mpeg')
     }
     #headers = {'Content-type': 'multipart/form-data'}
-    r = requests.post("http://localhost:8080/api/movement/8ee83843-8bfa-410a-bd8b-a36e730146d6", files=files)
+    r = requests.post("http://localhost:8080/api/movement/03e076a5-8087-4d72-a532-2c08002eb27c", files=files)
     print(r.content)
 
 
-#send_birddata("bird2.mp4", "./static/data/images/bird.mp3")
+#send_birddata("bird2.mp4", "./static/data/audios/test_1.mp3")
 #send_birddata("bird1.mp4", "./static/data/images/bird.mp3")
 
 def send_environment(payload):
@@ -38,7 +38,7 @@ def send_environment(payload):
        
 
     headers = {'Content-type': 'application/json'}   
-    r = requests.post("http://localhost:8080/api/environment/8ee83843-8bfa-410a-bd8b-a36e730146d6", json=payload)
+    r = requests.post("http://localhost:8080/api/environment/03e076a5-8087-4d72-a532-2c08002eb27c", json=payload)
     print(r.content)
 
 #send_environment("./static/data/images/svetozar-cenisev-pvqTCIOx9MQ-unsplash.jpg")
@@ -64,12 +64,12 @@ def send_video(file):
 def create_station():
 
     payload= {
-        "name" : "Prinzen-Garten",
+        "name" : "Archigymnasium Soest",
         "location" : {
-            "lat": 51.959004064216145,
-            "lng": 7.9898635467529298
+            "lat": 51.567066929153455,
+            "lng": 8.117072582244875
         },
-        "mail": {"adresses": ["oliver.prinz@vfj-warendorf.de"]}
+        "mail": {"adresses": [""]}
     }
 
     r = requests.post("https://wiediversistmeingarten.org/api/station", json=payload)
@@ -98,17 +98,18 @@ def updatePharmagarten():
 #updatePharmagarten()
 
 def deleteStation():
-    r = requests.delete("https://wiediversistmeingarten.org/api/station/288e0e1e-7c11-4cf7-b7b4-75e6c75f9897")
+    r = requests.delete("http://localhost:8080/api/station/03e076a5-8087-4d72-a532-2c08002eb27c?apikey=abc")
 
-#deleteStation()
+res= deleteStation()
+print(res)
 
 
 def updatestation():
     payload= {
-        "mail": {"adresses": ["klausf27@unity-mail.de"]}
+        "mail": {"adresses": [""]}
     }
 
-    r = requests.put("https://wiediversistmeingarten.org/api/station/37a44ee0-6377-4a2e-9481-d1029c00d83f", json=payload)
+    r = requests.put("https://wiediversistmeingarten.org/api/station/37a44ee0-6377-4a2e-9481-d1029c00d83fapikey=abc", json=payload)
     print(r.content)
 
 #updatestation()
