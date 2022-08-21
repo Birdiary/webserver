@@ -45,7 +45,7 @@ class App extends React.Component {
 
   changeLang(lang){
     this.setState({language: lang})
-    localStorage.setItem("language", lang);
+    window.localStorage.setItem("language", lang);
   }
   
 

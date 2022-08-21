@@ -19,6 +19,14 @@
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800" rel="stylesheet">
 
     <script src="/static/js/vendor/modernizr-2.8.3-respond-1.4.2.min.js"></script>
+   <script>  
+   function setLang(lang) {
+    console.log("set")
+    window.localStorage.setItem("language", lang);
+    if(lang==="en"){
+        window.location.href = "/"
+    }
+}</script> 
 </head>
 <!--
 Vanilla Template
@@ -40,10 +48,10 @@ https://templatemo.com/tm-526-vanilla
                   <a class="nav-link" href="/view">Beobachte Stationen</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" onclick="setLanguage('en')" href="/">English</a>
+                    <a class="nav-link" onclick="setLang('en')" href="#">English</a>
                                 </li>
                 <li class="nav-item"></li>
-                <a class="nav-link" onclick="setLanguage('de')" href="/de"><b>Deutsch</b></a>
+                <a class="nav-link" onclick="setLang('de')" href="#"><b>Deutsch</b></a>
                 </li>
 
                 <!--  <li><a href="#"><i class="fa fa-linkedin"></i></a></li>-->
@@ -502,9 +510,7 @@ https://templatemo.com/tm-526-vanilla
     }
   });
 
-  function setLang(lang) {
-    localStorage.setItem("language", lang);
-}
+
 
 
             window.addEventListener('resize', function () {

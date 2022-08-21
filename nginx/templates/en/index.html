@@ -22,16 +22,25 @@
         var language = navigator.language || navigator.userLanguage; 
         language = language.substring( 0, 2 );
         if (window.localStorage.getItem("language")) {
+            console.log(window.localStorage.getItem("language"))
             if (window.localStorage.getItem("language") == "de"){
-                window.location.href = "de";   
+                window.location.replace("de");   
             }
             else{
-                return;
+                console.log("stay")
             }
         }
         else if  (language == "de"){
-        window.location.href = "de";   
+        window.location.replace("de");   
         } 
+
+        function setLang(lang) {
+    console.log("set")
+    window.localStorage.setItem("language", lang);
+    if(lang==="de"){
+        window.location.href ="/de" 
+    }
+}
         </script>
 
 </head>
@@ -54,10 +63,10 @@ https://templatemo.com/tm-526-vanilla
                   <a class="nav-link" href="/view">Beobachte Stationen</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" onclick="setLanguage('en')" href="/">English</a>
+                    <a class="nav-link" onclick="setLang('en')" href="#" ><b>English</b></a>
                                 </li>
                 <li class="nav-item"></li>
-                <a class="nav-link" onclick="setLanguage('de')" href="/de"><b>Deutsch</b></a>
+                <a class="nav-link" onclick="setLang('de')" href="#">Deutsch</a>
                 </li>
 
                 <!--  <li><a href="#"><i class="fa fa-linkedin"></i></a></li>-->
@@ -481,7 +490,10 @@ Have fun browsing through the videos of the birds and all other recorded data of
   });
 
   function setLang(lang) {
-    localStorage.setItem("language", lang);
+    window.localStorage.setItem("language", lang);
+    if (lang=="de"){
+        window.location.replace("/de");
+    }
 }
 
             window.addEventListener('resize', function () {
