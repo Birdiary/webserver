@@ -47,7 +47,8 @@ const language = {
             running: "Creating a station",
             overview: "Go to the overview",
             viewStation: "Inspect Station",
-            dataPrivacyText: "I accept that the data collected here in this form and by the station will be published on our website. The mail addresses will not be published, but only used to notify you. All data can be deleted or modified upon request."
+            dataPrivacyText: "I accept that the data collected here in this form and by the station will be published on our website. The mail addresses will not be published, but only used to notify you. All data can be deleted or modified upon request.",
+            opensensemapText: "I agree that the environmental data (air temperature and humidity) and the location of my station will also be published on opensensemap.org. The senseBox created, shall be managed by the operators of the website wiediversistmeingarten.org."
         }
     
     },
@@ -99,7 +100,8 @@ const language = {
             running: "Erstellen einer Station",
             overview: "Gehe zum Überblick",
             viewStation: "Beobachte Station",
-            dataPrivacyText: "Ich akzeptiere, dass die hier bei diesem Formular und durch die Station gesammelten Daten auf unserer Website veröffentlicht werden. Die Mail-Adressen werden nicht veröffentlicht, sondern nur genutzt um euch zu benachrichtigen. Alle Daten können auf Anfrage gelöscht oder geändert werden."
+            dataPrivacyText: "Ich akzeptiere, dass die hier bei diesem Formular und durch die Station gesammelten Daten auf unserer Website veröffentlicht werden. Die Mail-Adressen werden nicht veröffentlicht, sondern nur genutzt um euch zu benachrichtigen. Alle Daten können auf Anfrage gelöscht oder geändert werden.",
+            opensensemapText: "Ich stimme zu, dass die Umweltdaten (Lufttemperatur und -feuchte) und der Standort meiner Station auch auf opensensemap.org veröffentlicht werden. Die dort erstellte senseBox soll von den Betreibern der Website wiediversistmeingarten.org verwaltet werden."
         }
     }
   };

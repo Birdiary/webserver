@@ -201,7 +201,7 @@ class CreateStation extends React.Component {
           control={<Checkbox
             senseboxChecked={this.state.checked}
             onChange={this.handleSenseboxChecked} />}
-          label="Ich stimme zu, dass die Umweltdaten (Lufttemperatur und -feuchte) und der Standort meiner Station auch auf opensensemap.org veröffentlicht werden. Die dort erstellte senseBox soll von den Betreibern der Website wiediversistmeingarten.org verwaltet werden." />
+          label={language[this.props.language]["createStation"]["opensensemapText"]} />
         <br></br>
         <br />
         <Button color="primary" variant="contained" type="submit" onClick={this.sendData} disabled={!this.state.checked}>
