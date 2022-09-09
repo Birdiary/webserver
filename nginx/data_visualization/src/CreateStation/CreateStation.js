@@ -4,7 +4,7 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import requests from '../helpers/requests'
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
+import { MapContainer, Marker, Popup, TileLayer, useMapEvents, } from 'react-leaflet'
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import { blue } from '@mui/material/colors';
@@ -20,6 +20,8 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import './CreateStation.css';
 import { Link } from 'react-router-dom';
+import language from '../languages/languages';
+import L from "leaflet";
 
 const center = {
   lat: 51.9606649,
@@ -131,14 +133,17 @@ class CreateStation extends React.Component {
 
   }
 
+
+
   render() {
+    const self = this
     return (
       <div style={{ textAlign: "center" }}>
-        <h1>Create a Station: </h1>
+        <h1>{language[this.props.language]["createStation"]["title"]} </h1>
         <TextField style={{ width: "50vw" }}
           id="name"
           name="name"
-          label="Name der Station"
+          label={language[this.props.language]["createStation"]["name"]}
           value={this.state.name}
           onChange={this.handleChange}
         />
@@ -151,7 +156,7 @@ class CreateStation extends React.Component {
           freeSolo={true}
           options={[]}
           renderInput={(params) => (
-            <TextField {...params} variant="outlined" label="Zu Benarichtigende Mail Adressen" placeholder='Mail Adresse mit Enter bestätigen' />
+            <TextField {...params} variant="outlined" label={language[this.props.language]["createStation"]["mail"]} placeholder={language[this.props.language]["createStation"]["mailHelper"]} />
           )}
         />
         <br />
@@ -159,7 +164,7 @@ class CreateStation extends React.Component {
         <TextField style={{ width: "50vw" }}
           id="postion"
           name="position"
-          label="Standort der Station (Gib die Koordinaten ein oder bewege den Marker in der Karte)"
+          label={language[this.props.language]["createStation"]["position"]}
           value={JSON.stringify(this.state.position)}
           onChange={this.handlePositionChange}
         />
@@ -168,7 +173,15 @@ class CreateStation extends React.Component {
 
 
         <div >
-          <MapContainer center={center} zoom={13} style={{ height: "50vh", width: "50vw", display: "inline-block" }}>
+          <MapContainer center={center} zoom={13} style={{ height: "50vh", width: "50vw", display: "inline-block" }}
+            whenReady={(map) => {
+              console.log(map);
+              map.target.on("click", function (e) {
+                const { lat, lng } = e.latlng;
+                const pos = { lat: lat, lng: lng }
+                self.setState({ position: pos })
+              });
+            }}>
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -180,12 +193,7 @@ class CreateStation extends React.Component {
         </div>
         <br />
         <br />
-        <FormControlLabel
-          style={{ "max-width": "45vw", textAlign: "left" }}
-          control={<Checkbox
-            checked={this.state.checked}
-            onChange={this.handleChecked} />}
-          label="Ich akzeptiere, dass die hier bei diesem Formular und durch die Station gesammelten Daten auf unserer Website veröffentlicht werden. Die Mail-Adressen werden nicht veröffentlicht, sondern nur genutzt um euch zu benachrichtigen. Alle Daten können auf Anfrage gelöscht oder geändert werden." />
+        <FormControlLabel style={{ "max-width": "45vw", textAlign: "left" }} control={<Checkbox checked={this.state.checked} onChange={this.handleChecked} />} label={language[this.props.language]["createStation"]["dataPrivacyText"]} />
         <br></br>
         <br />
         <FormControlLabel
@@ -200,7 +208,7 @@ class CreateStation extends React.Component {
           Submit
         </Button>
         <br></br>
-        {this.state.checked ? "" : <p>Ihr müsst der Datenschutzerklärung zustimmen</p>}
+        {this.state.checked ? "" : <p>{language[this.props.language]["createStation"]["dataPrivacy"]}</p>}
 
         <br />
         <br />
@@ -234,16 +242,16 @@ class CreateStation extends React.Component {
               )}
             </Box>
             {this.state.finished ? <DialogContentText id="alert-dialog-description" style={{ "padding": "10px" }}>
-              Die Station wurde erfolgreich erstellt und hat die ID: <br></br>{this.state.id}
+              {language[this.props.language]["createStation"]["finished"]} <br></br>{this.state.id}
             </DialogContentText> :
               <DialogContentText id="alert-dialog-description" style={{ "padding": "10px" }}>
-                Die Station wird gerade erstellt
+                {language[this.props.language]["createStation"]["creating"]}
               </DialogContentText>}
           </DialogContent>
           <DialogActions>
-            <Button component={Link} to="/view" >Gehe zum Überblick</Button>
+            <Button component={Link} to="/view" >{language[this.props.language]["createStation"]["overview"]}</Button>
             <Button component={Link} to={"/view/station/" + this.state.id}>
-              Beobachte Station
+              {language[this.props.language]["createStation"]["viewStation"]}
             </Button>
           </DialogActions>
         </Dialog>
