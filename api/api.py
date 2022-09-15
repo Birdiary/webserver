@@ -369,7 +369,7 @@ def add_station():
 
         # Add object to movie and save
         station = Station(station_id = id, location=location, name=name, measurements = measurement, mail=mail, sensebox_id=sensebox_id).save()
-        return {"id": id}, 201
+        return {"id": id, "sensebox_id": sensebox_id}, 201
     stations = Station.objects.only('station_id', "location", "name", 'sensebox_id').exclude('_id')
     return  jsonify(stations), 200
 

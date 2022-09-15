@@ -75,6 +75,7 @@ class CreateStation extends React.Component {
       finished: false,
       checked: false,
       senseboxChecked: false,
+      senseboxCreated: false,
       name: ""
     };
     this.handler = this.handler.bind(this)
@@ -128,7 +129,10 @@ class CreateStation extends React.Component {
         var id = res.data.id
         console.log(res)
         console.log(id)
-        self.setState({ id: id, finished: true })
+        if (res.data.sensebox_id != '') {
+          var createdSensebox = true;
+        }
+        self.setState({ id: id, finished: true, senseboxCreated: createdSensebox })
       })
 
   }
@@ -241,9 +245,16 @@ class CreateStation extends React.Component {
                 />
               )}
             </Box>
-            {this.state.finished ? <DialogContentText id="alert-dialog-description" style={{ "padding": "10px" }}>
-              {language[this.props.language]["createStation"]["finished"]} <br></br>{this.state.id}
-            </DialogContentText> :
+            {this.state.finished ?
+              (this.state.senseboxCreated ?
+                <DialogContentText id="alert-dialog-description" style={{ "padding": "10px" }}>
+                  {language[this.props.language]["createStation"]["finished"]} <br></br>{this.state.id}<br></br>
+                  {language[this.props.language]["createStation"]["senseboxCreated"]}
+                </DialogContentText> :
+                <DialogContentText id="alert-dialog-description" style={{ "padding": "10px" }}>
+                  {language[this.props.language]["createStation"]["finished"]} <br></br>{this.state.id}<br></br>
+                  {language[this.props.language]["createStation"]["senseboxNotCreated"]}
+                </DialogContentText>) :
               <DialogContentText id="alert-dialog-description" style={{ "padding": "10px" }}>
                 {language[this.props.language]["createStation"]["creating"]}
               </DialogContentText>}
