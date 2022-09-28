@@ -377,7 +377,7 @@ def add_station():
 def station(station_id: str):
     if request.method=="GET":
         movements = request.args.get('movements')
-        station = Station.objects(station_id=station_id).exclude('_id', 'mail').first_or_404()
+        station = Station.objects(station_id=station_id).exclude('_id').first_or_404()
         if movements and int(movements) > 0:
             station.measurements.movements = station.measurements.movements[:int(movements)]
         return jsonify(station), 200
