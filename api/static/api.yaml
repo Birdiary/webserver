@@ -46,8 +46,7 @@ paths:
                     lon: 12
                   mail:
                     adresses:
-                      - n_jaku01@wwu.de
-                      - nick@test.de
+                      - mail@test.de
               properties:
                 name:
                   type: string
@@ -64,8 +63,6 @@ paths:
                       type: number
                 mail:
                   type: object
-                  required:
-                    - adresses
                   properties:
                     adresses:
                       type: array
@@ -75,7 +72,6 @@ paths:
               required:
                 - name
                 - location
-                - mail
             examples:
               Example:
                 value:
@@ -86,8 +82,41 @@ paths:
                   mail:
                     adresses:
                       - e-mail@test.de
-      description: 'Endpoint to create a new station. Example '
+      description: Endpoint to create a new station
       parameters: []
+    get:
+      summary: ''
+      operationId: get-station
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                x-examples:
+                  example-1:
+                    - station_id: 24943bb4-b902-4b32-9262-f79ecd9d69c7
+                      name: Test Jan
+                      location:
+                        lat: 51.7676339975328
+                        lng: 6.837615966796876
+                description: Array of all stations
+                items:
+                  type: object
+                  properties:
+                    station_id:
+                      type: string
+                    name:
+                      type: string
+                    location:
+                      type: object
+                      properties:
+                        lat:
+                          type: number
+                        lng:
+                          type: number
+      description: Get all stations
   '/station/{station_id}':
     parameters:
       - schema:
@@ -116,7 +145,7 @@ paths:
                       lon: 9.688879
                     mail:
                       adresses:
-                        - tom.niers@countyourbirds.org
+                        - mail@test.de
                     measurements:
                       environment:
                         - date: '2022-02-01 11:56:58.898282'
@@ -142,21 +171,15 @@ paths:
                             temp: 10
                           mov_id: cd20f9db-7156-4288-9687-9fb1db182982
                           start_date: '123'
-                    name: Peter Lustigs Station
+                    name: Station name
                 properties:
-                  _id:
-                    type: object
-                    required:
-                      - $oid
-                    description: internal id
-                    properties:
-                      $oid:
-                        type: string
-                        minLength: 1
                   station_id:
                     type: string
                     minLength: 1
                     description: station id which can be used for further requests
+                  name:
+                    type: string
+                    minLength: 1
                   location:
                     type: object
                     required:
@@ -167,15 +190,6 @@ paths:
                         type: number
                       lon:
                         type: number
-                  mail:
-                    type: object
-                    required:
-                      - adresses
-                    properties:
-                      adresses:
-                        type: array
-                        items:
-                          type: string
                   measurements:
                     type: object
                     required:
@@ -195,12 +209,14 @@ paths:
                             env_id:
                               type: string
                               minLength: 1
-                            temp:
+                            temperature:
+                              type: number
+                            humidity:
                               type: number
                           required:
                             - date
                             - env_id
-                            - temp
+                            - temperature
                       movements:
                         type: array
                         uniqueItems: true
@@ -208,37 +224,21 @@ paths:
                         items:
                           type: object
                           properties:
+                            mov_id:
+                              type: string
+                            start_date:
+                              type: string
+                              minLength: 1
+                            end_date:
+                              type: string
+                              minLength: 1
                             audio:
                               type: string
                               minLength: 1
                               description: 'url to audio file '
-                            detections:
-                              type: array
-                              uniqueItems: true
-                              minItems: 1
-                              items:
-                                type: object
-                                properties:
-                                  count:
-                                    type: object
-                                    properties:
-                                      Cyanistes caeruleus:
-                                        type: number
-                                    required:
-                                      - Cyanistes caeruleus
-                                  det_id:
-                                    type: string
-                                    minLength: 1
-                                  image:
-                                    type: string
-                                    minLength: 1
-                                    description: url to image files
-                                  weight:
-                                    type: number
-                                required:
-                                  - det_id
-                                  - image
-                                  - weight
+                            video:
+                              type: string
+                              description: link to the video file
                             environment:
                               type: object
                               properties:
@@ -248,79 +248,150 @@ paths:
                                 env_id:
                                   type: string
                                   minLength: 1
-                                temp:
+                                temperature:
+                                  type: number
+                                humidity:
                                   type: number
                               required:
                                 - date
                                 - env_id
-                                - temp
-                            start_date:
-                              type: string
-                              minLength: 1
-                            end_date:
-                              type: string
-                              minLength: 1
-                            mov_id:
-                              type: string
-                              minLength: 1
+                                - temperature
+                            detections:
+                              type: array
+                              uniqueItems: true
+                              minItems: 1
+                              description: all detections sorted by score
+                              items:
+                                type: object
+                                properties:
+                                  latinName:
+                                    type: string
+                                    minLength: 1
+                                  germanName:
+                                    type: string
+                                    minLength: 1
+                                  score:
+                                    type: number
+                                    description: 'propability '
+                                required:
+                                  - latinName
+                                  - germanName
+                                  - score
+                            weight:
+                              type: number
                           required:
-                            - audio
                             - start_date
                             - end_date
-                            - mov_id
-                  name:
-                    type: string
-                    minLength: 1
+                            - audio
+                  count:
+                    type: array
+                    description: count of birds for each day
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: object
+                          properties:
+                            latinName:
+                              type: string
+                            germanName:
+                              type: string
+                            amount:
+                              type: number
                 required:
-                  - _id
                   - station_id
-                  - location
-                  - mail
-                  - measurements
                   - name
+                  - location
+                  - measurements
               examples:
                 example:
                   value:
-                    _id:
-                      $oid: 61f90dee49c53fcca2a06580
-                    station_id: 5dba702d-ccff-4095-8c0a-f5cbe2e1baf6
+                    station_id: a19bdefe-403b-4791-a220-48a857dce14f
+                    name: Floriade
                     location:
-                      lat: 51.399206
-                      lon: 9.688879
-                    mail:
-                      adresses:
-                        - tom.niers@countyourbirds.org
+                      lat: 52.357177391260805
+                      lng: 5.22501826286316
                     measurements:
                       environment:
-                        - date: '2022-02-01 11:56:58.898282'
-                          env_id: d8b8e9f5-26a5-48e8-8deb-f56615818b90
-                          temp: 36
+                        - env_id: 2b349c4e-18df-42a1-b15c-53f6f01928e9
+                          date: '2022-07-26 15:42:41.351365'
+                          temperature: 23.7
+                          humidity: 45.7
+                        - env_id: 8d7a1397-8e41-431d-a813-a0af5fb9642f
+                          date: '2022-07-26 15:41:40.377121'
+                          temperature: 23.7
+                          humidity: 45.7
                       movements:
-                        - audio: 'http://localhost:5000/uploads/audios/test.mp3'
-                          detections:
-                            - count:
-                                Cyanistes caeruleus: 1
-                              det_id: f317bdc8-39cf-4940-ac46-c48ed192c8fb
-                              image: 'http://localhost:5000/uploads/images/svetozar-cenisev-pvqTCIOx9MQ-unsplash.jpg'
-                              weight: 7.6
-                            - count:
-                                Cyanistes caeruleus: 1
-                              det_id: a874d4bf-a16a-45a6-beda-b63aa8337d63
-                              image: 'http://localhost:5000/uploads/images/svetozar-cenisev-pvqTCIOx9MQ-unsplash_1.jpg'
-                              weight: 7.6
-                          end_date: '123'
+                        - mov_id: 64ed8003-c313-40e4-b234-b23c4de68fc3
+                          start_date: '2022-07-26 11:29:11.676586'
+                          end_date: '2022-07-26 11:29:14.717148'
+                          audio: 'https://wiediversistmeingarten.org/api/uploads/audios/sound_74591.wav'
+                          video: 'https://wiediversistmeingarten.org/api/uploads/videos/2022-07-26_112911.676586.mp4'
                           environment:
-                            date: '123'
-                            env_id: d80e4e89-b8f0-4ade-818d-48526dbf22eb
-                            temp: 10
-                          mov_id: cd20f9db-7156-4288-9687-9fb1db182982
-                          start_date: '123'
-                    name: Peter Lustigs Station
+                            env_id: a17a2528-aa81-427f-93d7-4545149b2bec
+                            date: '2022-07-26 11:16:21.366904'
+                            temperature: -50
+                            humidity: 1
+                          weight: 1358.6345142660116
+                          detections:
+                            - latinName: Pyrrhula pyrrhula
+                              germanName: Gimpel
+                              score: 0.8823529411764706
+                    count:
+                      '2022-07-26':
+                        - latinName: Pyrrhula pyrrhula
+                          germanName: Gimpel
+                          amount: 1
         '404':
           description: station not Found
       operationId: get-station-station_id
       parameters: []
       description: 'Endpoint to get one station, with all measurements'
+    put:
+      summary: ''
+      operationId: put-station-station_id
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Station Not Found
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: apikey
+          description: Api key to change Data. Can be requested by provider.
+      description: Change Station Data
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+            examples:
+              example:
+                value:
+                  name: newName
+        description: It can change all values of the station
+    delete:
+      summary: ''
+      operationId: delete-station-station_id
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      description: Delete Station
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: apikey
+          description: Api key to change Data. Can be requested by provider.
   '/environment/{station_id}':
     parameters:
       - schema:
@@ -364,15 +435,18 @@ paths:
                 date:
                   type: string
                   minLength: 1
-                temp:
+                temperature:
+                  type: number
+                humidity:
                   type: number
               required:
                 - date
             examples:
-              example-1:
+              example:
                 value:
-                  date: string
-                  temp: 0
+                  date: '2022-06-21 18:16:10.210804'
+                  temperature: 10
+                  humidity: 10
       description: 'Endpoint to send values of environment sensors from the station to the server '
   '/movement/{station_id}':
     parameters:
@@ -431,13 +505,11 @@ paths:
               properties:
                 json:
                   type: object
+                  description: 'json object, send as file containing all objects'
                   required:
                     - start_date
                     - end_date
-                    - audio
                     - environment
-                    - detections
-                  description: 'json object, send as file containing all objects'
                   properties:
                     start_date:
                       type: string
@@ -445,134 +517,54 @@ paths:
                     end_date:
                       type: string
                       minLength: 1
-                    audio:
-                      type: string
-                      minLength: 1
-                      description: Name of the parameter under which the audio file is stored to this movement
                     environment:
                       type: object
+                      description: environment object. containing values of different sensors
                       required:
                         - date
-                        - temp
-                      description: environment object. containing values of different sensors
+                        - temperature
                       properties:
                         date:
                           type: string
                           minLength: 1
-                        temp:
+                        temperature:
                           type: number
                           description: 'exampe measurement, more possible'
-                    detections:
-                      type: array
-                      uniqueItems: true
-                      minItems: 1
-                      items:
-                        type: object
-                        properties:
-                          date:
-                            type: string
-                            minLength: 1
-                          image:
-                            type: string
-                            minLength: 1
-                            description: name of the parameter under which the images of this detection is stored
-                          weight:
-                            type: number
-                        required:
-                          - date
-                          - image
-                          - weight
+                        humidity:
+                          type: number
                 audioKey:
-                  type: object
                   description: the name "audioKey" has to be set in the json under audio. The object is the audio the file itself
-                imageKey1:
                   type: object
-                  description: 'the name "imageKey1" has to be set in the json int the detection under image. The object is the image file itself. It is possible to send more image obejcts. For each detection one image, the keys have to be stored in the detection object.'
+                videoKey:
+                  type: object
+                  description: the name "videoKey" has to be set in the json int the detection under image. The object is the video file itself.
               required:
                 - json
-                - audioKey
-                - imageKey1
+                - videoKey
             examples:
               example:
                 value:
                   json:
                     start_date: string
                     end_date: string
-                    audio: audioKey
                     environment:
                       date: string
-                      temp: 0
-                    detections:
-                      - date: string
-                        image: imageKey1
-                        weight: 0
-                      - date: string
-                        image: imageKey2
-                        weight: 0
-                  audioKey: {}
-                  imageKey1: {}
-                  imageKey2: {}
-      x-code_example: null
-      description: 'Endpoint to send a new movement to the station. Example Pythorn request can be found here: https://github.com/CountYourBirds/webserver/blob/bdc7814753ad3db087c9c3b27010d7bef2b86966/request.py#L4'
-  /image:
-    post:
-      summary: Identify bird on image
-      operationId: post-image
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                description: ''
-                type: object
-                x-examples:
-                  example-1:
-                    result:
-                      - - 0.9176470588235294
-                        - Cyanistes caeruleus
-                      - - 0.01568627450980392
-                        - Parus major
-                      - - 0.011764705882352941
-                        - Setophaga americana
-                      - - 0.00392156862745098
-                        - Vireo philadelphicus
-                      - - 0
-                        - None
-                properties:
-                  result:
-                    type: array
-                    description: 'Array of 5 predictions. Containing an array[propability, birdname]. Best prediction is placed first in the array.'
-                    items:
-                      type: array
-                      description: 'Array of 5 predictions. Containing an array[propability, birdname]. Best prediction is placed first in the array.'
-                      items: {}
-                required:
-                  - result
-              examples:
-                example:
-                  value:
-                    result:
-                      - - 0.9176470588235294
-                        - Cyanistes caeruleus
-                      - - 0.01568627450980392
-                        - Parus major
-                      - - 0.011764705882352941
-                        - Setophaga americana
-                      - - 0.00392156862745098
-                        - Vireo philadelphicus
-                      - - 0
-                        - None
-      description: Test the image detection tool
-      requestBody:
-        content:
-          multipart/form-data:
+                      temperature: 12
+                      humidity: 12
+                  audioKey: string
+                  videoKey: string
+          application/json:
             schema:
               type: object
-              properties:
-                image:
-                  type: object
-                  description: the image files
+              properties: {}
+          application/xml:
+            schema:
+              type: object
+              properties: {}
+        description: 'The form data consist of three parts. One JSON with metadata, one videofile and one audiofile. An example request can be found here https://github.com/Birdiary/webserver/blob/main/api/example_requests.py.'
+      x-code_example: null
+      description: Endpoint to send data of a movement.
+  /image: {}
   '/uploads/audios/{filename}':
     parameters:
       - schema:
@@ -586,9 +578,11 @@ paths:
       responses:
         '200':
           description: OK
+        '404':
+          description: Not Found
       operationId: get-uploads-audios-filename
       description: Get the uploaded audio
-  '/uploads/images/{filename}':
+  '/uploads/videos/{filename}':
     parameters:
       - schema:
           type: string
@@ -600,6 +594,11 @@ paths:
       tags: []
       operationId: get-uploads-images-filename
       description: Get the uploaded image
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Not Found
 components:
   schemas:
     station:

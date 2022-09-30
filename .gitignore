@@ -136,4 +136,4 @@ dmypy.json
 /api/data
 /api/uploads
 server.env
-birdlist1.csv
+*.csv

@@ -1,6 +1,7 @@
+from calendar import c
 from flask import Flask, render_template, request, jsonify, send_from_directory
 
-from flask_mongoengine import MongoEngine
+from pymongo import MongoClient
 import json
 from flask_uploads import configure_uploads, IMAGES, UploadSet, AUDIO, ALL
 from scripts.classify_birds import classify
@@ -9,6 +10,8 @@ from sys import modules
 from os.path import basename, splitext
 from datetime import datetime
 from datetime import date
+
+import json
 
 import subprocess
 import uuid
@@ -61,8 +64,14 @@ app.config['MONGODB_SETTINGS'] = {
     'host': 'mongodb',
     'port': 27017
 }
-db = MongoEngine()
-db.init_app(app)
+
+
+client = MongoClient('mongodb',27017)
+db = client.your_database
+
+stations= db.stations
+
+
 
 images = UploadSet('images', IMAGES)
 
@@ -72,47 +81,22 @@ videos = UploadSet('videos', ALL)
 configure_uploads(app, (images, audios, videos))
 
 
-
-
-class Location(db.EmbeddedDocument):
-    lat = db.FloatField()
-    lng = db.FloatField()
-
-class Environment(db.DynamicEmbeddedDocument):
-    env_id = db.StringField()
-    date = db.StringField()
-    
-
-class Movements(db.DynamicEmbeddedDocument):
-    mov_id = db.StringField()
-    start_date =db.StringField()
-    end_date = db.StringField()
-    audio= db.StringField()
-    video = db.StringField()
-    environment = db.EmbeddedDocumentField(Environment)
-    weight = db.FloatField()
-
-class Measurement(db.EmbeddedDocument):
-    environment = db.ListField(db.EmbeddedDocumentField(Environment))
-    movements = db.ListField(db.EmbeddedDocumentField(Movements))
-
-class Mail(db.DynamicEmbeddedDocument):
-    adresses = db.ListField(db.StringField())
-    
-class Station(db.DynamicDocument):
-    station_id = db.StringField()
-    name = db.StringField()
-    location = db.EmbeddedDocumentField(Location)
-    measurements = db.EmbeddedDocumentField(Measurement)
-    mail = db.EmbeddedDocumentField(Mail)
-    sensebox_id = db.StringField()
-
-class Box(db.DynamicDocument):
-    box_id = db.StringField()
-    name = db.StringField()
-    location = db.EmbeddedDocumentField(Location)
-    measurements = db.EmbeddedDocumentField(Measurement)
-    mail = db.EmbeddedDocumentField(Mail)
+def insert(list, n):
+ 
+    index = len(list)
+    # Searching for the position
+    for i in range(len(list)):
+      if list[i]['date'] < n['date']:
+        index = i
+        break
+ 
+    # Inserting n in the list
+    if index == len(list):
+      list = list[:index] + [n]
+    else:
+      list = list[:index] + [n] + list[index:]
+    return list
+ 
 
 def enqueueable(func):
     if func.__module__ == "__main__":
@@ -121,7 +105,7 @@ def enqueueable(func):
 
 @enqueueable
 # Create a working task queue  
-def videoAnalysis(filename, movement_id, station_id):
+def videoAnalysis(filename, movement_id, station_id, movement):
     if  os.path.splitext(filename)[1] == ".h264":
         command = "MP4Box -add {} {}.mp4".format("./uploads/disk/videos/" + filename, "./uploads/disk/videos/" + os.path.splitext(filename)[0])
         try:
@@ -132,7 +116,7 @@ def videoAnalysis(filename, movement_id, station_id):
 
     cap = cv2.VideoCapture('uploads/disk/videos/' + filename)
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    print(total_frames)
+    #print(total_frames)
     result=[]
     for fno in range(0, total_frames, 10):
         cap.set(cv2.CAP_PROP_POS_FRAMES, fno)
@@ -148,7 +132,7 @@ def videoAnalysis(filename, movement_id, station_id):
             elif key!= "None":
                 if result[i][key] > 0.3:
                     output[key]=result[i][key]
-    print(output)
+    #print(output)
     output2 = {k: v for k, v in output.items()}
     marklist = sorted(output2.items(), key=lambda x:x[1], reverse=True)
     output3 = dict(marklist)
@@ -162,30 +146,26 @@ def videoAnalysis(filename, movement_id, station_id):
         birds.append({"latinName":key, "germanName": germanName, "score" : value})
     print(birds)
 
-    station = Station.objects(station_id=station_id).first_or_404()
+    newMovement= dict()
 
-    movements= station.measurements.movements
-    selectedMovement = {}
+    newMovement["detections"] = birds
+    newMovement["video"] = str(host)+ "/api/uploads/videos/" + filename
 
-    for i, movement in enumerate(movements):
-        if movement.mov_id == movement_id:
-            movements[i].detections = birds
-            movements[i].video = str(host)+ "/api/uploads/videos/" + filename
-            selectedMovement = movements[i]
 
+    station = stations.find_one({"station_id":station_id})
     count = {}
     if "count" in station: 
-        count = station.count
+        count = station["count"]
 
 
     if len(birds) > 0:
         try:
-            today = selectedMovement.start_date.split()[0]
+            today = movement["start_date"].split()[0]
         except:
             today = date.today()
             today = today.strftime("%Y-%m-%d")
 
-        print(today)
+        #print(today)
         latinName=birds[0]['latinName']
         germanName=birds[0]["germanName"]
             
@@ -201,35 +181,61 @@ def videoAnalysis(filename, movement_id, station_id):
         else:
             count[today] = [{"latinName": latinName, "germanName" : germanName, "amount": 1}]
 
-        for mail in station.mail.adresses:
+        for mail in station["mail"]["adresses"]:
             try:
                 send_email(mail, filename, str(host)+ "/api/uploads/videos/" + filename, birds, pwd, str(host) +"/view/station/" +station_id )
             except (e):
                 print(e)
                 print("mail to " + mail + " failed") 
 
-    station.measurements.movements= movements
-    station.update(measurements= station.measurements, count=count)
+    db["movements_"+station_id].update_one({"mov_id": movement_id}, {'$set': newMovement})
+    stations.update_one({"station_id":station_id}, {'$set': {"count":count}})
 
     return birds
 
 @enqueueable
 def saveEnvironment(body, env_id, station_id):
 
-    station = Station.objects(station_id=station_id).first_or_404()
-    environmentClass = Environment()
-    for name,value in body.items():
-        setattr(environmentClass, name, value)
     
-    environmentClass.env_id = env_id
+    environmentClass = dict()
+    for name,value in body.items():
+        environmentClass[name]= value
+    
+    environmentClass["env_id"] = env_id
 
-    environmentList = station.measurements.environment
-    environmentList.insert(0, environmentClass)
-    station.measurements.environment = environmentList
-    station.update(measurements = station.measurements)
+    environmentList = db["environments_" + station_id].find()
+    try:
+        month = environmentClass["date"]
+        month = month[0:7]
+    except:
+        month = date.today()
+        month = month.strftime("%Y-%m")
+
+    listID =""
+    for listElement in environmentList:
+        if listElement["month"] == month:
+            listID = listElement["list_id"]
+            selectedList = listElement
+            break
+
+    if listID == "":
+        environmentMonth = dict()
+        environmentMonth["station_id"] = station_id
+        environmentMonth["month"] = month
+        environmentMonth["list_id"] = str(uuid.uuid4())
+        environmentMonth["measurements"] = []
+        environmentMonth["measurements"].insert(0,environmentClass)
+        #print(environmentMonth, flush=True)
+        db["environments_" + station_id].insert_one(environmentMonth)
+    else: 
+        measurements = selectedList["measurements"]
+        measurements = insert(measurements ,environmentClass)
+        #print(measurements, flush=True)
+        db["environments_"+ station_id].update_one({"list_id":listID}, {'$set': {"measurements":measurements}})
 
     # Send Temperature and Humidity to openSenseMap if sensebox id is defined for the station
     # print(station.sensebox_id, flush=True)
+    station = stations.find_one({"station_id":station_id})
     try:
         if station.sensebox_id not in ['', None]:
             headersSendSensorValue = {'content-type': 'application/json'}
@@ -251,8 +257,41 @@ def saveEnvironment(body, env_id, station_id):
 
     return(env_id)
  
- 
-    
+@enqueueable
+def save_Environment_old(environments, station_id):
+    environmentMonths = []
+    for environment in environments:
+            try:
+                month = environment["date"]
+                month = month[0:7]
+            except:
+                month = date.today()
+                month = month.strftime("%Y-%m")
+
+            
+            index= len(environmentMonths)
+            listID=""
+            for i in range(len(environmentMonths)):
+                if environmentMonths[i]["month"] == month:
+                    index=i
+                    listID= environmentMonths[i]["list_id"]
+                    break
+
+            if listID == "":
+                environmentMonth = dict()
+                environmentMonth["station_id"] = station_id
+                environmentMonth["month"] = month
+                environmentMonth["list_id"] = str(uuid.uuid4())
+                environmentMonth["measurements"] = []
+                environmentMonth["measurements"].insert(0,environment)
+                environmentMonths.insert(0, environmentMonth)
+            else: 
+                measurements = environmentMonths[index]["measurements"]
+                measurements = insert(measurements, environment)
+                environmentMonths[index]["measurements"] = measurements
+
+    db["environments_"+station_id].insert_many(environmentMonths)
+    return environmentMonths
 
 @app.route('/')
 def index():
@@ -264,7 +303,7 @@ def index():
 def image():
     if request.method=="POST":
         data = request.files['image']
-        print (data)
+        #print (data)
         filename = images.save(data)
         result = classify('uploads/disk/images/' + filename)
 
@@ -276,7 +315,7 @@ def image():
 def video():
     if request.method=="POST":
         data = request.files['video']
-        print (data, flush=True)
+        #print (data, flush=True)
         filename = videos.save(data)
         command = "MP4Box -add {} {}.mp4".format("./uploads/disk/videos/" + filename, "./uploads/disk/videos/" + os.path.splitext(filename)[0])
         try:
@@ -285,7 +324,7 @@ def video():
              print('FAIL:\ncmd:{}\noutput:{}'.format(e.cmd, e.output))
         cap = cv2.VideoCapture('uploads/disk/videos/' + os.path.splitext(filename)[0] +".mp4")
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        print(total_frames)
+        #print(total_frames)
         result=[]
         images = 0
         for fno in range(0, total_frames, 20):
@@ -301,11 +340,11 @@ def video():
                     output[key]+=result[i][key]
                 else:
                     output[key]=result[i][key]
-        print(output)
+        #print(output)
         output2 = {k: v / images for k, v in output.items()}
         marklist = sorted(output2.items(), key=lambda x:x[1], reverse=True)
         birds = dict(marklist)
-        print(birds)
+        #print(birds)
                 
         return jsonify(
             result= birds
@@ -317,7 +356,7 @@ def audio():
     if request.method=="POST":
         # this line goes to the console/terminal in flask dev server
         data = request.files['audio']
-        print (data)
+        #print (data)
         # this line prints out the form to the browser
         #return jsonify(data)
         filename = audios.save(data)
@@ -328,24 +367,19 @@ def audio():
 def add_station():
     if request.method=="POST":
         body = request.get_json()
-        location = Location()
-        location.lat = body['location']['lat']
-        location.lng= body['location']['lng']
-        measurement= Measurement()
-        mail = Mail()
-        list= mail.adresses
+        location = dict()
+        location['lat'] = body['location']['lat']
+        location['lng']= body['location']['lng']
+        arr= []
         for mailToInsert in body['mail']['adresses']:
             print(mailToInsert)
-            list.append(mailToInsert)
-        mail.adresses = list
+            arr.append(mailToInsert)
+        mail = dict()
+        mail["adresses"] = arr
         id = str(uuid.uuid4())
-        name=body['name']
-        
-        with open('body.json', 'w') as f:
-            json.dump(body, f)
-
         createSensebox = body['createSensebox']
         sensebox_id = ''
+        name = body["name"]
         if createSensebox:
             # login to opensensemap account to get token
             loginUrl = 'https://api.opensensemap.org/users/sign-in'
@@ -367,50 +401,115 @@ def add_station():
                 if sensemapRequest.status_code == 201:
                     sensebox_id = sensemapRequest.json()['data']['_id']
 
+        #print(mail)
+        count = dict()
         # Add object to movie and save
-        station = Station(station_id = id, location=location, name=name, measurements = measurement, mail=mail, sensebox_id=sensebox_id).save()
-        return {"id": id, "sensebox_id": sensebox_id}, 201
-    stations = Station.objects.only('station_id', "location", "name", 'sensebox_id').exclude('_id')
-    return  jsonify(stations), 200
+        station = stations.insert_one({"station_id": id, "location":location, "name":body['name'], "mail":mail, "count": count, "sensebox_id":sensebox_id})
+        movementsCollection = db["movements_"+ id]
+        movementsCollection.create_index( [( "start_date", -1 )] )
+        environmentCollection = db["environments_"+ id]
+        environmentCollection.create_index( [( "month", -1 )] )
+
+        return {"id": id}, 201
+    station = list(stations.find({}, {'_id' : False, "mail":False} ))
+    return  jsonify(station), 200
+
+@app.route('/api/station/old', methods=['GET', 'POST'])
+def add_station_old():
+    if request.method=="POST":
+        body = request.get_json()
+        location = dict()
+        location['lat'] = body['location']['lat']
+        location['lng']= body['location']['lng']
+        arr= []
+        for mailToInsert in body['mail']['adresses']:
+            print(mailToInsert)
+            arr.append(mailToInsert)
+        mail = dict()
+        mail["adresses"] = arr
+        station_id = body['station_id']
+        #senseboxid = ""
+        #if(body['senseboxID']):
+        #    senseboxid = body['senseboxID']
+        #else: 
+        #    senseboxid
+
+        print(mail)
+        try:
+            count = body["count"]
+        except:
+            count= dict()
+        try:
+            sensebox_id= body["sensebox_id"]
+        except:
+            sensebox_id = ""
+        # Add object to movie and save
+        station = stations.insert_one({"station_id": station_id, "location":location, "name":body['name'], "mail":mail, "count": count, "sensebox_id": sensebox_id})
+        movements= body['measurements']['movements']
+        movementsCollection = db["movements_"+ station_id]
+        movementsCollection.create_index( [( "start_date", -1 )] )
+        environmentCollection = db["environments_"+ station_id]
+        environmentCollection.create_index( [( "month", -1 )] )
+        for movement in movements:
+            db["movements_"+station_id].insert_one(movement)
+        environments = body['measurements']['environment']
+        job = q.enqueue(save_Environment_old, environments, station_id)
+        
+        return {"id": station_id}, 201
+
 
 @app.route('/api/station/<station_id>', methods=['GET', 'PUT', 'DELETE'])
 def station(station_id: str):
     if request.method=="GET":
-        movements = request.args.get('movements')
-        station = Station.objects(station_id=station_id).exclude('_id', 'mail').first_or_404()
-        if movements and int(movements) > 0:
-            station.measurements.movements = station.measurements.movements[:int(movements)]
+        numberOfMovements = request.args.get('movements')
+        station = stations.find_one({"station_id":station_id}, {'_id' : False, "mail":False} )
+        #print(station, flush=True)
+        if station is None:
+            return "not found", 404
+        movements=[]
+        if numberOfMovements and int(numberOfMovements) > 0:
+            movements = list(db["movements_" + station_id].find({}, {'_id' : False}).sort("start_date",-1).limit(int(numberOfMovements)))
+        else:
+            movements = list(db["movements_" + station_id].find({}, {'_id' : False}).sort("start_date",-1))
+        station["measurements"] = dict()
+        station["measurements"]["movements"] = movements
+        environment= db["environments_"+station_id].find({}, {'_id' : False}).sort("month",-1)
+        environment = list(environment)
+        #print(environment, flush=True)
+        environments = []
+        for months in environment:
+            environments= environments + months["measurements"]
+        station["measurements"]["environment"] = environments
         return jsonify(station), 200
     if request.method=="PUT":
         apikey= request.args.get("apikey")
         body = request.get_json()
-        print(apikey, flush=True)
-        print(API_KEY, flush=True)
         if API_KEY != apikey:
             return "Not authorized", 401
-        station = Station.objects.get_or_404(station_id=station_id)
-        station.update(**body)
-        return jsonify(station), 200
+        result= stations.update_one({"station_id":station_id}, {'$set': body})
+        return jsonify(result.modified_count), 200
     if request.method=="DELETE":
         apikey= request.args.get("apikey")
-        print(apikey, flush=True)
-        print(API_KEY, flush=True)
+        deleteData = request.args.get("deleteData")
         if API_KEY != apikey:
             return "Not authorized", 401
-        station = Station.objects.get_or_404(station_id=station_id)
-        station.delete()
-        return jsonify(str(station.station_id)), 200
+        stations.delete_one({"station_id": station_id})
+        if(deleteData):
+            movementsCollection = db["movements_"+station_id]
+            movementsCollection.drop
+            environmentCollection = db["environments_"+station_id]
+            environmentCollection.drop
+        return jsonify(str(station_id)), 200
 
 
 @app.route('/api/environment/<station_id>', methods=['POST'])
 def add_environment(station_id: str):
     content_type = request.headers.get('Content-Type')
-    print(content_type, flush=True)
 
     body = request.get_json()
 
     env_id = str(uuid.uuid4())
-    job = q.enqueue(saveEnvironment, body,env_id,station_id)
+    #job = q.enqueue(saveEnvironment, body,env_id,station_id)
 
     return jsonify(id = env_id), 200
 
@@ -418,49 +517,37 @@ def add_environment(station_id: str):
 def add_movement(station_id: str):
     content_type = request.headers.get('Content-Type')
     print(content_type, flush=True)
-    station = Station.objects(station_id=station_id).first_or_404()
-
-
     ##TODO: Count Birds in image and Crop images to bird onyl 
-    
-    
 
     body = request.form['json']
     body = json.loads(body)
-    print(body.items(), flush=True)
 
-
-
-    movementsClass = Movements()
+    movementsClass = dict()
     mov_id = str(uuid.uuid4())
-    movementsClass.mov_id = mov_id
-    movementsClass.start_date = body['start_date']
-    movementsClass.end_date = body['end_date']
-    movementsClass.weight = body['weight']
+    movementsClass["station_id"] =station_id
+    movementsClass["mov_id"] = mov_id
+    movementsClass["start_date"] = body['start_date']
+    movementsClass["end_date"] = body['end_date']
+    movementsClass["weight"] = body['weight']
     audio = request.files[body['audio']]
     filename = audios.save(audio)
-    movementsClass.audio = str(host)+ "/api/uploads/audios/" + filename
+    movementsClass["audio"] = str(host)+ "/api/uploads/audios/" + filename
     video = request.files[body['video']]
     filename = videos.save(video)
-    movementsClass.video = "pending"
+    movementsClass["video"] = "pending"
     
 
-    environmentClass = Environment()
+    environmentClass = dict()
     for name,value in body['environment'].items():
-        setattr(environmentClass, name, value)
+        environmentClass[name]= value
     env_id = str(uuid.uuid4())
-    environmentClass.env_id = env_id
+    environmentClass["env_id"] = env_id
 
-    movementsClass.environment = environmentClass
-
-    movementsClass.detections = {}
-
+    movementsClass["environment"] = environmentClass
     
-    movementList = station.measurements.movements
-    movementList.insert(0, movementsClass)
-    station.measurements.movements = movementList
-    station.update(measurements = station.measurements)
-    job= q.enqueue(videoAnalysis, filename, mov_id, station_id)  
+    
+    db["movements_"+station_id].insert_one(movementsClass)
+    job= q.enqueue(videoAnalysis, filename, mov_id, station_id, movementsClass)  
     #print(movementList)
 
     return jsonify(id = mov_id), 200
@@ -478,16 +565,11 @@ def getVideos(filename):
     return send_from_directory(app.config['UPLOADED_VIDEOS_DEST'], filename)
 
 
-@app.route('/api/all')
-def getLastBird():
-  station=  Station.objects.exclude('_id', 'mail')
-  station = list(station)
-  return jsonify(station)
 
 @app.route('/api/count')
 def count():
 
-    station=  Station.objects.only("count")
+    station=  stations.find({},{"count":1})
     counts= list(station)
     count = {}
     for countObjects in counts:
