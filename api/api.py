@@ -293,6 +293,12 @@ def save_Environment_old(environments, station_id):
     db["environments_"+station_id].insert_many(environmentMonths)
     return environmentMonths
 
+@enqueueable
+def save_station_id(station_id):
+    db["movements_"+station_id].update_many({}, {"$set": { "station_id" : station_id }})
+    return station_id
+
+
 @app.route('/')
 def index():
     return render_template('./index.html') 
@@ -462,7 +468,7 @@ def add_station_old():
 def station(station_id: str):
     if request.method=="GET":
         numberOfMovements = request.args.get('movements')
-        station = stations.find_one({"station_id":station_id}, {'_id' : False, "mail":False} )
+        station = stations.find_one({"station_id":station_id}, {'_id' : False} )
         #print(station, flush=True)
         if station is None:
             return "not found", 404
@@ -509,7 +515,7 @@ def add_environment(station_id: str):
     body = request.get_json()
 
     env_id = str(uuid.uuid4())
-    #job = q.enqueue(saveEnvironment, body,env_id,station_id)
+    job = q.enqueue(saveEnvironment, body,env_id,station_id)
 
     return jsonify(id = env_id), 200
 
@@ -529,6 +535,7 @@ def add_movement(station_id: str):
     movementsClass["start_date"] = body['start_date']
     movementsClass["end_date"] = body['end_date']
     movementsClass["weight"] = body['weight']
+    movementsClass["detections"] = []
     audio = request.files[body['audio']]
     filename = audios.save(audio)
     movementsClass["audio"] = str(host)+ "/api/uploads/audios/" + filename
@@ -551,6 +558,20 @@ def add_movement(station_id: str):
     #print(movementList)
 
     return jsonify(id = mov_id), 200
+
+@app.route('/api/movement/<station_id>/<movement_id>', methods=['DELETE'])
+def delete_movement(station_id: str, movement_id: str):
+    apikey= request.args.get("apikey")
+    deleteData = request.args.get("deleteData")
+    if API_KEY != apikey:
+        return "Not authorized", 401
+    db["movements_" + station_id].delete_one({"mov_id": movement_id})
+    return jsonify(str(station_id)), 200
+
+@app.route('/api/movement/<station_id>', methods=['PUT'])
+def insert_station_id(station_id: str):
+    job = q.enqueue(save_station_id, station_id)
+    return "ok", 200
 
 @app.route('/api/uploads/images/<filename>')
 def getImages(filename):
