@@ -462,15 +462,15 @@ def add_station_old():
         job = q.enqueue(save_Environment_old, environments, station_id)
         
         return {"id": station_id}, 201
-    if request.method=="POST":
-        stations= list(db_old.station.find({}, {"measurements" : False}))
-        return stations
+    if request.method=="GET":
+        stations= list(db_old.station.find({}, {"measurements" : False, "_id" : False}))
+        return jsonify(stations)
 
 
 @app.route('/api/station/old/<station_id>', methods=['GET', 'PUT'])
 def oldstation(station_id: str):
     if request.method=="GET":
-        station= list(db_old.station.find({"station_id": station_id}))
+        station= list(db_old.station.find({"station_id": station_id}, {"_id" : False}))
         return station
     if request.method=="PUT":
         body = request.get_json()
