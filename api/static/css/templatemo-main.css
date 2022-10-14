@@ -147,13 +147,13 @@ a:hover { color: #FF0; }
 .baner-content {
   padding-top: 30vh;
   text-align: center;
-  background-image: url(../img/r1.jpg);
+  background-image: url(../img/r1-min.jpg);
 }
 
 .video-content {
   padding-top: 10vh;
   text-align: center;
-  background-image: url(../img/GEO1.jpg);
+  background-image: url(../img/GEO1-min.jpg);
   background-attachment: fixed;
   min-height: 100vh;
   background-size: cover;
@@ -163,7 +163,7 @@ a:hover { color: #FF0; }
 .workshop-content {
   padding-top: 10vh;
   text-align: center;
-  background-image: url(../img/bird4.jpg);
+  background-image: url(../img/bird4-min.jpg);
   background-attachment: fixed;
   min-height: 100vh;
   background-size: cover;
@@ -203,7 +203,7 @@ a:hover { color: #FF0; }
   padding-left: 15px;
   padding-right: 15px;
   padding-top: 15vh;
-  background-image: url(../img/bird6.jpg);
+  background-image: url(../img/bird6-min.jpg);
   background-attachment: fixed;
   min-height: 100vh;
   background-size: cover;
@@ -266,7 +266,7 @@ h4, .h4 {
 
 .projects-content {
   padding-top: 20vh;
-  background-image: url(../img/bird5.jpg);
+  background-image: url(../img/bird5-min.jpg);
   background-attachment: fixed;
   min-height: 100vh;
   background-size: cover;
@@ -324,7 +324,7 @@ h4, .h4 {
   padding-left: 15px;
   padding-right: 15px;
   padding-top: 8vh;
-  background-image: url(../img/bird5.jpg);
+  background-image: url(../img/bird5-min.jpg);
   background-attachment: fixed;
   min-height: 100vh;
   background-size: cover;
@@ -393,7 +393,7 @@ section {
   padding-left: 15px;
   padding-right: 15px;
   padding-top: 16vh;
-  background-image: url(../img/bird7.jpg);
+  background-image: url(../img/bird7-min.jpg);
   background-attachment: fixed;
   min-height: 100vh;
   background-size: cover;

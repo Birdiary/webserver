@@ -1,4 +1,3 @@
-from calendar import c
 from flask import Flask, render_template, request, jsonify, send_from_directory
 
 from pymongo import MongoClient
@@ -67,7 +66,8 @@ app.config['MONGODB_SETTINGS'] = {
 
 
 client = MongoClient('mongodb',27017)
-db = client.your_database
+db = client.birdiary_database
+db_old = client.your_database
 
 stations= db.stations
 
@@ -462,7 +462,25 @@ def add_station_old():
         job = q.enqueue(save_Environment_old, environments, station_id)
         
         return {"id": station_id}, 201
+    if request.method=="POST":
+        stations= list(db_old.station.find({}, {"measurements" : False}))
+        return stations
 
+
+@app.route('/api/station/old/<station_id>', methods=['GET', 'PUT'])
+def oldstation(station_id: str):
+    if request.method=="GET":
+        station= list(db_old.station.find({"station_id": station_id}))
+        return station
+    if request.method=="PUT":
+        body = request.get_json()
+        environments_to_add= body["measurements"]["environment"]
+        for environment in environments_to_add:
+            save_Environment_old(environment, station_id)
+        movements_to_add = body["measurements"]["movements"]
+        for movement in movements_to_add:
+            db["movements_"+station_id].insert_one(movement)
+        return station_id
 
 @app.route('/api/station/<station_id>', methods=['GET', 'PUT', 'DELETE'])
 def station(station_id: str):

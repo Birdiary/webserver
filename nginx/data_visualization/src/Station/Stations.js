@@ -89,7 +89,7 @@ function StationView(props) {
       date = new Date(dateArray[0])
       var hum = environment.humidity
       var temp = environment.temperature
-      /**try{
+      try{
       var lastDate = tempSeries[0].data[tempSeries[0].data.length -1][0]
       var  diffTime = Math.abs(date - lastDate);
       if(diffTime > 1000 * 60 * 240 ){
@@ -101,7 +101,7 @@ function StationView(props) {
     }
     catch (e){
       console.log(e)
-    }*/
+    }
       if (temp > -35){
         tempSeries[0].data.push([date, temp])
         humSeries[0].data.push([date, hum])

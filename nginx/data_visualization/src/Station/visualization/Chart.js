@@ -31,11 +31,11 @@ class ApexChart extends React.Component {
           },
           tooltip: {
             x: {
-              format: 'H:mm dd.MMM.yy'
+              format: 'H:mm dd/MMM/yy'
             }
           },
           stroke: {
-            curve: 'smooth',
+            curve: 'straight',
           }
         },      
       };
