@@ -19,7 +19,7 @@ import IconButton from '@mui/material/IconButton';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import zIndex from "@mui/material/styles/zIndex";
 import language from "../languages/languages";
-
+import TimelineChart from "./visualization/Charts2";
 
 
 function StationView(props) {
@@ -70,13 +70,13 @@ function StationView(props) {
   const createSeries = (data) => {
 
     var tempSeries = [{
-      name: "temperature",
+      label: "temperature",
       data: [
 
       ]
     }]
     var humSeries = [{
-      name: "humidity",
+      label: "humidity",
       data: [
       ]
     }]
@@ -86,16 +86,16 @@ function StationView(props) {
 
       let date = environment.date;
       const dateArray = date.split(".");
-      date = new Date(dateArray[0])
+      date = new Date(dateArray[0].replace(/\s/, 'T'))
       var hum = environment.humidity
       var temp = environment.temperature
-      try{
-      var lastDate = tempSeries[0].data[tempSeries[0].data.length -1][0]
+     try{
+      var lastDate = tempSeries[0].data[tempSeries[0].data.length -1].x
       var  diffTime = Math.abs(date - lastDate);
       if(diffTime > 1000 * 60 * 240 ){
         var middleDate = new Date(lastDate + 1000*60*120)
-        tempSeries[0].data.push([middleDate, null])
-        humSeries[0].data.push([middleDate, null])
+        tempSeries[0].data.push({x: middleDate, y: null})
+        humSeries[0].data.push({x: middleDate, y: null})
 
       }
     }
@@ -103,8 +103,8 @@ function StationView(props) {
       console.log(e)
     }
       if (temp > -35){
-        tempSeries[0].data.push([date, temp])
-        humSeries[0].data.push([date, hum])
+        tempSeries[0].data.push({x: date, y: temp})
+        humSeries[0].data.push({x: date, y: hum})
       }
 
     }
@@ -226,10 +226,10 @@ function StationView(props) {
                     </IconButton></h3>
     <Grid container spacing={2}>
             <Grid item lg={6} md={12}>
-              <h4>{language[props.language]["stations"]["temperature"]}</h4><ApexChart series={temperatue} />
+              <h4>{language[props.language]["stations"]["temperature"]}</h4><TimelineChart series={temperatue} />
             </Grid>
             <Grid item lg={6} md={12}>
-              <h4>{language[props.language]["stations"]["humidity"]}</h4><ApexChart series={humidity} />
+              <h4>{language[props.language]["stations"]["humidity"]}</h4><TimelineChart series={humidity} />
             </Grid>
           </Grid> </div> : <p>{language[props.language]["stations"]["noData2"]}</p>
         }

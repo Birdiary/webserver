@@ -25,6 +25,8 @@ services:
     image: mongo:latest
     ports:
       - 27017
+    volumes:
+      - ./db-data:/data/db
 
 
   nginx:

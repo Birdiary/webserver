@@ -450,7 +450,7 @@ def add_station_old():
         except:
             sensebox_id = ""
         # Add object to movie and save
-        station = stations.insert_one({"station_id": station_id, "location":location, "name":body['name'], "mail":mail, "count": count, "sensebox_id": sensebox_id})
+        station = db.stations.insert_one({"station_id": station_id, "location":location, "name":body['name'], "mail":mail, "count": count, "sensebox_id": sensebox_id})
         movements= body['measurements']['movements']
         movementsCollection = db["movements_"+ station_id]
         movementsCollection.create_index( [( "start_date", -1 )] )
@@ -479,7 +479,17 @@ def oldstation(station_id: str):
             save_Environment_old(environment, station_id)
         movements_to_add = body["measurements"]["movements"]
         for movement in movements_to_add:
+            movement["station_id"] = station_id
             db["movements_"+station_id].insert_one(movement)
+        station = list(db.stations.find({"station_id": station_id}, {"_id" : False}))
+        count = station[0]["count"]
+        dates = ["2022-09-28", "2022-09-29", "2022-09-30"]
+        for date in dates:
+            try:
+                count[date] = body["count"][date]
+            except:
+                print(date)
+
         return station_id
 
 @app.route('/api/station/<station_id>', methods=['GET', 'PUT', 'DELETE'])
