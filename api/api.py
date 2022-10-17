@@ -489,6 +489,7 @@ def oldstation(station_id: str):
                 count[date] = body["count"][date]
             except:
                 print(date)
+        result= db.stations.update_one({"station_id":station_id}, {'$set': {"count": count}})
 
         return station_id
 
