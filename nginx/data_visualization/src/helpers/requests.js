@@ -20,10 +20,20 @@ function sendStation(body) {
 }
 
 
+function getMovement() {
+    return axios.get(_env.api + '/movement');
+}
+
+function sendValdation(station_id, movement_id, validation){
+    var _url = _env.api + "/validate/" + station_id + "/" + movement_id
+    return axios.put(_url, validation);
+}
 
 module.exports = {
     getStation : getStation,
     sendStation : sendStation,
-    getStations : getStations
+    getStations : getStations,
+    getMovement : getMovement,
+    sendValidation : sendValdation,
     
 };

@@ -9,6 +9,7 @@ from sys import modules
 from os.path import basename, splitext
 from datetime import datetime
 from datetime import date
+import random
 
 import json
 
@@ -475,8 +476,7 @@ def oldstation(station_id: str):
     if request.method=="PUT":
         body = request.get_json()
         environments_to_add= body["measurements"]["environment"]
-        for environment in environments_to_add:
-            save_Environment_old(environment, station_id)
+        save_Environment_old(environments_to_add, station_id)
         movements_to_add = body["measurements"]["movements"]
         for movement in movements_to_add:
             movement["station_id"] = station_id
@@ -588,14 +588,18 @@ def add_movement(station_id: str):
 
     return jsonify(id = mov_id), 200
 
-@app.route('/api/movement/<station_id>/<movement_id>', methods=['DELETE'])
-def delete_movement(station_id: str, movement_id: str):
-    apikey= request.args.get("apikey")
-    deleteData = request.args.get("deleteData")
-    if API_KEY != apikey:
-        return "Not authorized", 401
-    db["movements_" + station_id].delete_one({"mov_id": movement_id})
-    return jsonify(str(station_id)), 200
+@app.route('/api/movement/<station_id>/<movement_id>', methods=['GET', 'DELETE'])
+def handle_movement(station_id: str, movement_id: str):
+    if request.method=="DELETE":
+        apikey= request.args.get("apikey")
+        deleteData = request.args.get("deleteData")
+        if API_KEY != apikey:
+            return "Not authorized", 401
+        db["movements_" + station_id].delete_one({"mov_id": movement_id})
+        return jsonify(str(station_id)), 200
+    movement = db["movements_" + station_id].find({"mov_id": movement_id}, {'_id' : False})
+    movement = list(movement)[0]
+    return jsonify(movement)
 
 @app.route('/api/movement/<station_id>', methods=['PUT'])
 def insert_station_id(station_id: str):
@@ -645,6 +649,54 @@ def count():
             print("No count available")
     return count
 
+@app.route('/api/movement', methods=['GET'])
+def getMovement():
+    collections = db.list_collection_names()
+    print(collections)
+    movementCollections= []
+    for col in collections:
+        if col.find('movements') != -1:
+            movementCollections.append(col)
+    randomCollection = random.choice(movementCollections)
+    print(randomCollection)
+    movement = db[randomCollection].aggregate([{ "$sample": { "size": 1 } } ])
+    movement = list(movement)[0]
+    movement.pop("_id")
+
+    return jsonify(movement)
+
+@app.route('/api/validate/<station_id>/<movement_id>', methods=['PUT'])
+def addValidation(station_id: str, movement_id: str):
+    body = request.get_json()
+    validation= body["validation"]
+    newValidation = dict()
+    movement = db["movements_"+station_id].find({"mov_id": movement_id}, {'_id' : False})
+    movement = list(movement)[0]
+    if "timestamp" not in validation:
+        validation["timestamp"] = str(datetime.now())
+    if "validation" in  movement:
+        validations = movement["validation"]["validations"]
+        latinName = validation["latinName"]
+        validations.append(validation)
+        summary = movement["validation"]["summary"]
+        found=False
+        for key in summary:
+            if key == latinName:
+                summary[latinName]["amount"] = summary[latinName]["amount"] + 1
+                found = True
+                break
+        if found == False:
+            summary[latinName] = {"latinName": latinName, "amount": 1}
+        newValidation["validations"] = validations
+        newValidation["summary"] = summary
+        db["movements_"+station_id].update_one({"mov_id": movement_id}, {'$set': {"validation" : newValidation} })
+    else:
+        latinName = validation["latinName"]
+        newValidation["validations"] = [validation]
+        newValidation["summary"] = {latinName: {"latinName": latinName, "amount": 1}}
+        db["movements_"+station_id].update_one({"mov_id": movement_id}, {'$set': {"validation" : newValidation} })
+
+    return jsonify(movement)
 #@app.route('/api')
 #def api():
 #    return render_template('./redoc/redoc.html')

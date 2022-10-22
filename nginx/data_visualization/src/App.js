@@ -2,6 +2,7 @@ import React from 'react'
 import OwnMap from './Map/Map'
 import Createstation from './CreateStation/CreateStation';
 import StationView from './Station/Stations'
+import Validation from './Validation/Validation';
 
 import { Route, Routes, BrowserRouter } from "react-router-dom";
 import Header from './Navbar/Navbar';
@@ -64,6 +65,7 @@ class App extends React.Component {
           <Route exact path="/view" element={<OwnMap language={this.state.language} changeLang={this.changeLang}/>} />
           <Route exact path="/view/station/:id" element={<StationView language={this.state.language} />}></Route>
           <Route path="/view/createStation" element={<Createstation language={this.state.language} />}></Route>
+          <Route path="/view/validation" element={<Validation language={this.state.language} />}></Route>
           </Routes>
         </div>
       </div>
