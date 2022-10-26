@@ -1,5 +1,5 @@
 # base image
-FROM python:latest
+FROM python:3.9.15
 
 # install netcat
 RUN apt-get update && \

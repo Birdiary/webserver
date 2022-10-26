@@ -137,3 +137,5 @@ dmypy.json
 /api/uploads
 server.env
 *.csv
+/data
+/db-data

@@ -458,6 +458,7 @@ def add_station_old():
         environmentCollection = db["environments_"+ station_id]
         environmentCollection.create_index( [( "month", -1 )] )
         for movement in movements:
+            movement["station_id"] = station_id
             db["movements_"+station_id].insert_one(movement)
         environments = body['measurements']['environment']
         job = q.enqueue(save_Environment_old, environments, station_id)
@@ -471,7 +472,7 @@ def add_station_old():
 @app.route('/api/station/old/<station_id>', methods=['GET', 'PUT'])
 def oldstation(station_id: str):
     if request.method=="GET":
-        station= list(db_old.station.find({"station_id": station_id}, {"_id" : False}))
+        station= list(db_old.station.find({"station_id": station_id}, {"_id" : False, "mail":False}))
         return station
     if request.method=="PUT":
         body = request.get_json()
@@ -497,7 +498,7 @@ def oldstation(station_id: str):
 def station(station_id: str):
     if request.method=="GET":
         numberOfMovements = request.args.get('movements')
-        station = stations.find_one({"station_id":station_id}, {'_id' : False} )
+        station = stations.find_one({"station_id":station_id}, {'_id' : False, "mail":False} )
         #print(station, flush=True)
         if station is None:
             return "not found", 404
@@ -548,6 +549,17 @@ def add_environment(station_id: str):
 
     return jsonify(id = env_id), 200
 
+@app.route('/api/environment/<station_id>', methods=['GET'])
+def get_environment(station_id: str):
+    environment= db["environments_"+station_id].find({}, {'_id' : False}).sort("month",-1)
+    environment = list(environment)
+        #print(environment, flush=True)
+    environments = []
+    for months in environment:
+            environments= environments + months["measurements"]
+
+    return jsonify(environments), 200
+
 @app.route('/api/movement/<station_id>', methods=['POST'])
 def add_movement(station_id: str):
     content_type = request.headers.get('Content-Type')
@@ -596,15 +608,27 @@ def handle_movement(station_id: str, movement_id: str):
         if API_KEY != apikey:
             return "Not authorized", 401
         db["movements_" + station_id].delete_one({"mov_id": movement_id})
-        return jsonify(str(station_id)), 200
+        return jsonify(str(station_id)), 200   
+        
     movement = db["movements_" + station_id].find({"mov_id": movement_id}, {'_id' : False})
     movement = list(movement)[0]
     return jsonify(movement)
 
-@app.route('/api/movement/<station_id>', methods=['PUT'])
+@app.route('/api/movement/<station_id>', methods=['GET'])
 def insert_station_id(station_id: str):
-    job = q.enqueue(save_station_id, station_id)
-    return "ok", 200
+    species = request.args.get('species')
+    
+    numberOfMovements = request.args.get('movements')
+    query = {}
+    if species != "":
+        species = species.replace("_", " ")
+        print(species, flush=True)
+        query = {"detections": { "$elemMatch" : {"latinName": { "$in": [species] } } } }
+    if numberOfMovements and int(numberOfMovements) > 0:
+            movements = list(db["movements_" + station_id].find(query, {'_id' : False}).sort("start_date",-1).limit(int(numberOfMovements)))
+    else:
+            movements = list(db["movements_" + station_id].find(query, {'_id' : False}).sort("start_date",-1))
+    return jsonify(movements), 200
 
 @app.route('/api/uploads/images/<filename>')
 def getImages(filename):
@@ -656,11 +680,14 @@ def getMovement():
     movementCollections= []
     for col in collections:
         if col.find('movements') != -1:
-            movementCollections.append(col)
+            if db[col].count_documents({}) > 0:
+                movementCollections.append(col)
     randomCollection = random.choice(movementCollections)
-    print(randomCollection)
+    print(randomCollection, flush=True)
     movement = db[randomCollection].aggregate([{ "$sample": { "size": 1 } } ])
-    movement = list(movement)[0]
+    movemntList = list(movement)
+    print(movemntList, flush=True)
+    movement = movemntList[0]
     movement.pop("_id")
 
     return jsonify(movement)

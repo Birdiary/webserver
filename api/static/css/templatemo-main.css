@@ -163,7 +163,17 @@ a:hover { color: #FF0; }
 .workshop-content {
   padding-top: 10vh;
   text-align: center;
-  background-image: url(../img/bird4-min.jpg);
+  background-image: url(../img/Stieglitz_Moment.jpg);
+  background-attachment: fixed;
+  min-height: 100vh;
+  background-size: cover;
+  background-position: center center !important;
+}
+
+.workshop2-content {
+  padding-top: 10vh;
+  text-align: center;
+  background-image: url(../img/Rotkehlchen_Moment.jpg);
   background-attachment: fixed;
   min-height: 100vh;
   background-size: cover;
@@ -203,7 +213,7 @@ a:hover { color: #FF0; }
   padding-left: 15px;
   padding-right: 15px;
   padding-top: 15vh;
-  background-image: url(../img/bird6-min.jpg);
+  background-image: url(../img/kleiber_Moment.jpg);
   background-attachment: fixed;
   min-height: 100vh;
   background-size: cover;
@@ -266,7 +276,7 @@ h4, .h4 {
 
 .projects-content {
   padding-top: 20vh;
-  background-image: url(../img/bird5-min.jpg);
+  background-image: url(../img/Zaunkönig_Moment.jpg);
   background-attachment: fixed;
   min-height: 100vh;
   background-size: cover;
@@ -324,7 +334,7 @@ h4, .h4 {
   padding-left: 15px;
   padding-right: 15px;
   padding-top: 8vh;
-  background-image: url(../img/bird5-min.jpg);
+  background-image: url(../img/Buntspecht_Moment.jpg);
   background-attachment: fixed;
   min-height: 100vh;
   background-size: cover;
@@ -393,7 +403,7 @@ section {
   padding-left: 15px;
   padding-right: 15px;
   padding-top: 16vh;
-  background-image: url(../img/bird7-min.jpg);
+  background-image: url(../img/Zaunkönig_Moment.jpg);
   background-attachment: fixed;
   min-height: 100vh;
   background-size: cover;

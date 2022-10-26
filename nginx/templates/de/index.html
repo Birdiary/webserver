@@ -19,14 +19,14 @@
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800" rel="stylesheet">
 
     <script src="/static/js/vendor/modernizr-2.8.3-respond-1.4.2.min.js"></script>
-   <script>  
-   function setLang(lang) {
-    console.log("set")
-    window.localStorage.setItem("language", lang);
-    if(lang==="en"){
-        window.location.href = "/"
-    }
-}</script> 
+    <script>
+        function setLang(lang) {
+            console.log("set")
+            window.localStorage.setItem("language", lang);
+            if (lang === "en") {
+                window.location.href = "/"
+            }
+        }</script>
 </head>
 <!--
 Vanilla Template
@@ -39,43 +39,46 @@ https://templatemo.com/tm-526-vanilla
     <header>
         <!-- Animated navbar-->
         <nav class="navbar navbar-expand-md fixed-top navbar-dark">
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-              <span class="navbar-toggler-icon"></span>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse"
+                aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarCollapse">
-              <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                  <a class="nav-link" href="/view">Beobachte Stationen</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" onclick="setLang('en')" href="#">English</a>
-                                </li>
-                <li class="nav-item"></li>
-                <a class="nav-link" onclick="setLang('de')" href="#"><b>Deutsch</b></a>
-                </li>
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/view">Beobachte Stationen</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="setLang('en')" href="#">English</a>
+                    </li>
+                    <li class="nav-item"></li>
+                    <a class="nav-link" onclick="setLang('de')" href="#"><b>Deutsch</b></a>
+                    </li>
 
-                <!--  <li><a href="#"><i class="fa fa-linkedin"></i></a></li>-->
-                <!--  <li><a href="#"><i class="fa fa-google"></i></a></li>-->
-                <!-- <li><a href="#"><i class="fa fa-dribbble"></i></a></li>-->
-            </ul>
-            <a style="padding-right: 5px" target="_blank"
-                href="https://www.facebook.com/Wie-divers-ist-mein-Garten-105311925484763"><i
-                    class="fa fa-facebook"></i></a>
-        <a style="padding-right: 5px" target="_blank" href="https://www.instagram.com/_birdiary_/"><i
-                    class="fa fa-instagram"></i></a>
-        <a style="padding-right: 5px" target="_blank" href="https://twitter.com/_birdiary_"><i class="fa fa-twitter"></i></a>
+                    <!--  <li><a href="#"><i class="fa fa-linkedin"></i></a></li>-->
+                    <!--  <li><a href="#"><i class="fa fa-google"></i></a></li>-->
+                    <!-- <li><a href="#"><i class="fa fa-dribbble"></i></a></li>-->
+                </ul>
+                <a style="padding-right: 5px" target="_blank"
+                    href="https://www.facebook.com/Wie-divers-ist-mein-Garten-105311925484763"><i
+                        class="fa fa-facebook"></i></a>
+                <a style="padding-right: 5px" target="_blank" href="https://www.instagram.com/_birdiary_/"><i
+                        class="fa fa-instagram"></i></a>
+                <a style="padding-right: 5px" target="_blank" href="https://twitter.com/_birdiary_"><i
+                        class="fa fa-twitter"></i></a>
             </div>
-          </nav>
-      
-        
-      </header>
+        </nav>
+
+
+    </header>
 
     <div class="fixed-side-navbar">
         <ul class="nav flex-column">
             <li class="nav-item"><a class="nav-link" href="#home"><span>Einführung</span></a></li>
             <li class="nav-item"><a class="nav-link" href="#video"><span>Video</span></a></li>
             <li class="nav-item"><a class="nav-link" href="#services"><span>Projekt</span></a></li>
-            <li class="nav-item"><a class="nav-link" href="#workshop"><span>Workshop</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="#workshop"><span>Workshop 1</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="#workshop2"><span>Workshop 2</span></a></li>
             <li class="nav-item"><a class="nav-link" href="#our-story"><span>Unsere Geschichte</span></a></li>
             <li class="nav-item"><a class="nav-link" href="#contact-us"><span>Kontakt</span></a></li>
         </ul>
@@ -162,7 +165,8 @@ https://templatemo.com/tm-526-vanilla
                             <div class="service-item">
                                 <h4>Analyse der gesammelten Daten</h4>
                                 <div class="line-dec"></div>
-                                <p>Unter diesem Link findet ihr eine Website, wo alle gesammelten Daten und Bilder der Station zu finden sind.</p>
+                                <p>Unter diesem Link findet ihr eine Website, wo alle gesammelten Daten und Bilder der
+                                    Station zu finden sind.</p>
                                 <a href="/view"> https://wiediversistmeingarten.org/view</a>
                             </div>
                         </div>
@@ -178,8 +182,13 @@ https://templatemo.com/tm-526-vanilla
                             <div class="service-item">
                                 <h4>Selbstbauanleitung</h4>
                                 <div class="line-dec"></div>
-                                <p>Unter dem folgenden Link findet ihr eine Anleitung, mit der ihr eine der Stationen selber bauen könnt: <a href="https://docs.google.com/document/d/1aUBDAAl8RrAqekmtY9fd0eZRtfFVpdbspXzJ32ul654/edit?usp=sharing">Anleitung</a> <br>
-                                      Alle benötigten Materialien sind frei verfügbar und die verwendete Software ist als Open Source bei <a href="https://github.com/Birdiary/station">GitHub</a> verfügbar.</p>
+                                <p>Unter dem folgenden Link findet ihr eine Anleitung, mit der ihr eine der Stationen
+                                    selber bauen könnt: <a
+                                        href="https://docs.google.com/document/d/1aUBDAAl8RrAqekmtY9fd0eZRtfFVpdbspXzJ32ul654/edit?usp=sharing">Anleitung</a>
+                                    <br>
+                                    Alle benötigten Materialien sind frei verfügbar und die verwendete Software ist als
+                                    Open Source bei <a href="https://github.com/Birdiary/station">GitHub</a> verfügbar.
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -220,7 +229,7 @@ https://templatemo.com/tm-526-vanilla
             </div>
             <div style="padding-bottom:10vh; margin-top: 30px;">
                 <div class="primary-button" style="display: inline-block; padding-right: 10px; padding-bottom: 5vh;">
-                    <a href="#our-story">Erfahre unsere Geschichte</a>
+                    <a href="#workshop2">Erfahre etwas über den 2 Workshop</a>
                 </div>
             </div>
             <div class="container" style="padding-bottom: 100px;">
@@ -250,6 +259,75 @@ https://templatemo.com/tm-526-vanilla
                     </div>
                     <div class="col-md-3" style="padding-bottom: 15px;">
                         <img src="/static/img/work_8-min.jpg">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="parallax-content workshop2-content" id="workshop2">
+        <div class="container" style="min-width: fit-content;">
+            <h4 style="color: #fff;">Workshop 2</h4>
+            <div class="line-dec"></div>
+            <div class="workshop-text">
+                <p style="text-align: justify">
+                    Nach 185 Messtagen haben wir die Bürger*innen mit Stationen erneut zu einem Workshop eingeladen, um
+                    uns über die Erfahrungen und Verbesserungsmöglichkeiten mit der smarten Futterstation auszutauschen.
+                    Mit ca. 15 Personen haben wir uns im GEO1 Gebäude der Uni Münster getroffen, wo die Stationen damals
+                    auch entstanden sind. Angefangen haben wir mit einem kurzen Bericht über den aktuellen Projektstand.
+                    Es wurden insgesamt schon über 94.000 Vögel aufgenommen und über 1.200.000 Umweltmessungen
+                    durchgeführt. Überrascht hat uns, dass 719 Vögel an einem einzelnen Tag eine Station besucht haben.
+                    Da musste die Station schon regelmäßig mit neuem Futter befüllt werden. Nach unserem Bericht,
+                    konnten die Bürgerwissenschaftler*innen vorstellen, welche Änderungen sie an der Station vorgenommen
+                    haben. Wir waren sehr beeindruckt davon, was alles verbessert wurde: Verschiedene
+                    Befestigungsmöglichkeiten, Verbesserung der Futterstange und -ausgabe, Füllstandssensoren, sichere
+                    Anbringung der Sensoren und Datenspeicherung bei Internetausfall. Danach gab es noch eine
+                    Diskussionsrunde, wo weitere Erfahrungen ausgetauscht und über Verbesserungsmöglichkeiten gesprochen
+                    wurde.
+                    Nach dem intensiven Austausch ging es dann auch direkt daran, einige Verbesserungsmöglichkeiten in
+                    kleinen Gruppen umzusetzen. So wurden defekte Sensoren ausgetauscht, die Sensoren winterfest
+                    angebracht oder Plexiglasfenster eingebaut, um den Futterstand zu kontrollieren. In der Zwischenzeit
+                    gab es noch eine Mittagspause mit einer stärkenden Suppe.
+                    Am Ende des Workshops haben sich nochmal alle für eine Abschlussrunde getroffen, in welcher der
+                    Fortschritt vorgestellt wurde und Wünsche sowie Ziele für die Zukunft geäußert wurden. Einer der
+                    Wünsche war, die angeregte Diskussion in einem Online-Forum fortzuführen. Wir haben daher einen
+                    Discord Server für euch eingerichtet: <a href="https://discord.gg/VBDy7sXgzK">https://discord.gg/VBDy7sXgzK </a> Schaut gerne mal vorbei und
+                    scheut euch nicht davor mitzumachen! 
+
+                </p>
+            </div>
+            <div style="padding-bottom:10vh; margin-top: 30px;">
+                <div class="primary-button" style="display: inline-block; padding-right: 10px; padding-bottom: 5vh;">
+                    <a href="#our-story">Erfahre unsere Geschichte</a>
+                </div>
+            </div>
+            <div class="container" style="padding-bottom: 100px;">
+                <div class="row align-items-center" style="padding-bottom: 5px;">
+                    <div class="col-md-3" style="padding-bottom: 15px;">
+                        <img src="/static/img/work2_1-min.JPG">
+                    </div>
+                    <div class="col-md-3" style="padding-bottom: 15px;">
+                        <img src="/static/img/work2_2-min.JPG">
+                    </div>
+                    <div class="col-md-3" style="padding-bottom: 15px;">
+                        <img src="/static/img/work2_3-min.JPG">
+                    </div>
+                    <div class="col-md-3" style="padding-bottom: 15px;">
+                        <img src="/static/img/work2_4-min.JPG">
+                    </div>
+                </div>
+                <div class="row align-items-center" style="padding-bottom: 5px;">
+                    <div class="col-md-3" style="padding-bottom: 15px;">
+                        <img src="/static/img/work2_5-min.JPG">
+                    </div>
+                    <div class="col-md-3" style="padding-bottom: 15px;">
+                        <img src="/static/img/work2_6-min.JPG">
+                    </div>
+                    <div class="col-md-3" style="padding-bottom: 15px;">
+                        <img src="/static/img/work2_7-min.JPG">
+                    </div>
+                    <div class="col-md-3" style="padding-bottom: 15px;">
+                        <img src="/static/img/work2_8-min.JPG">
                     </div>
                 </div>
             </div>
@@ -289,7 +367,8 @@ https://templatemo.com/tm-526-vanilla
                             </div>
                             <div id="tab4">
                                 <img src="/static/img/bild1.jpg" height="400" alt="">
-                                <p>Entwicklung der smarten Futterstation und Durchführung des Citizen Sicence Projekts "Wie divers ist mein Garten?"</p>
+                                <p>Entwicklung der smarten Futterstation und Durchführung des Citizen Sicence Projekts
+                                    "Wie divers ist mein Garten?"</p>
                             </div>
                         </section>
                         <ul class="tabs clearfix" data-tabgroup="first-tab-group">
@@ -361,13 +440,16 @@ https://templatemo.com/tm-526-vanilla
             </div>
             <div class="row align-items-center" style="padding-bottom: 5px;">
                 <div class="col-md-4" style="padding-bottom: 15px;">
-                    <a href="https://www.uni-muenster.de/AFO/CS/wettbewerb/cs_wettbewerb.html" target="_blank"> <img src="/static/img/CS_Siegel_rgb.png"> </a>
+                    <a href="https://www.uni-muenster.de/AFO/CS/wettbewerb/cs_wettbewerb.html" target="_blank"> <img
+                            src="/static/img/CS_Siegel_rgb.png"> </a>
                 </div>
                 <div class="col-md-4" style="padding-bottom: 15px;">
-                    <a href="https://www.uni-muenster.de/Stiftung-WWU/" target="_blank"> <img src="/static/img/Logo_StiftungWWU_2019_rgb.png"> </a>
+                    <a href="https://www.uni-muenster.de/Stiftung-WWU/" target="_blank"> <img
+                            src="/static/img/Logo_StiftungWWU_2019_rgb.png"> </a>
                 </div>
                 <div class="col-md-4" style="padding-bottom: 15px;">
-                    <a href="https://www.uni-muenster.de/Safir/" target="_blank"> <img src="/static/img/safir_logo.svg"> </a>
+                    <a href="https://www.uni-muenster.de/Safir/" target="_blank"> <img src="/static/img/safir_logo.svg">
+                    </a>
                 </div>
             </div>
             <div class="row">
@@ -377,16 +459,20 @@ https://templatemo.com/tm-526-vanilla
             </div>
             <div class="row gx-5 align-items-center" style="padding-bottom: 5px;">
                 <div class="col-md-3" style="padding-bottom: 15px;">
-                    <a href="https://sensebox.de/" target="_blank"><img style="padding:10px" src="/static/img/sensebox_logo.svg"> </a>
+                    <a href="https://sensebox.de/" target="_blank"><img style="padding:10px"
+                            src="/static/img/sensebox_logo.svg"> </a>
                 </div>
                 <div class="col-md-3 " style="padding-bottom: 15px;">
-                    <a href="https://reedu.de/" target="_blank"><img style="padding:10px" src="/static/img/logo_reedu.png"> </a>
+                    <a href="https://reedu.de/" target="_blank"><img style="padding:10px"
+                            src="/static/img/logo_reedu.png"> </a>
                 </div>
                 <div class="col-md-3" style="padding-bottom: 15px;">
-                    <a href="https://www.uni-muenster.de/Geoinformatics/" target="_blank"><img style="padding:10px" src="/static/img/Logo_ifgi_long.png"> </a>
+                    <a href="https://www.uni-muenster.de/Geoinformatics/" target="_blank"><img style="padding:10px"
+                            src="/static/img/Logo_ifgi_long.png"> </a>
                 </div>
                 <div class="col-md-3" style="padding-bottom: 15px;">
-                    <a href="https://www.uni-muenster.de/Landschaftsoekologie/" target="_blank"><img style="padding:10px" src="/static/img/logo_iloek.png"> </a>
+                    <a href="https://www.uni-muenster.de/Landschaftsoekologie/" target="_blank"><img
+                            style="padding:10px" src="/static/img/logo_iloek.png"> </a>
                 </div>
             </div>
             <div class="row gx-5 align-items-center" style="padding-bottom: 5px;">
@@ -396,41 +482,52 @@ https://templatemo.com/tm-526-vanilla
             </div>
             <div class="row gx-5 align-items-center" style="padding-bottom: 15px;">
                 <div class="col-md-2" style="padding-bottom: 15px;">
-                    <a href="https://www.nabu-muensterland.de/" target="_blank"><img style="padding:10px" src="/static/img/Logo_nabu.png">
+                    <a href="https://www.nabu-muensterland.de/" target="_blank"><img style="padding:10px"
+                            src="/static/img/Logo_nabu.png">
                 </div>
                 <div class="col-md-2 " style="padding-bottom: 15px;">
-                    <a href="https://bonn.leibniz-lib.de/de/zbm" target="_blank"> <img style="padding:10px" src="/static/img/logo_lib.png">
+                    <a href="https://bonn.leibniz-lib.de/de/zbm" target="_blank"> <img style="padding:10px"
+                            src="/static/img/logo_lib.png">
                 </div>
                 <div class="col-md-2" style="padding-bottom: 15px;">
-                    <a href="https://www.lwl-naturkundemuseum-muenster.de/" target="_blank"> <img style="padding:10px" src="/static/img/logo_lwl.png">
+                    <a href="https://www.lwl-naturkundemuseum-muenster.de/" target="_blank"> <img style="padding:10px"
+                            src="/static/img/logo_lwl.png">
                 </div>
                 <div class="col-md-2" style="padding-bottom: 15px;">
-                    <a href="https://www.allwetterzoo.de/" target="_blank"> <img style="padding:10px" src="/static/img/logo_zoo.png">
+                    <a href="https://www.allwetterzoo.de/" target="_blank"> <img style="padding:10px"
+                            src="/static/img/logo_zoo.png">
                 </div>
                 <div class="col-md-2" style="padding-bottom: 15px;">
-                    <a href="https://www.uni-muenster.de/AFO/" target="_blank"> <img style="padding:10px" src="/static/img/AFO.png">
+                    <a href="https://www.uni-muenster.de/AFO/" target="_blank"> <img style="padding:10px"
+                            src="/static/img/AFO.png">
                 </div>
                 <div class="col-md-2" style="padding-bottom: 15px;">
-                    <a href="https://www.buergerschaffenwissen.de/" target="_blank"> <img style="padding:10px" src="/static/img/BsW_Logo.png"/> </a>
+                    <a href="https://www.buergerschaffenwissen.de/" target="_blank"> <img style="padding:10px"
+                            src="/static/img/BsW_Logo.png" /> </a>
                 </div>
             </div>
             <div class="row gx-5 align-items-center" style="padding-bottom: 15px;">
                 <div class="col-md-1" style="padding-bottom: 15px;">
                 </div>
                 <div class="col-md-2" style="padding-bottom: 15px;">
-                    <a href="https://www.kreis-steinfurt.de/kv_steinfurt/Kreisportrait/Kreislehrgarten/" target="_blank"> <img style="padding:10px" src="/static/img/Kreislehrgarten_logo.png"> </a>
+                    <a href="https://www.kreis-steinfurt.de/kv_steinfurt/Kreisportrait/Kreislehrgarten/"
+                        target="_blank"> <img style="padding:10px" src="/static/img/Kreislehrgarten_logo.png"> </a>
                 </div>
                 <div class="col-md-2" style="padding-bottom: 15px;">
-                    <a href="https://www.kreis-steinfurt.de/kv_steinfurt/Home/" target="_blank"> <img style="padding:10px" src="/static/img/logo_steinfurth.png"> </a>
+                    <a href="https://www.kreis-steinfurt.de/kv_steinfurt/Home/" target="_blank"> <img
+                            style="padding:10px" src="/static/img/logo_steinfurth.png"> </a>
                 </div>
                 <div class="col-md-2" style="padding-bottom: 15px;">
-                    <a href="https://www.uni-muenster.de/BotanischerGarten/" target="_blank"> <img style="padding:20px" src="/static/img/logo_botanischer_garten.svg"> </a>
+                    <a href="https://www.uni-muenster.de/BotanischerGarten/" target="_blank"> <img style="padding:20px"
+                            src="/static/img/logo_botanischer_garten.svg"> </a>
                 </div>
                 <div class="col-md-2" style="padding-bottom: 15px;">
-                    <a href="https://www.uni-muenster.de/Stiftung-WWU/foerderprojekte/citizenscience.html" target="_blank"> <img style="padding:10px" src="/static/img/CS_Logo.jpg"> </a>
+                    <a href="https://www.uni-muenster.de/Stiftung-WWU/foerderprojekte/citizenscience.html"
+                        target="_blank"> <img style="padding:10px" src="/static/img/CS_Logo.jpg"> </a>
                 </div>
                 <div class="col-md-2" style="padding-bottom: 15px;">
-                    <a href="https://www.uni-muenster.de/" target="_blank"> <img style="padding:10px" src="/static/img/WWUMuenster_Logo_2021_rgb.png"> </a>
+                    <a href="https://www.uni-muenster.de/" target="_blank"> <img style="padding:10px"
+                            src="/static/img/WWUMuenster_Logo_2021_rgb.png"> </a>
                 </div>
                 <div class="col-md-1" style="padding-bottom: 15px;">
                 </div>
@@ -502,13 +599,13 @@ https://templatemo.com/tm-526-vanilla
                 //assign width and height to your v unit elements here
             }
 
-            $(window).scroll(function() {
-    if ($(window).scrollTop() > 56) {
-      $(".navbar").addClass("bg-dark");
-    } else {
-      $(".navbar").removeClass("bg-dark");
-    }
-  });
+            $(window).scroll(function () {
+                if ($(window).scrollTop() > 56) {
+                    $(".navbar").addClass("bg-dark");
+                } else {
+                    $(".navbar").removeClass("bg-dark");
+                }
+            });
 
 
 
