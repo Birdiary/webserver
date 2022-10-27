@@ -104,12 +104,12 @@ class CreateStation extends React.Component {
   };
 
   handleChecked = (event) => {
-    console.log(event.target.checked)
+    ////console.log(event.target.checked)
     this.setState({ checked: event.target.checked });
   };
 
   handleSenseboxChecked = (event) => {
-    console.log(event.target.checked)
+    ////console.log(event.target.checked)
     this.setState({ senseboxChecked: event.target.checked });
   };
 
@@ -123,12 +123,9 @@ class CreateStation extends React.Component {
       "mail": { "adresses": this.state.mail },
       "createSensebox": this.state.senseboxChecked
     }
-    console.log(payload)
     requests.sendStation(payload)
       .then(function (res) {
         var id = res.data.id
-        console.log(res)
-        console.log(id)
         if (res.data.sensebox_id != '') {
           var createdSensebox = true;
         }
@@ -179,7 +176,6 @@ class CreateStation extends React.Component {
         <div >
           <MapContainer center={center} zoom={13} style={{ height: "50vh", width: "50vw", display: "inline-block" }}
             whenReady={(map) => {
-              console.log(map);
               map.target.on("click", function (e) {
                 const { lat, lng } = e.latlng;
                 const pos = { lat: lat, lng: lng }

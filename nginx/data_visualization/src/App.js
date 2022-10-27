@@ -9,6 +9,7 @@ import Header from './Navbar/Navbar';
 
 import './App.css';
 import { useNavigate, Link } from 'react-router-dom'; 
+import Movement from './Movement/Movement';
 
 
 
@@ -64,6 +65,7 @@ class App extends React.Component {
           <Routes>
           <Route exact path="/view" element={<OwnMap language={this.state.language} changeLang={this.changeLang}/>} />
           <Route exact path="/view/station/:id" element={<StationView language={this.state.language} />}></Route>
+          <Route path="/view/station/:id/:mov_id" element={<Movement language={this.state.language} />}></Route>
           <Route path="/view/createStation" element={<Createstation language={this.state.language} />}></Route>
           <Route path="/view/validation" element={<Validation language={this.state.language} />}></Route>
           </Routes>

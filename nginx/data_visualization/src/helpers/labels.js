@@ -1,2898 +1,4980 @@
-const options =[
-    {
-        "label": "Haemorhous cassinii"
+const options = {
+    "Haussperling": {
+        "latinName": "Passer domesticus",
+        "germanName": "Haussperling"
+    },
+    "Kohlmeise": {
+        "latinName": "Parus major",
+        "germanName": "Kohlmeise"
+    },
+    "Blaumeise": {
+        "latinName": "Cyanistes caeruleus",
+        "germanName": "Blaumeise"
+    },
+    "Rotkehlchen": {
+        "latinName": "Erithacus rubecula",
+        "germanName": "Rotkehlchen"
+    },
+    "Amsel": {
+        "latinName": "Turdus merula",
+        "germanName": "Amsel"
+    },
+    "Alpenstrandlaeufer": {
+        "latinName": "Calidris alpina",
+        "germanName": "Alpenstrandlaeufer"
+    },
+    "Austernfischer": {
+        "latinName": "Haematopus ostralegus",
+        "germanName": "Austernfischer"
+    },
+    "Aztekenmoewe": {
+        "latinName": "Leucophaeus atricilla",
+        "germanName": "Aztekenmoewe"
+    },
+    "Bachstelze": {
+        "latinName": "Motacilla alba",
+        "germanName": "Bachstelze"
+    },
+    "Bahamaente": {
+        "latinName": "Anas bahamensis",
+        "germanName": "Bahamaente"
+    },
+    "Bairdstrandlaeufer": {
+        "latinName": "Calidris bairdii",
+        "germanName": "Bairdstrandlaeufer"
+    },
+    "Basstoelpel": {
+        "latinName": "Morus bassanus",
+        "germanName": "Basstoelpel"
+    },
+    "Baumfalke": {
+        "latinName": "Falco subbuteo",
+        "germanName": "Baumfalke"
+    },
+    "Bekassine": {
+        "latinName": "Gallinago gallinago",
+        "germanName": "Bekassine"
+    },
+    "Bergente": {
+        "latinName": "Aythya marila",
+        "germanName": "Bergente"
+    },
+    "Bergfink": {
+        "latinName": "Fringilla montifringilla",
+        "germanName": "Bergfink"
+    },
+    "Bienenfresser": {
+        "latinName": "Merops apiaster",
+        "germanName": "Bienenfresser"
+    },
+    "Bindenkreuzschnabel": {
+        "latinName": "Loxia leucoptera",
+        "germanName": "Bindenkreuzschnabel"
+    },
+    "Bindenstrandlaeufer": {
+        "latinName": "Calidris himantopus",
+        "germanName": "Bindenstrandlaeufer"
+    },
+    "Bindentaucher": {
+        "latinName": "Podilymbus podiceps",
+        "germanName": "Bindentaucher"
+    },
+    "Blaessgans": {
+        "latinName": "Anser albifrons",
+        "germanName": "Blaessgans"
+    },
+    "Blaesshuhn": {
+        "latinName": "Fulica atra",
+        "germanName": "Blaesshuhn"
+    },
+    "Blaukehlchen": {
+        "latinName": "Luscinia svecica",
+        "germanName": "Blaukehlchen"
+    },
+    "Blaumerle": {
+        "latinName": "Monticola solitarius",
+        "germanName": "Blaumerle"
+    },
+    "Blauracke": {
+        "latinName": "Coracias garrulus",
+        "germanName": "Blauracke"
+    },
+    "Bonapartemoewe": {
+        "latinName": "Chroicocephalus philadelphia",
+        "germanName": "Bonapartemoewe"
     },
-    {
-        "label": "Aramus guarauna"
+    "Brachvogel": {
+        "latinName": "Numenius arquata",
+        "germanName": "Brachvogel"
     },
-    {
-        "label": "Rupornis magnirostris"
+    "Brandgans": {
+        "latinName": "Tadorna tadorna",
+        "germanName": "Brandgans"
     },
-    {
-        "label": "Cyanocitta cristata"
+    "Brandseeschwalbe": {
+        "latinName": "Thalasseus sandvicensis",
+        "germanName": "Brandseeschwalbe"
     },
-    {
-        "label": "Cyanocitta stelleri"
+    "Braunkehlchen": {
+        "latinName": "Saxicola rubetra",
+        "germanName": "Braunkehlchen"
     },
-    {
-        "label": "Balearica regulorum"
+    "Braunkopf-Kuhstaerling": {
+        "latinName": "Molothrus ater",
+        "germanName": "Braunkopf-Kuhstaerling"
     },
-    {
-        "label": "Pyrocephalus rubinus"
+    "Brautente": {
+        "latinName": "Aix sponsa",
+        "germanName": "Brautente"
     },
-    {
-        "label": "Recurvirostra americana"
+    "Brillenente": {
+        "latinName": "Melanitta perspicillata",
+        "germanName": "Brillenente"
     },
-    {
-        "label": "Ardeotis kori"
+    "Bruchwasserlaeufer": {
+        "latinName": "Tringa glareola",
+        "germanName": "Bruchwasserlaeufer"
     },
-    {
-        "label": "Pica nuttalli"
+    "Buchfink": {
+        "latinName": "Fringilla coelebs",
+        "germanName": "Buchfink"
     },
-    {
-        "label": "Perisoreus canadensis"
+    "Bueffelkopfente": {
+        "latinName": "Bucephala albeola",
+        "germanName": "Bueffelkopfente"
     },
-    {
-        "label": "Antigone canadensis"
+    "Buntfalke": {
+        "latinName": "Falco sparverius",
+        "germanName": "Buntfalke"
     },
-    {
-        "label": "Parkesia noveboracensis"
+    "Buntfuss-Sturmschwalbe": {
+        "latinName": "Oceanites oceanicus",
+        "germanName": "Buntfuss-Sturmschwalbe"
     },
-    {
-        "label": "Ardea herodias occidentalis"
+    "Buntspecht": {
+        "latinName": "Dendrocopos major",
+        "germanName": "Buntspecht"
     },
-    {
-        "label": "Porzana carolina"
+    "Carolinataube": {
+        "latinName": "Zenaida macroura",
+        "germanName": "Carolinataube"
     },
-    {
-        "label": "Anas platyrhynchos diazi"
+    "Dachsammer": {
+        "latinName": "Zonotrichia leucophrys",
+        "germanName": "Dachsammer"
     },
-    {
-        "label": "Motacilla cinerea"
+    "Dorngrasmuecke": {
+        "latinName": "Sylvia communis",
+        "germanName": "Dorngrasmuecke"
     },
-    {
-        "label": "Empidonax difficilis"
+    "Dreifarbenreiher": {
+        "latinName": "Egretta tricolor",
+        "germanName": "Dreifarbenreiher"
     },
-    {
-        "label": "Empidonax minimus"
+    "Dreizehenmoewe": {
+        "latinName": "Rissa tridactyla",
+        "germanName": "Dreizehenmoewe"
     },
-    {
-        "label": "Empidonax fulvifrons"
+    "Drosseluferlaeufer": {
+        "latinName": "Actitis macularius",
+        "germanName": "Drosseluferlaeufer"
     },
-    {
-        "label": "Empidonax traillii"
+    "Dunkelente": {
+        "latinName": "Anas rubripes",
+        "germanName": "Dunkelente"
     },
-    {
-        "label": "Empidonax hammondii"
+    "Eichelhaeher": {
+        "latinName": "Garrulus glandarius",
+        "germanName": "Eichelhaeher"
     },
-    {
-        "label": "Empidonax occidentalis"
+    "Eiderente": {
+        "latinName": "Somateria mollissima",
+        "germanName": "Eiderente"
     },
-    {
-        "label": "Rallus limicola"
+    "Einsiedler-Musendrossel": {
+        "latinName": "Catharus guttatus",
+        "germanName": "Einsiedler-Musendrossel"
     },
-    {
-        "label": "Grus grus"
+    "Eisente": {
+        "latinName": "Clangula hyemalis",
+        "germanName": "Eisente"
     },
-    {
-        "label": "Quiscalus major"
+    "Eismoewe": {
+        "latinName": "Larus hyperboreus",
+        "germanName": "Eismoewe"
     },
-    {
-        "label": "Branta leucopsis"
+    "Eissturmvogel": {
+        "latinName": "Fulmarus glacialis",
+        "germanName": "Eissturmvogel"
     },
-    {
-        "label": "Cyanocorax yucatanicus"
+    "Eistaucher": {
+        "latinName": "Gavia immer",
+        "germanName": "Eistaucher"
     },
-    {
-        "label": "Cyanocorax yncas"
+    "Eisvogel": {
+        "latinName": "Alcedo atthis",
+        "germanName": "Eisvogel"
     },
-    {
-        "label": "Oceanites oceanicus"
+    "Elster": {
+        "latinName": "Pica pica",
+        "germanName": "Elster"
     },
-    {
-        "label": "Quiscalus niger"
+    "Erlenzeisig": {
+        "latinName": "Spinus spinus",
+        "germanName": "Erlenzeisig"
     },
-    {
-        "label": "Psilorhinus morio"
+    "Feldlerche": {
+        "latinName": "Alauda arvensis",
+        "germanName": "Feldlerche"
     },
-    {
-        "label": "Megarynchus pitangua"
+    "Feldsperling": {
+        "latinName": "Passer montanus",
+        "germanName": "Feldsperling"
     },
-    {
-        "label": "Gallinula tenebrosa"
+    "Fichtenkreuzschnabel": {
+        "latinName": "Loxia curvirostra",
+        "germanName": "Fichtenkreuzschnabel"
     },
-    {
-        "label": "Gallus gallus domesticus"
+    "Fischadler": {
+        "latinName": "Pandion haliaetus",
+        "germanName": "Fischadler"
     },
-    {
-        "label": "Numida meleagris"
+    "Flussregenpfeifer": {
+        "latinName": "Charadrius dubius",
+        "germanName": "Flussregenpfeifer"
     },
-    {
-        "label": "Junco hyemalis caniceps"
+    "Flussseeschwalbe": {
+        "latinName": "Sterna hirundo",
+        "germanName": "Flussseeschwalbe"
     },
-    {
-        "label": "Tyrannus vociferans"
+    "Flussuferlaeufer": {
+        "latinName": "Actitis hypoleucos",
+        "germanName": "Flussuferlaeufer"
     },
-    {
-        "label": "Tyrannus tyrannus"
+    "Fuchsammer": {
+        "latinName": "Passerella iliaca",
+        "germanName": "Fuchsammer"
     },
-    {
-        "label": "Tyrannus forficatus"
+    "Gaensegeier": {
+        "latinName": "Gyps fulvus",
+        "germanName": "Gaensegeier"
     },
-    {
-        "label": "Tyrannus crassirostris"
+    "Gaensesaeger": {
+        "latinName": "Mergus merganser",
+        "germanName": "Gaensesaeger"
     },
-    {
-        "label": "Tyrannus verticalis"
+    "Gartenrotschwanz": {
+        "latinName": "Phoenicurus phoenicurus",
+        "germanName": "Gartenrotschwanz"
     },
-    {
-        "label": "Tyrannus savana"
+    "Gebirgsstelze": {
+        "latinName": "Motacilla cinerea",
+        "germanName": "Gebirgsstelze"
     },
-    {
-        "label": "Gallirallus australis"
+    "Gelbkehlvireo": {
+        "latinName": "Vireo flavifrons",
+        "germanName": "Gelbkehlvireo"
     },
-    {
-        "label": "Calocitta formosa"
+    "Gelbkopfamazone": {
+        "latinName": "Amazona oratrix",
+        "germanName": "Gelbkopfamazone"
     },
-    {
-        "label": "Calocitta colliei"
+    "Gelbschenkel": {
+        "latinName": "Tringa flavipes",
+        "germanName": "Gelbschenkel"
     },
-    {
-        "label": "Fulica americana"
+    "Gimpel": {
+        "latinName": "Pyrrhula pyrrhula",
+        "germanName": "Gimpel"
     },
-    {
-        "label": "Pachyramphus aglaiae"
+    "Girlitz": {
+        "latinName": "Serinus serinus",
+        "germanName": "Girlitz"
     },
-    {
-        "label": "Buteo lagopus"
+    "Goldammer": {
+        "latinName": "Emberiza citrinella",
+        "germanName": "Goldammer"
     },
-    {
-        "label": "Cygnus atratus"
+    "Graslaeufer": {
+        "latinName": "Calidris subruficollis",
+        "germanName": "Graslaeufer"
     },
-    {
-        "label": "Philesturnus rufusater"
+    "Grauammer": {
+        "latinName": "Emberiza calandra",
+        "germanName": "Grauammer"
     },
-    {
-        "label": "Larus marinus"
+    "Graubrust-Strandlaeufer": {
+        "latinName": "Calidris melanotos",
+        "germanName": "Graubrust-Strandlaeufer"
     },
-    {
-        "label": "Pitangus sulphuratus"
+    "Graugans": {
+        "latinName": "Anser anser",
+        "germanName": "Graugans"
     },
-    {
-        "label": "Anas rubripes"
+    "Graukopf-Purpurhuhn": {
+        "latinName": "Porphyrio poliocephalus",
+        "germanName": "Graukopf-Purpurhuhn"
     },
-    {
-        "label": "Anthus novaeseelandiae novaeseelandiae"
+    "Graureiher": {
+        "latinName": "Ardea cinerea",
+        "germanName": "Graureiher"
     },
-    {
-        "label": "Sayornis phoebe"
+    "Grauschnaepper": {
+        "latinName": "Muscicapa striata",
+        "germanName": "Grauschnaepper"
     },
-    {
-        "label": "Sayornis nigricans"
+    "Grauwangen-Musendrossel": {
+        "latinName": "Catharus minimus",
+        "germanName": "Grauwangen-Musendrossel"
     },
-    {
-        "label": "Tityra semifasciata"
+    "Gruenfink": {
+        "latinName": "Chloris chloris",
+        "germanName": "Gruenfink"
     },
-    {
-        "label": "Dryocopus lineatus"
+    "Gruenmantel-Waldsaenger": {
+        "latinName": "Setophaga virens",
+        "germanName": "Gruenmantel-Waldsaenger"
     },
-    {
-        "label": "Porphyrio melanotus"
+    "Gruenschenkel": {
+        "latinName": "Tringa nebularia",
+        "germanName": "Gruenschenkel"
     },
-    {
-        "label": "Anas bahamensis"
+    "Gruenspecht": {
+        "latinName": "Picus viridis",
+        "germanName": "Gruenspecht"
     },
-    {
-        "label": "Egretta novaehollandiae"
+    "Gryllteiste": {
+        "latinName": "Cepphus grylle",
+        "germanName": "Gryllteiste"
     },
-    {
-        "label": "Anas crecca carolinensis"
+    "Habicht": {
+        "latinName": "Accipiter gentilis",
+        "germanName": "Habicht"
     },
-    {
-        "label": "Alectoris chukar"
+    "Hakengimpel": {
+        "latinName": "Pinicola enucleator",
+        "germanName": "Hakengimpel"
     },
-    {
-        "label": "Tachybaptus dominicus"
+    "Halsbandsittich": {
+        "latinName": "Psittacula krameri",
+        "germanName": "Halsbandsittich"
     },
-    {
-        "label": "Artemisiospiza belli"
+    "Haubenlerche": {
+        "latinName": "Galerida cristata",
+        "germanName": "Haubenlerche"
     },
-    {
-        "label": "Gallus gallus"
+    "Haubentaucher": {
+        "latinName": "Podiceps cristatus",
+        "germanName": "Haubentaucher"
     },
-    {
-        "label": "Cardinalis sinuatus"
+    "Hausrotschwanz": {
+        "latinName": "Phoenicurus ochruros",
+        "germanName": "Hausrotschwanz"
     },
-    {
-        "label": "Cardinalis cardinalis"
+    "Heckenbraunelle": {
+        "latinName": "Prunella modularis",
+        "germanName": "Heckenbraunelle"
     },
-    {
-        "label": "Melospiza lincolnii"
+    "Heringsmoewe": {
+        "latinName": "Larus fuscus",
+        "germanName": "Heringsmoewe"
     },
-    {
-        "label": "Podilymbus podiceps"
+    "Hirtenmaina": {
+        "latinName": "Acridotheres tristis",
+        "germanName": "Hirtenmaina"
     },
-    {
-        "label": "Melospiza georgiana"
+    "Hoeckerschwan": {
+        "latinName": "Cygnus olor",
+        "germanName": "Hoeckerschwan"
     },
-    {
-        "label": "Meleagris gallopavo"
+    "Indigofink": {
+        "latinName": "Passerina cyanea",
+        "germanName": "Indigofink"
     },
-    {
-        "label": "Meleagris ocellata"
+    "Jagdfasan": {
+        "latinName": "Phasianus colchicus",
+        "germanName": "Jagdfasan"
     },
-    {
-        "label": "Lagopus lagopus"
+    "Kampflaeufer": {
+        "latinName": "Calidris pugnax",
+        "germanName": "Kampflaeufer"
     },
-    {
-        "label": "Spizella atrogularis"
+    "Kanadabergente": {
+        "latinName": "Aythya affinis",
+        "germanName": "Kanadabergente"
     },
-    {
-        "label": "Pyrrhocorax graculus"
+    "Kanadagans": {
+        "latinName": "Branta canadensis",
+        "germanName": "Kanadagans"
     },
-    {
-        "label": "Spizella breweri"
+    "Kanadakranich": {
+        "latinName": "Antigone canadensis",
+        "germanName": "Kanadakranich"
     },
-    {
-        "label": "Sialia currucoides"
+    "Kappensaeger": {
+        "latinName": "Lophodytes cucullatus",
+        "germanName": "Kappensaeger"
     },
-    {
-        "label": "Spizella pusilla"
+    "Kappensturmtaucher": {
+        "latinName": "Ardenna gravis",
+        "germanName": "Kappensturmtaucher"
     },
-    {
-        "label": "Anas superciliosa"
+    "Katzenspottdrossel": {
+        "latinName": "Dumetella carolinensis",
+        "germanName": "Katzenspottdrossel"
     },
-    {
-        "label": "Passerella iliaca"
+    "Kernbeisser": {
+        "latinName": "Coccothraustes coccothraustes",
+        "germanName": "Kernbeisser"
     },
-    {
-        "label": "Phoenicopterus ruber"
+    "Kiebitz": {
+        "latinName": "Vanellus vanellus",
+        "germanName": "Kiebitz"
     },
-    {
-        "label": "Sylvia atricapilla"
+    "Kiebitzregenpfeifer": {
+        "latinName": "Pluvialis squatarola",
+        "germanName": "Kiebitzregenpfeifer"
     },
-    {
-        "label": "Vireo bellii"
+    "Kleiber": {
+        "latinName": "Sitta europaea",
+        "germanName": "Kleiber"
     },
-    {
-        "label": "Vireo plumbeus"
+    "Knutt": {
+        "latinName": "Calidris canutus",
+        "germanName": "Knutt"
     },
-    {
-        "label": "Vireo philadelphicus"
+    "Kolbenente": {
+        "latinName": "Netta rufina",
+        "germanName": "Kolbenente"
     },
-    {
-        "label": "Vireo flavifrons"
+    "Kolkrabe": {
+        "latinName": "Corvus corax",
+        "germanName": "Kolkrabe"
     },
-    {
-        "label": "Vireo olivaceus"
+    "Kormoran": {
+        "latinName": "Phalacrocorax carbo",
+        "germanName": "Kormoran"
     },
-    {
-        "label": "Zonotrichia querula"
+    "Kornweihe": {
+        "latinName": "Circus cyaneus",
+        "germanName": "Kornweihe"
     },
-    {
-        "label": "Vireo huttoni"
+    "Kragenente": {
+        "latinName": "Histrionicus histrionicus",
+        "germanName": "Kragenente"
     },
-    {
-        "label": "Zonotrichia albicollis"
+    "Kranich": {
+        "latinName": "Grus grus",
+        "germanName": "Kranich"
     },
-    {
-        "label": "Zonotrichia atricapilla"
+    "Krickente": {
+        "latinName": "Anas crecca",
+        "germanName": "Krickente"
     },
-    {
-        "label": "Emberiza citrinella"
+    "Kubaflamingo": {
+        "latinName": "Phoenicopterus ruber",
+        "germanName": "Kubaflamingo"
     },
-    {
-        "label": "Bucephala islandica"
+    "Kuckuck": {
+        "latinName": "Cuculus canorus",
+        "germanName": "Kuckuck"
     },
-    {
-        "label": "Emberiza schoeniclus"
+    "Kuestenreiher": {
+        "latinName": "Egretta gularis",
+        "germanName": "Kuestenreiher"
     },
-    {
-        "label": "Vireo gilvus"
+    "Kuestenseeschwalbe": {
+        "latinName": "Sterna paradisaea",
+        "germanName": "Kuestenseeschwalbe"
     },
-    {
-        "label": "Serinus serinus"
+    "Kuhreiher": {
+        "latinName": "Bubulcus ibis",
+        "germanName": "Kuhreiher"
     },
-    {
-        "label": "Serinus mozambicus"
+    "Lachmoewe": {
+        "latinName": "Chroicocephalus ridibundus",
+        "germanName": "Lachmoewe"
     },
-    {
-        "label": "Lophura leucomelanos"
+    "Lachseeschwalbe": {
+        "latinName": "Gelochelidon nilotica",
+        "germanName": "Lachseeschwalbe"
     },
-    {
-        "label": "Euphonia elegantissima"
+    "Lazulifink": {
+        "latinName": "Passerina amoena",
+        "germanName": "Lazulifink"
     },
-    {
-        "label": "Euphonia hirundinacea"
+    "Loeffler": {
+        "latinName": "Platalea leucorodia",
+        "germanName": "Loeffler"
     },
-    {
-        "label": "Euphonia affinis"
+    "Maeusebussard": {
+        "latinName": "Buteo buteo",
+        "germanName": "Maeusebussard"
     },
-    {
-        "label": "Agelaius tricolor"
+    "Mandarinente": {
+        "latinName": "Aix galericulata",
+        "germanName": "Mandarinente"
     },
-    {
-        "label": "Momotus lessonii"
+    "Mantelmoewe": {
+        "latinName": "Larus marinus",
+        "germanName": "Mantelmoewe"
     },
-    {
-        "label": "Zosterops japonicus"
+    "Mauersegler": {
+        "latinName": "Apus apus",
+        "germanName": "Mauersegler"
     },
-    {
-        "label": "Phalacrocorax pelagicus"
+    "Meerstrandlaeufer": {
+        "latinName": "Calidris maritima",
+        "germanName": "Meerstrandlaeufer"
     },
-    {
-        "label": "Icterus cucullatus"
+    "Mehlschwalbe": {
+        "latinName": "Delichon urbicum",
+        "germanName": "Mehlschwalbe"
     },
-    {
-        "label": "Icterus graduacauda"
+    "Meisenwaldsaenger": {
+        "latinName": "Setophaga americana",
+        "germanName": "Meisenwaldsaenger"
     },
-    {
-        "label": "Motacilla aguimp"
+    "Merlin": {
+        "latinName": "Falco columbarius",
+        "germanName": "Merlin"
     },
-    {
-        "label": "Anas superciliosa \u00c3\u2014 platyrhynchos"
+    "Misteldrossel": {
+        "latinName": "Turdus viscivorus",
+        "germanName": "Misteldrossel"
     },
-    {
-        "label": "Icterus pustulatus"
+    "Mittelmeermoewe": {
+        "latinName": "Larus michahellis",
+        "germanName": "Mittelmeermoewe"
     },
-    {
-        "label": "Icterus gularis"
+    "Mittelsaeger": {
+        "latinName": "Mergus serrator",
+        "germanName": "Mittelsaeger"
     },
-    {
-        "label": "Carduelis cannabina"
+    "Moenchsgrasmuecke": {
+        "latinName": "Sylvia atricapilla",
+        "germanName": "Moenchsgrasmuecke"
     },
-    {
-        "label": "Catharus minimus"
+    "Moorschlammlaeufer": {
+        "latinName": "Limnodromus griseus",
+        "germanName": "Moorschlammlaeufer"
     },
-    {
-        "label": "Amaurornis phoenicurus"
+    "Moschusente": {
+        "latinName": "Cairina moschata",
+        "germanName": "Moschusente"
     },
-    {
-        "label": "Pavo cristatus"
+    "Nachtreiher": {
+        "latinName": "Nycticorax nycticorax",
+        "germanName": "Nachtreiher"
     },
-    {
-        "label": "Rallus crepitans"
+    "Nebelkraehe": {
+        "latinName": "Corvus cornix",
+        "germanName": "Nebelkraehe"
     },
-    {
-        "label": "Nestor meridionalis septentrionalis"
+    "Neuntoeter": {
+        "latinName": "Lanius collurio",
+        "germanName": "Neuntoeter"
     },
-    {
-        "label": "Pipilo chlorurus"
+    "Nilgans": {
+        "latinName": "Alopochen aegyptiaca",
+        "germanName": "Nilgans"
     },
-    {
-        "label": "Pipilo maculatus"
+    "Noddi": {
+        "latinName": "Anous stolidus",
+        "germanName": "Noddi"
     },
-    {
-        "label": "Pipilo erythrophthalmus"
+    "Odinshuehnchen": {
+        "latinName": "Phalaropus lobatus",
+        "germanName": "Odinshuehnchen"
     },
-    {
-        "label": "Cairina moschata domestica"
+    "Ohrenlerche": {
+        "latinName": "Eremophila alpestris",
+        "germanName": "Ohrenlerche"
     },
-    {
-        "label": "Phalacrocorax varius"
+    "Ohrenscharbe": {
+        "latinName": "Phalacrocorax auritus",
+        "germanName": "Ohrenscharbe"
     },
-    {
-        "label": "Picoides dorsalis"
+    "Ohrentaucher": {
+        "latinName": "Podiceps auritus",
+        "germanName": "Ohrentaucher"
     },
-    {
-        "label": "Picoides nuttallii"
+    "Papageitaucher": {
+        "latinName": "Fratercula arctica",
+        "germanName": "Papageitaucher"
     },
-    {
-        "label": "Picoides scalaris"
+    "Pazifikpieper": {
+        "latinName": "Anthus rubescens",
+        "germanName": "Pazifikpieper"
     },
-    {
-        "label": "Callipepla gambelii"
+    "Pazifiktrauerente": {
+        "latinName": "Melanitta americana",
+        "germanName": "Pazifiktrauerente"
     },
-    {
-        "label": "Pyrrhula pyrrhula"
+    "Pfuhlschnepfe": {
+        "latinName": "Limosa lapponica",
+        "germanName": "Pfuhlschnepfe"
     },
-    {
-        "label": "Phalacrocorax brasilianus"
+    "Pharaonenibis": {
+        "latinName": "Threskiornis aethiopicus",
+        "germanName": "Pharaonenibis"
     },
-    {
-        "label": "Picoides pubescens"
+    "Polarmoewe": {
+        "latinName": "Larus glaucoides",
+        "germanName": "Polarmoewe"
     },
-    {
-        "label": "Colinus virginianus"
+    "Praerie-Goldregenpfeifer": {
+        "latinName": "Pluvialis dominica",
+        "germanName": "Praerie-Goldregenpfeifer"
     },
-    {
-        "label": "Sporophila torqueola"
+    "Praerielaeufer": {
+        "latinName": "Bartramia longicauda",
+        "germanName": "Praerielaeufer"
     },
-    {
-        "label": "Picoides villosus"
+    "Praeriemoewe": {
+        "latinName": "Leucophaeus pipixcan",
+        "germanName": "Praeriemoewe"
     },
-    {
-        "label": "Calidris pusilla"
+    "Purpurreiher": {
+        "latinName": "Ardea purpurea",
+        "germanName": "Purpurreiher"
     },
-    {
-        "label": "Picoides arcticus"
+    "Rabenkraehe": {
+        "latinName": "Corvus corone",
+        "germanName": "Rabenkraehe"
     },
-    {
-        "label": "Aythya marila"
+    "Rallenreiher": {
+        "latinName": "Ardeola ralloides",
+        "germanName": "Rallenreiher"
     },
-    {
-        "label": "Phaethon aethereus"
+    "Raubseeschwalbe": {
+        "latinName": "Hydroprogne caspia",
+        "germanName": "Raubseeschwalbe"
     },
-    {
-        "label": "Sturnella magna"
+    "Raubwuerger": {
+        "latinName": "Lanius excubitor",
+        "germanName": "Raubwuerger"
     },
-    {
-        "label": "Melopsittacus undulatus"
+    "Rauchschwalbe": {
+        "latinName": "Hirundo rustica",
+        "germanName": "Rauchschwalbe"
     },
-    {
-        "label": "Aythya affinis"
+    "Raufussbussard": {
+        "latinName": "Buteo lagopus",
+        "germanName": "Raufussbussard"
     },
-    {
-        "label": "Aythya novaeseelandiae"
+    "Regenbrachvogel": {
+        "latinName": "Numenius phaeopus",
+        "germanName": "Regenbrachvogel"
     },
-    {
-        "label": "Cyrtonyx montezumae"
+    "Reiherente": {
+        "latinName": "Aythya fuligula",
+        "germanName": "Reiherente"
     },
-    {
-        "label": "Pelecanus occidentalis"
+    "Riesentafelente": {
+        "latinName": "Aythya valisineria",
+        "germanName": "Riesentafelente"
     },
-    {
-        "label": "Cinclus cinclus"
+    "Ringelgans": {
+        "latinName": "Branta bernicla",
+        "germanName": "Ringelgans"
     },
-    {
-        "label": "Chen rossii"
+    "Ringeltaube": {
+        "latinName": "Columba palumbus",
+        "germanName": "Ringeltaube"
     },
-    {
-        "label": "Callipepla californica"
+    "Ringschnabelente": {
+        "latinName": "Aythya collaris",
+        "germanName": "Ringschnabelente"
     },
-    {
-        "label": "Quiscalus quiscula"
+    "Ringschnabelmoewe": {
+        "latinName": "Larus delawarensis",
+        "germanName": "Ringschnabelmoewe"
     },
-    {
-        "label": "Quiscalus mexicanus"
+    "Rohrammer": {
+        "latinName": "Emberiza schoeniclus",
+        "germanName": "Rohrammer"
     },
-    {
-        "label": "Callipepla squamata"
+    "Rohrweihe": {
+        "latinName": "Circus aeruginosus",
+        "germanName": "Rohrweihe"
     },
-    {
-        "label": "Dryocopus pileatus"
+    "Rosaflamingo": {
+        "latinName": "Phoenicopterus roseus",
+        "germanName": "Rosaflamingo"
     },
-    {
-        "label": "Passerina caerulea"
+    "Rosapelikan": {
+        "latinName": "Pelecanus onocrotalus",
+        "germanName": "Rosapelikan"
     },
-    {
-        "label": "Amazilia beryllina"
+    "Rosenbrust-Kernknacker": {
+        "latinName": "Pheucticus ludovicianus",
+        "germanName": "Rosenbrust-Kernknacker"
     },
-    {
-        "label": "Geothlypis trichas"
+    "Rostgans": {
+        "latinName": "Tadorna ferruginea",
+        "germanName": "Rostgans"
     },
-    {
-        "label": "Trogon melanocephalus"
+    "Rotaugenvireo": {
+        "latinName": "Vireo olivaceus",
+        "germanName": "Rotaugenvireo"
     },
-    {
-        "label": "Sylvia communis"
+    "Rotgesichtloeffler": {
+        "latinName": "Platalea alba",
+        "germanName": "Rotgesichtloeffler"
     },
-    {
-        "label": "Pinicola enucleator"
+    "Rothalstaucher": {
+        "latinName": "Podiceps grisegena",
+        "germanName": "Rothalstaucher"
     },
-    {
-        "label": "Coccothraustes vespertinus"
+    "Rothuhn": {
+        "latinName": "Alectoris rufa",
+        "germanName": "Rothuhn"
     },
-    {
-        "label": "Coccothraustes coccothraustes"
+    "Rotkopfente": {
+        "latinName": "Aythya americana",
+        "germanName": "Rotkopfente"
     },
-    {
-        "label": "Vermivora chrysoptera"
+    "Rotmilan": {
+        "latinName": "Milvus milvus",
+        "germanName": "Rotmilan"
     },
-    {
-        "label": "Opisthocomus hoazin"
+    "Rotschenkel": {
+        "latinName": "Tringa totanus",
+        "germanName": "Rotschenkel"
     },
-    {
-        "label": "Setophaga coronata coronata"
+    "Russseeschwalbe": {
+        "latinName": "Onychoprion fuscatus",
+        "germanName": "Russseeschwalbe"
     },
-    {
-        "label": "Diglossa baritula"
+    "Saatkraehe": {
+        "latinName": "Corvus frugilegus",
+        "germanName": "Saatkraehe"
     },
-    {
-        "label": "Saltator coerulescens"
+    "Saebelschnaebler": {
+        "latinName": "Recurvirostra avosetta",
+        "germanName": "Saebelschnaebler"
     },
-    {
-        "label": "Saltator atriceps"
+    "Samtente": {
+        "latinName": "Melanitta fusca",
+        "germanName": "Samtente"
     },
-    {
-        "label": "Sicalis flaveola"
+    "Sanderling": {
+        "latinName": "Calidris alba",
+        "germanName": "Sanderling"
     },
-    {
-        "label": "Aix galericulata"
+    "Sandregenpfeifer": {
+        "latinName": "Charadrius hiaticula",
+        "germanName": "Sandregenpfeifer"
     },
-    {
-        "label": "Junco hyemalis hyemalis"
+    "Sandstrandlaeufer": {
+        "latinName": "Calidris pusilla",
+        "germanName": "Sandstrandlaeufer"
     },
-    {
-        "label": "Eupsittula canicularis"
+    "Schafstelze": {
+        "latinName": "Motacilla flava",
+        "germanName": "Schafstelze"
     },
-    {
-        "label": "Microcarbo melanoleucos"
+    "Schellente": {
+        "latinName": "Bucephala clangula",
+        "germanName": "Schellente"
     },
-    {
-        "label": "Piranga rubra"
+    "Schlangenadler": {
+        "latinName": "Circaetus gallicus",
+        "germanName": "Schlangenadler"
     },
-    {
-        "label": "Piranga olivacea"
+    "Schleiereule": {
+        "latinName": "Tyto alba",
+        "germanName": "Schleiereule"
     },
-    {
-        "label": "Piranga flava"
+    "Schmarotzerraubmoewe": {
+        "latinName": "Stercorarius parasiticus",
+        "germanName": "Schmarotzerraubmoewe"
     },
-    {
-        "label": "Amphispiza bilineata"
+    "Schmuckreiher": {
+        "latinName": "Egretta thula",
+        "germanName": "Schmuckreiher"
     },
-    {
-        "label": "Larus dominicanus"
+    "Schmuckseeschwalbe": {
+        "latinName": "Thalasseus elegans",
+        "germanName": "Schmuckseeschwalbe"
     },
-    {
-        "label": "Piaya cayana"
+    "Schneeammer": {
+        "latinName": "Plectrophenax nivalis",
+        "germanName": "Schneeammer"
     },
-    {
-        "label": "Aimophila ruficeps"
+    "Schneeeule": {
+        "latinName": "Bubo scandiacus",
+        "germanName": "Schneeeule"
     },
-    {
-        "label": "Melanerpes lewis"
+    "Schwalbenmoewe": {
+        "latinName": "Xema sabini",
+        "germanName": "Schwalbenmoewe"
     },
-    {
-        "label": "Melanerpes uropygialis"
+    "Schwanzmeise": {
+        "latinName": "Aegithalos caudatus",
+        "germanName": "Schwanzmeise"
     },
-    {
-        "label": "Passerculus sandwichensis"
+    "Schwarzhalstaucher": {
+        "latinName": "Podiceps nigricollis",
+        "germanName": "Schwarzhalstaucher"
     },
-    {
-        "label": "Melanerpes pucherani"
+    "Schwarzkehlchen": {
+        "latinName": "Saxicola rubicola",
+        "germanName": "Schwarzkehlchen"
     },
-    {
-        "label": "Salpinctes obsoletus"
+    "Schwarzkopf-Ruderente": {
+        "latinName": "Oxyura jamaicensis",
+        "germanName": "Schwarzkopf-Ruderente"
     },
-    {
-        "label": "Melanerpes carolinus"
+    "Schwarzmilan": {
+        "latinName": "Milvus migrans",
+        "germanName": "Schwarzmilan"
     },
-    {
-        "label": "Melanerpes chrysogenys"
+    "Schwarzschnabelkuckuck": {
+        "latinName": "Coccyzus erythropthalmus",
+        "germanName": "Schwarzschnabelkuckuck"
     },
-    {
-        "label": "Melanerpes formicivorus"
+    "Schwarzschwan": {
+        "latinName": "Cygnus atratus",
+        "germanName": "Schwarzschwan"
     },
-    {
-        "label": "Colaptes auratus"
+    "Seidenreiher": {
+        "latinName": "Egretta garzetta",
+        "germanName": "Seidenreiher"
     },
-    {
-        "label": "Basileuterus rufifrons"
+    "Seidenschwanz": {
+        "latinName": "Bombycilla garrulus",
+        "germanName": "Seidenschwanz"
     },
-    {
-        "label": "Larus michahellis"
+    "Sichelstrandlaeufer": {
+        "latinName": "Calidris ferruginea",
+        "germanName": "Sichelstrandlaeufer"
     },
-    {
-        "label": "Ramphocelus passerinii"
+    "Sichler": {
+        "latinName": "Plegadis falcinellus",
+        "germanName": "Sichler"
     },
-    {
-        "label": "Athene cunicularia"
+    "Silbermoewe": {
+        "latinName": "Larus argentatus",
+        "germanName": "Silbermoewe"
     },
-    {
-        "label": "Branta hutchinsii"
+    "Silberreiher": {
+        "latinName": "Ardea alba",
+        "germanName": "Silberreiher"
     },
-    {
-        "label": "Fringilla montifringilla"
+    "Singammer": {
+        "latinName": "Melospiza melodia",
+        "germanName": "Singammer"
     },
-    {
-        "label": "Fringilla coelebs"
+    "Singdrossel": {
+        "latinName": "Turdus philomelos",
+        "germanName": "Singdrossel"
     },
-    {
-        "label": "Junco hyemalis"
+    "Singschwan": {
+        "latinName": "Cygnus cygnus",
+        "germanName": "Singschwan"
     },
-    {
-        "label": "Cuculus canorus"
+    "Sommergoldhaehnchen": {
+        "latinName": "Regulus ignicapilla",
+        "germanName": "Sommergoldhaehnchen"
     },
-    {
-        "label": "Junco phaeonotus"
+    "Spatelente": {
+        "latinName": "Bucephala islandica",
+        "germanName": "Spatelente"
     },
-    {
-        "label": "Ammodramus nelsoni"
+    "Spatelraubmoewe": {
+        "latinName": "Stercorarius pomarinus",
+        "germanName": "Spatelraubmoewe"
     },
-    {
-        "label": "Ammodramus savannarum"
+    "Sperber": {
+        "latinName": "Accipiter nisus",
+        "germanName": "Sperber"
     },
-    {
-        "label": "Ammodramus maritimus"
+    "Sperbereule": {
+        "latinName": "Surnia ulula",
+        "germanName": "Sperbereule"
     },
-    {
-        "label": "Coccyzus erythropthalmus"
+    "Spiessente": {
+        "latinName": "Anas acuta",
+        "germanName": "Spiessente"
     },
-    {
-        "label": "Coccyzus minor"
+    "Spornammer": {
+        "latinName": "Calcarius lapponicus",
+        "germanName": "Spornammer"
     },
-    {
-        "label": "Coccyzus americanus"
+    "Spornkiebitz": {
+        "latinName": "Vanellus spinosus",
+        "germanName": "Spornkiebitz"
     },
-    {
-        "label": "Nucifraga columbiana"
+    "Star": {
+        "latinName": "Sturnus vulgaris",
+        "germanName": "Star"
     },
-    {
-        "label": "Crotophaga sulcirostris"
+    "Steinadler": {
+        "latinName": "Aquila chrysaetos",
+        "germanName": "Steinadler"
     },
-    {
-        "label": "Pooecetes gramineus"
+    "Steinkauz": {
+        "latinName": "Athene noctua",
+        "germanName": "Steinkauz"
     },
-    {
-        "label": "Arremonops rufivirgatus"
+    "Steinschmaetzer": {
+        "latinName": "Oenanthe oenanthe",
+        "germanName": "Steinschmaetzer"
     },
-    {
-        "label": "Geococcyx californianus"
+    "Steinwaelzer": {
+        "latinName": "Arenaria interpres",
+        "germanName": "Steinwaelzer"
     },
-    {
-        "label": "Geococcyx velox"
+    "Stelzenlaeufer": {
+        "latinName": "Himantopus himantopus",
+        "germanName": "Stelzenlaeufer"
     },
-    {
-        "label": "Coereba flaveola"
+    "Sterntaucher": {
+        "latinName": "Gavia stellata",
+        "germanName": "Sterntaucher"
     },
-    {
-        "label": "Passerina ciris"
+    "Stieglitz": {
+        "latinName": "Carduelis carduelis",
+        "germanName": "Stieglitz"
     },
-    {
-        "label": "Alectura lathami"
+    "Stockente": {
+        "latinName": "Anas platyrhynchos",
+        "germanName": "Stockente"
     },
-    {
-        "label": "Passerina leclancherii"
+    "Sturmmoewe": {
+        "latinName": "Larus canus",
+        "germanName": "Sturmmoewe"
     },
-    {
-        "label": "Passerina amoena"
+    "Sumpfohreule": {
+        "latinName": "Asio flammeus",
+        "germanName": "Sumpfohreule"
     },
-    {
-        "label": "Icteria virens"
+    "Tafelente": {
+        "latinName": "Aythya ferina",
+        "germanName": "Tafelente"
     },
-    {
-        "label": "Crax rubra"
+    "Taigabirkenzeisig": {
+        "latinName": "Acanthis flammea",
+        "germanName": "Taigabirkenzeisig"
     },
-    {
-        "label": "Penelope purpurascens"
+    "Tannenmeise": {
+        "latinName": "Periparus ater",
+        "germanName": "Tannenmeise"
     },
-    {
-        "label": "Copsychus malabaricus"
+    "Teichhuhn": {
+        "latinName": "Gallinula chloropus",
+        "germanName": "Teichhuhn"
     },
-    {
-        "label": "Paroaria capitata"
+    "Thorshuehnchen": {
+        "latinName": "Phalaropus fulicarius",
+        "germanName": "Thorshuehnchen"
     },
-    {
-        "label": "Cyanerpes cyaneus"
+    "Tordalk": {
+        "latinName": "Alca torda",
+        "germanName": "Tordalk"
     },
-    {
-        "label": "Microcarbo melanoleucos brevirostris"
+    "Trauerschnaepper": {
+        "latinName": "Ficedula hypoleuca",
+        "germanName": "Trauerschnaepper"
     },
-    {
-        "label": "Sphyrapicus thyroideus"
+    "Trauerseeschwalbe": {
+        "latinName": "Chlidonias niger",
+        "germanName": "Trauerseeschwalbe"
     },
-    {
-        "label": "Pheucticus ludovicianus"
+    "Trottellumme": {
+        "latinName": "Uria aalge",
+        "germanName": "Trottellumme"
     },
-    {
-        "label": "Sphyrapicus ruber"
+    "Truthuhn": {
+        "latinName": "Meleagris gallopavo",
+        "germanName": "Truthuhn"
     },
-    {
-        "label": "Pheucticus melanocephalus"
+    "Tuerkentaube": {
+        "latinName": "Streptopelia decaocto",
+        "germanName": "Tuerkentaube"
     },
-    {
-        "label": "Sphyrapicus nuchalis"
+    "Tundra-Goldregenpfeifer": {
+        "latinName": "Pluvialis fulva",
+        "germanName": "Tundra-Goldregenpfeifer"
     },
-    {
-        "label": "Ortalis poliocephala"
+    "Tundraschlammlaeufer": {
+        "latinName": "Limnodromus scolopaceus",
+        "germanName": "Tundraschlammlaeufer"
     },
-    {
-        "label": "Ortalis vetula"
+    "Turmfalke": {
+        "latinName": "Falco tinnunculus",
+        "germanName": "Turmfalke"
     },
-    {
-        "label": "Corvus albus"
+    "Turteltaube": {
+        "latinName": "Streptopelia turtur",
+        "germanName": "Turteltaube"
     },
-    {
-        "label": "Mniotilta varia"
+    "Uferschnepfe": {
+        "latinName": "Limosa limosa",
+        "germanName": "Uferschnepfe"
     },
-    {
-        "label": "Volatinia jacarina"
+    "Uferschwalbe": {
+        "latinName": "Riparia riparia",
+        "germanName": "Uferschwalbe"
     },
-    {
-        "label": "Thraupis palmarum"
+    "Virginiauhu": {
+        "latinName": "Bubo virginianus",
+        "germanName": "Virginiauhu"
     },
-    {
-        "label": "Momotus mexicanus"
+    "Wacholderdrossel": {
+        "latinName": "Turdus pilaris",
+        "germanName": "Wacholderdrossel"
     },
-    {
-        "label": "Euphagus cyanocephalus"
+    "Waldohreule": {
+        "latinName": "Asio otus",
+        "germanName": "Waldohreule"
     },
-    {
-        "label": "Cacatua galerita"
+    "Waldwasserlaeufer": {
+        "latinName": "Tringa ochropus",
+        "germanName": "Waldwasserlaeufer"
     },
-    {
-        "label": "Junco hyemalis oreganus"
+    "Wanderdrossel": {
+        "latinName": "Turdus migratorius",
+        "germanName": "Wanderdrossel"
     },
-    {
-        "label": "Pluvialis fulva"
+    "Wanderfalke": {
+        "latinName": "Falco peregrinus",
+        "germanName": "Wanderfalke"
     },
-    {
-        "label": "Molothrus aeneus"
+    "Wasseramsel": {
+        "latinName": "Cinclus cinclus",
+        "germanName": "Wasseramsel"
     },
-    {
-        "label": "Molothrus ater"
+    "Weissbauchtoelpel": {
+        "latinName": "Sula leucogaster",
+        "germanName": "Weissbauchtoelpel"
     },
-    {
-        "label": "Merops pusillus"
+    "Weissbuerzel-Strandlaeufer": {
+        "latinName": "Calidris fuscicollis",
+        "germanName": "Weissbuerzel-Strandlaeufer"
     },
-    {
-        "label": "Merops apiaster"
+    "Weisskehlammer": {
+        "latinName": "Zonotrichia albicollis",
+        "germanName": "Weisskehlammer"
     },
-    {
-        "label": "Pteroglossus torquatus"
+    "Weisskopf-Seeadler": {
+        "latinName": "Haliaeetus leucocephalus",
+        "germanName": "Weisskopf-Seeadler"
     },
-    {
-        "label": "Loxia curvirostra"
+    "Weissstorch": {
+        "latinName": "Ciconia ciconia",
+        "germanName": "Weissstorch"
     },
-    {
-        "label": "Merops orientalis"
+    "Weisswangengans": {
+        "latinName": "Branta leucopsis",
+        "germanName": "Weisswangengans"
     },
-    {
-        "label": "Loxia leucoptera"
+    "Wiedehopf": {
+        "latinName": "Upupa epops",
+        "germanName": "Wiedehopf"
     },
-    {
-        "label": "Coracias garrulus"
+    "Wiesenpieper": {
+        "latinName": "Anthus pratensis",
+        "germanName": "Wiesenpieper"
     },
-    {
-        "label": "Coracias caudatus"
+    "Wiesenstrandlaeufer": {
+        "latinName": "Calidris minutilla",
+        "germanName": "Wiesenstrandlaeufer"
     },
-    {
-        "label": "Coracias benghalensis"
+    "Wilsonwassertreter": {
+        "latinName": "Phalaropus tricolor",
+        "germanName": "Wilsonwassertreter"
     },
-    {
-        "label": "Xanthocephalus xanthocephalus"
+    "Wintergoldhaehnchen": {
+        "latinName": "Regulus regulus",
+        "germanName": "Wintergoldhaehnchen"
     },
-    {
-        "label": "Chondestes grammacus"
+    "Zaunkoenig": {
+        "latinName": "Troglodytes troglodytes",
+        "germanName": "Zaunkoenig"
     },
-    {
-        "label": "Dolichonyx oryzivorus"
+    "Zilpzalp": {
+        "latinName": "Phylloscopus collybita",
+        "germanName": "Zilpzalp"
     },
-    {
-        "label": "Pandion haliaetus"
+    "Zwergkanadagans": {
+        "latinName": "Branta hutchinsii",
+        "germanName": "Zwergkanadagans"
     },
-    {
-        "label": "Phainopepla nitens"
+    "Zwergmusendrossel": {
+        "latinName": "Catharus ustulatus",
+        "germanName": "Zwergmusendrossel"
     },
-    {
-        "label": "Tyrannus couchii"
+    "Zwergschwan": {
+        "latinName": "Cygnus columbianus",
+        "germanName": "Zwergschwan"
     },
-    {
-        "label": "Phylloscopus collybita"
+    "Zwergtaucher": {
+        "latinName": "Tachybaptus ruficollis",
+        "germanName": "Zwergtaucher"
     },
-    {
-        "label": "Circus cyaneus hudsonius"
+    "Acanthis flammea": {
+        "latinName": "Acanthis flammea",
+        "germanName": "Taigabirkenzeisig"
     },
-    {
-        "label": "Grallina cyanoleuca"
+    "Accipiter cooperii": {
+        "latinName": "Accipiter cooperii",
+        "germanName": ""
     },
-    {
-        "label": "Plectrophenax nivalis"
+    "Accipiter gentilis": {
+        "latinName": "Accipiter gentilis",
+        "germanName": "Habicht"
     },
-    {
-        "label": "Calamospiza melanocorys"
+    "Accipiter nisus": {
+        "latinName": "Accipiter nisus",
+        "germanName": "Sperber"
     },
-    {
-        "label": "Regulus calendula"
+    "Accipiter striatus": {
+        "latinName": "Accipiter striatus",
+        "germanName": ""
     },
-    {
-        "label": "Regulus ignicapilla"
+    "Acridotheres tristis": {
+        "latinName": "Acridotheres tristis",
+        "germanName": "Hirtenmaina"
     },
-    {
-        "label": "Regulus regulus"
+    "Actitis hypoleucos": {
+        "latinName": "Actitis hypoleucos",
+        "germanName": "Flussuferlaeufer"
     },
-    {
-        "label": "Regulus satrapa"
+    "Actitis macularius": {
+        "latinName": "Actitis macularius",
+        "germanName": "Drosseluferlaeufer"
     },
-    {
-        "label": "Tyrannus melancholicus"
+    "Actophilornis africanus": {
+        "latinName": "Actophilornis africanus",
+        "germanName": ""
     },
-    {
-        "label": "Pelecanus conspicillatus"
+    "Aechmophorus clarkii": {
+        "latinName": "Aechmophorus clarkii",
+        "germanName": ""
     },
-    {
-        "label": "Aulacorhynchus prasinus"
+    "Aechmophorus occidentalis": {
+        "latinName": "Aechmophorus occidentalis",
+        "germanName": ""
     },
-    {
-        "label": "Todiramphus sanctus"
+    "Aegithalos caudatus": {
+        "latinName": "Aegithalos caudatus",
+        "germanName": "Schwanzmeise"
     },
-    {
-        "label": "Icterus bullockii"
+    "Aegolius acadicus": {
+        "latinName": "Aegolius acadicus",
+        "germanName": ""
     },
-    {
-        "label": "Spiza americana"
+    "Aeronautes saxatalis": {
+        "latinName": "Aeronautes saxatalis",
+        "germanName": ""
     },
-    {
-        "label": "Tyrannus dominicensis"
+    "Agelaius phoeniceus": {
+        "latinName": "Agelaius phoeniceus",
+        "germanName": ""
     },
-    {
-        "label": "Chlidonias niger"
+    "Agelaius tricolor": {
+        "latinName": "Agelaius tricolor",
+        "germanName": ""
     },
-    {
-        "label": "Oriturus superciliosus"
+    "Aimophila ruficeps": {
+        "latinName": "Aimophila ruficeps",
+        "germanName": ""
     },
-    {
-        "label": "Psarocolius montezuma"
+    "Aix galericulata": {
+        "latinName": "Aix galericulata",
+        "germanName": "Mandarinente"
     },
-    {
-        "label": "Turdus pilaris"
+    "Aix sponsa": {
+        "latinName": "Aix sponsa",
+        "germanName": "Brautente"
     },
-    {
-        "label": "Notiomystis cincta"
+    "Alauda arvensis": {
+        "latinName": "Alauda arvensis",
+        "germanName": "Feldlerche"
     },
-    {
-        "label": "Sagittarius serpentarius"
+    "Alca torda": {
+        "latinName": "Alca torda",
+        "germanName": "Tordalk"
     },
-    {
-        "label": "Psittacula krameri"
+    "Alcedo atthis": {
+        "latinName": "Alcedo atthis",
+        "germanName": "Eisvogel"
     },
-    {
-        "label": "Platycercus eximius"
+    "Alectoris chukar": {
+        "latinName": "Alectoris chukar",
+        "germanName": ""
     },
-    {
-        "label": "Protonotaria citrea"
+    "Alectoris rufa": {
+        "latinName": "Alectoris rufa",
+        "germanName": "Rothuhn"
     },
-    {
-        "label": "Megaceryle torquata"
+    "Alectura lathami": {
+        "latinName": "Alectura lathami",
+        "germanName": ""
     },
-    {
-        "label": "Nestor meridionalis"
+    "Alisterus scapularis": {
+        "latinName": "Alisterus scapularis",
+        "germanName": ""
     },
-    {
-        "label": "Amazona viridigenalis"
+    "Alopochen aegyptiaca": {
+        "latinName": "Alopochen aegyptiaca",
+        "germanName": "Nilgans"
     },
-    {
-        "label": "Amazona albifrons"
+    "Amaurornis phoenicurus": {
+        "latinName": "Amaurornis phoenicurus",
+        "germanName": ""
     },
-    {
-        "label": "Amazona oratrix"
+    "Amazilia beryllina": {
+        "latinName": "Amazilia beryllina",
+        "germanName": ""
     },
-    {
-        "label": "Saxicola rubetra"
+    "Amazilia rutila": {
+        "latinName": "Amazilia rutila",
+        "germanName": ""
     },
-    {
-        "label": "Ara militaris"
+    "Amazilia tzacatl": {
+        "latinName": "Amazilia tzacatl",
+        "germanName": ""
     },
-    {
-        "label": "Spizelloides arborea"
+    "Amazilia violiceps": {
+        "latinName": "Amazilia violiceps",
+        "germanName": ""
     },
-    {
-        "label": "Ceryle rudis"
+    "Amazilia yucatanensis": {
+        "latinName": "Amazilia yucatanensis",
+        "germanName": ""
     },
-    {
-        "label": "Chloroceryle aenea"
+    "Amazona albifrons": {
+        "latinName": "Amazona albifrons",
+        "germanName": ""
     },
-    {
-        "label": "Chloroceryle amazona"
+    "Amazona autumnalis": {
+        "latinName": "Amazona autumnalis",
+        "germanName": ""
     },
-    {
-        "label": "Myiozetetes similis"
+    "Amazona oratrix": {
+        "latinName": "Amazona oratrix",
+        "germanName": "Gelbkopfamazone"
     },
-    {
-        "label": "Toxostoma curvirostre"
+    "Amazona viridigenalis": {
+        "latinName": "Amazona viridigenalis",
+        "germanName": ""
     },
-    {
-        "label": "Megaceryle alcyon"
+    "Ammodramus maritimus": {
+        "latinName": "Ammodramus maritimus",
+        "germanName": ""
     },
-    {
-        "label": "Eremophila alpestris"
+    "Ammodramus nelsoni": {
+        "latinName": "Ammodramus nelsoni",
+        "germanName": ""
     },
-    {
-        "label": "Alisterus scapularis"
+    "Ammodramus savannarum": {
+        "latinName": "Ammodramus savannarum",
+        "germanName": ""
     },
-    {
-        "label": "Cinnyris jugularis"
+    "Amphispiza bilineata": {
+        "latinName": "Amphispiza bilineata",
+        "germanName": ""
     },
-    {
-        "label": "Xiphorhynchus flavigaster"
+    "Anas acuta": {
+        "latinName": "Anas acuta",
+        "germanName": "Spiessente"
     },
-    {
-        "label": "Jacana jacana"
+    "Anas americana": {
+        "latinName": "Anas americana",
+        "germanName": ""
     },
-    {
-        "label": "Phalaropus fulicarius"
+    "Anas bahamensis": {
+        "latinName": "Anas bahamensis",
+        "germanName": "Bahamaente"
     },
-    {
-        "label": "Streptopelia turtur"
+    "Anas chlorotis": {
+        "latinName": "Anas chlorotis",
+        "germanName": ""
     },
-    {
-        "label": "Pica hudsonia"
+    "Anas clypeata": {
+        "latinName": "Anas clypeata",
+        "germanName": ""
     },
-    {
-        "label": "Corvus cornix"
+    "Anas crecca": {
+        "latinName": "Anas crecca",
+        "germanName": "Krickente"
     },
-    {
-        "label": "Myiopsitta monachus"
+    "Anas crecca carolinensis": {
+        "latinName": "Anas crecca carolinensis",
+        "germanName": ""
     },
-    {
-        "label": "Streptopelia decaocto"
+    "Anas cyanoptera": {
+        "latinName": "Anas cyanoptera",
+        "germanName": ""
     },
-    {
-        "label": "Piranga ludoviciana"
+    "Anas discors": {
+        "latinName": "Anas discors",
+        "germanName": ""
     },
-    {
-        "label": "Ixobrychus exilis"
+    "Anas fulvigula": {
+        "latinName": "Anas fulvigula",
+        "germanName": ""
     },
-    {
-        "label": "Auriparus flaviceps"
+    "Anas gracilis": {
+        "latinName": "Anas gracilis",
+        "germanName": ""
     },
-    {
-        "label": "Geothlypis tolmiei"
+    "Anas penelope": {
+        "latinName": "Anas penelope",
+        "germanName": ""
     },
-    {
-        "label": "Columba livia"
+    "Anas platyrhynchos": {
+        "latinName": "Anas platyrhynchos",
+        "germanName": "Stockente"
     },
-    {
-        "label": "Setophaga citrina"
+    "Anas platyrhynchos diazi": {
+        "latinName": "Anas platyrhynchos diazi",
+        "germanName": ""
     },
-    {
-        "label": "Setophaga cerulea"
+    "Anas platyrhynchos domesticus": {
+        "latinName": "Anas platyrhynchos domesticus",
+        "germanName": ""
     },
-    {
-        "label": "Columba palumbus"
+    "Anas querquedula": {
+        "latinName": "Anas querquedula",
+        "germanName": ""
     },
-    {
-        "label": "Piranga bidentata"
+    "Anas rubripes": {
+        "latinName": "Anas rubripes",
+        "germanName": "Dunkelente"
     },
-    {
-        "label": "Patagioenas leucocephala"
+    "Anas strepera": {
+        "latinName": "Anas strepera",
+        "germanName": ""
     },
-    {
-        "label": "Patagioenas fasciata"
+    "Anas superciliosa": {
+        "latinName": "Anas superciliosa",
+        "germanName": ""
     },
-    {
-        "label": "Patagioenas flavirostris"
+    "Anas superciliosa \u00c3\u2014 platyrhynchos": {
+        "latinName": "Anas superciliosa \u00c3\u2014 platyrhynchos",
+        "germanName": ""
     },
-    {
-        "label": "Setophaga discolor"
+    "Anastomus lamelligerus": {
+        "latinName": "Anastomus lamelligerus",
+        "germanName": ""
     },
-    {
-        "label": "Chordeiles minor"
+    "Anhinga anhinga": {
+        "latinName": "Anhinga anhinga",
+        "germanName": ""
     },
-    {
-        "label": "Chordeiles acutipennis"
+    "Anhinga novaehollandiae": {
+        "latinName": "Anhinga novaehollandiae",
+        "germanName": ""
     },
-    {
-        "label": "Platalea leucorodia"
+    "Anhinga rufa": {
+        "latinName": "Anhinga rufa",
+        "germanName": ""
     },
-    {
-        "label": "Phalaenoptilus nuttallii"
+    "Anous stolidus": {
+        "latinName": "Anous stolidus",
+        "germanName": "Noddi"
     },
-    {
-        "label": "Haemorhous mexicanus"
+    "Anser albifrons": {
+        "latinName": "Anser albifrons",
+        "germanName": "Blaessgans"
     },
-    {
-        "label": "Haemorhous purpureus"
+    "Anser anser": {
+        "latinName": "Anser anser",
+        "germanName": "Graugans"
     },
-    {
-        "label": "Nyctidromus albicollis"
+    "Anser anser domesticus": {
+        "latinName": "Anser anser domesticus",
+        "germanName": ""
     },
-    {
-        "label": "Campephilus guatemalensis"
+    "Anser cygnoides domesticus": {
+        "latinName": "Anser cygnoides domesticus",
+        "germanName": ""
     },
-    {
-        "label": "Toxostoma rufum"
+    "Anthornis melanura": {
+        "latinName": "Anthornis melanura",
+        "germanName": ""
     },
-    {
-        "label": "Leptotila verreauxi"
+    "Anthus novaeseelandiae novaeseelandiae": {
+        "latinName": "Anthus novaeseelandiae novaeseelandiae",
+        "germanName": ""
     },
-    {
-        "label": "Nyctibius jamaicensis"
+    "Anthus pratensis": {
+        "latinName": "Anthus pratensis",
+        "germanName": "Wiesenpieper"
     },
-    {
-        "label": "Anas penelope"
+    "Anthus rubescens": {
+        "latinName": "Anthus rubescens",
+        "germanName": "Pazifikpieper"
     },
-    {
-        "label": "Buteo plagiatus"
+    "Antigone canadensis": {
+        "latinName": "Antigone canadensis",
+        "germanName": "Kanadakranich"
     },
-    {
-        "label": "Selasphorus calliope"
+    "Aphelocoma californica": {
+        "latinName": "Aphelocoma californica",
+        "germanName": ""
     },
-    {
-        "label": "Megascops kennicottii"
+    "Aphelocoma coerulescens": {
+        "latinName": "Aphelocoma coerulescens",
+        "germanName": ""
     },
-    {
-        "label": "Porphyrio poliocephalus"
+    "Aphelocoma wollweberi": {
+        "latinName": "Aphelocoma wollweberi",
+        "germanName": ""
     },
-    {
-        "label": "Megascops asio"
+    "Aphelocoma woodhouseii": {
+        "latinName": "Aphelocoma woodhouseii",
+        "germanName": ""
     },
-    {
-        "label": "Zenaida auriculata"
+    "Apus apus": {
+        "latinName": "Apus apus",
+        "germanName": "Mauersegler"
     },
-    {
-        "label": "Hymenolaimus malacorhynchos"
+    "Aquila chrysaetos": {
+        "latinName": "Aquila chrysaetos",
+        "germanName": "Steinadler"
     },
-    {
-        "label": "Setophaga caerulescens"
+    "Ara macao": {
+        "latinName": "Ara macao",
+        "germanName": ""
     },
-    {
-        "label": "Camptostoma imberbe"
+    "Ara militaris": {
+        "latinName": "Ara militaris",
+        "germanName": ""
     },
-    {
-        "label": "Caracara plancus"
+    "Aramides cajaneus": {
+        "latinName": "Aramides cajaneus",
+        "germanName": ""
     },
-    {
-        "label": "Columbina passerina"
+    "Aramus guarauna": {
+        "latinName": "Aramus guarauna",
+        "germanName": ""
     },
-    {
-        "label": "Eupsittula nana"
+    "Aratinga nenday": {
+        "latinName": "Aratinga nenday",
+        "germanName": ""
     },
-    {
-        "label": "Nestor notabilis"
+    "Archilochus alexandri": {
+        "latinName": "Archilochus alexandri",
+        "germanName": ""
     },
-    {
-        "label": "Columbina talpacoti"
+    "Archilochus colubris": {
+        "latinName": "Archilochus colubris",
+        "germanName": ""
     },
-    {
-        "label": "Geopelia striata"
+    "Ardea alba": {
+        "latinName": "Ardea alba",
+        "germanName": "Silberreiher"
     },
-    {
-        "label": "Athene noctua"
+    "Ardea alba modesta": {
+        "latinName": "Ardea alba modesta",
+        "germanName": ""
     },
-    {
-        "label": "Crotophaga ani"
+    "Ardea cinerea": {
+        "latinName": "Ardea cinerea",
+        "germanName": "Graureiher"
     },
-    {
-        "label": "Sialia sialis"
+    "Ardea cocoi": {
+        "latinName": "Ardea cocoi",
+        "germanName": ""
     },
-    {
-        "label": "Platalea alba"
+    "Ardea herodias": {
+        "latinName": "Ardea herodias",
+        "germanName": ""
     },
-    {
-        "label": "Bubo virginianus"
+    "Ardea herodias occidentalis": {
+        "latinName": "Ardea herodias occidentalis",
+        "germanName": ""
     },
-    {
-        "label": "Petrochelidon fulva"
+    "Ardea purpurea": {
+        "latinName": "Ardea purpurea",
+        "germanName": "Purpurreiher"
     },
-    {
-        "label": "Progne subis"
+    "Ardenna creatopus": {
+        "latinName": "Ardenna creatopus",
+        "germanName": ""
     },
-    {
-        "label": "Setophaga coronata auduboni"
+    "Ardenna gravis": {
+        "latinName": "Ardenna gravis",
+        "germanName": "Kappensturmtaucher"
     },
-    {
-        "label": "Hirundo neoxena"
+    "Ardeola ralloides": {
+        "latinName": "Ardeola ralloides",
+        "germanName": "Rallenreiher"
     },
-    {
-        "label": "Hirundo rustica"
+    "Ardeotis kori": {
+        "latinName": "Ardeotis kori",
+        "germanName": ""
     },
-    {
-        "label": "Calidris virgata"
+    "Arenaria interpres": {
+        "latinName": "Arenaria interpres",
+        "germanName": "Steinwaelzer"
     },
-    {
-        "label": "Calidris pugnax"
+    "Arenaria melanocephala": {
+        "latinName": "Arenaria melanocephala",
+        "germanName": ""
     },
-    {
-        "label": "Platalea regia"
+    "Arremonops rufivirgatus": {
+        "latinName": "Arremonops rufivirgatus",
+        "germanName": ""
     },
-    {
-        "label": "Tachycineta thalassina"
+    "Artemisiospiza belli": {
+        "latinName": "Artemisiospiza belli",
+        "germanName": ""
     },
-    {
-        "label": "Bostrychia hagedash"
+    "Asio flammeus": {
+        "latinName": "Asio flammeus",
+        "germanName": "Sumpfohreule"
     },
-    {
-        "label": "Riparia riparia"
+    "Asio otus": {
+        "latinName": "Asio otus",
+        "germanName": "Waldohreule"
     },
-    {
-        "label": "Eudocimus albus"
+    "Athene cunicularia": {
+        "latinName": "Athene cunicularia",
+        "germanName": ""
     },
-    {
-        "label": "Plegadis falcinellus"
+    "Athene noctua": {
+        "latinName": "Athene noctua",
+        "germanName": "Steinkauz"
     },
-    {
-        "label": "Plegadis chihi"
+    "Aulacorhynchus prasinus": {
+        "latinName": "Aulacorhynchus prasinus",
+        "germanName": ""
     },
-    {
-        "label": "Corvus corax"
+    "Auriparus flaviceps": {
+        "latinName": "Auriparus flaviceps",
+        "germanName": ""
     },
-    {
-        "label": "Stelgidopteryx serripennis"
+    "Aythya affinis": {
+        "latinName": "Aythya affinis",
+        "germanName": "Kanadabergente"
     },
-    {
-        "label": "Sula dactylatra"
+    "Aythya americana": {
+        "latinName": "Aythya americana",
+        "germanName": "Rotkopfente"
     },
-    {
-        "label": "Sula sula"
+    "Aythya collaris": {
+        "latinName": "Aythya collaris",
+        "germanName": "Ringschnabelente"
     },
-    {
-        "label": "Sula leucogaster"
+    "Aythya ferina": {
+        "latinName": "Aythya ferina",
+        "germanName": "Tafelente"
     },
-    {
-        "label": "Morus serrator"
+    "Aythya fuligula": {
+        "latinName": "Aythya fuligula",
+        "germanName": "Reiherente"
     },
-    {
-        "label": "Eudyptula minor"
+    "Aythya marila": {
+        "latinName": "Aythya marila",
+        "germanName": "Bergente"
     },
-    {
-        "label": "Megadyptes antipodes"
+    "Aythya novaeseelandiae": {
+        "latinName": "Aythya novaeseelandiae",
+        "germanName": ""
     },
-    {
-        "label": "Scopus umbretta"
+    "Aythya valisineria": {
+        "latinName": "Aythya valisineria",
+        "germanName": "Riesentafelente"
     },
-    {
-        "label": "Troglodytes troglodytes"
+    "Baeolophus atricristatus": {
+        "latinName": "Baeolophus atricristatus",
+        "germanName": ""
     },
-    {
-        "label": "Calidris canutus"
+    "Baeolophus bicolor": {
+        "latinName": "Baeolophus bicolor",
+        "germanName": ""
     },
-    {
-        "label": "Lanius collurio"
+    "Baeolophus inornatus": {
+        "latinName": "Baeolophus inornatus",
+        "germanName": ""
     },
-    {
-        "label": "Calidris bairdii"
+    "Balearica regulorum": {
+        "latinName": "Balearica regulorum",
+        "germanName": ""
     },
-    {
-        "label": "Meleagris gallopavo intermedia"
+    "Bartramia longicauda": {
+        "latinName": "Bartramia longicauda",
+        "germanName": "Praerielaeufer"
     },
-    {
-        "label": "Calidris mauri"
+    "Basileuterus rufifrons": {
+        "latinName": "Basileuterus rufifrons",
+        "germanName": ""
     },
-    {
-        "label": "Calidris maritima"
+    "Bombycilla cedrorum": {
+        "latinName": "Bombycilla cedrorum",
+        "germanName": ""
     },
-    {
-        "label": "Calidris alpina"
+    "Bombycilla garrulus": {
+        "latinName": "Bombycilla garrulus",
+        "germanName": "Seidenschwanz"
     },
-    {
-        "label": "Calidris ferruginea"
+    "Bonasa umbellus": {
+        "latinName": "Bonasa umbellus",
+        "germanName": ""
     },
-    {
-        "label": "Calidris melanotos"
+    "Bostrychia hagedash": {
+        "latinName": "Bostrychia hagedash",
+        "germanName": ""
     },
-    {
-        "label": "Limnodromus griseus"
+    "Botaurus lentiginosus": {
+        "latinName": "Botaurus lentiginosus",
+        "germanName": ""
     },
-    {
-        "label": "Malurus cyaneus"
+    "Branta bernicla": {
+        "latinName": "Branta bernicla",
+        "germanName": "Ringelgans"
     },
-    {
-        "label": "Tringa nebularia"
+    "Branta canadensis": {
+        "latinName": "Branta canadensis",
+        "germanName": "Kanadagans"
     },
-    {
-        "label": "Todiramphus sanctus vagans"
+    "Branta hutchinsii": {
+        "latinName": "Branta hutchinsii",
+        "germanName": "Zwergkanadagans"
     },
-    {
-        "label": "Tringa ochropus"
+    "Branta leucopsis": {
+        "latinName": "Branta leucopsis",
+        "germanName": "Weisswangengans"
     },
-    {
-        "label": "Tringa glareola"
+    "Branta sandvicensis": {
+        "latinName": "Branta sandvicensis",
+        "germanName": ""
     },
-    {
-        "label": "Tringa melanoleuca"
+    "Bubo scandiacus": {
+        "latinName": "Bubo scandiacus",
+        "germanName": "Schneeeule"
     },
-    {
-        "label": "Tringa flavipes"
+    "Bubo virginianus": {
+        "latinName": "Bubo virginianus",
+        "germanName": "Virginiauhu"
     },
-    {
-        "label": "Numenius arquata"
+    "Bubulcus ibis": {
+        "latinName": "Bubulcus ibis",
+        "germanName": "Kuhreiher"
     },
-    {
-        "label": "Numenius phaeopus"
+    "Bucephala albeola": {
+        "latinName": "Bucephala albeola",
+        "germanName": "Bueffelkopfente"
     },
-    {
-        "label": "Phalacrocorax carbo novaehollandiae"
+    "Bucephala clangula": {
+        "latinName": "Bucephala clangula",
+        "germanName": "Schellente"
     },
-    {
-        "label": "Petroica macrocephala macrocephala"
+    "Bucephala islandica": {
+        "latinName": "Bucephala islandica",
+        "germanName": "Spatelente"
     },
-    {
-        "label": "Petroica australis longipes"
+    "Bucorvus leadbeateri": {
+        "latinName": "Bucorvus leadbeateri",
+        "germanName": ""
     },
-    {
-        "label": "Prosthemadera novaeseelandiae novaeseelandiae"
+    "Busarellus nigricollis": {
+        "latinName": "Busarellus nigricollis",
+        "germanName": ""
     },
-    {
-        "label": "Asio flammeus"
+    "Buteo albonotatus": {
+        "latinName": "Buteo albonotatus",
+        "germanName": ""
     },
-    {
-        "label": "Rhipidura fuliginosa fuliginosa"
+    "Buteo brachyurus": {
+        "latinName": "Buteo brachyurus",
+        "germanName": ""
     },
-    {
-        "label": "Scolopax minor"
+    "Buteo buteo": {
+        "latinName": "Buteo buteo",
+        "germanName": "Maeusebussard"
     },
-    {
-        "label": "Arenaria interpres"
+    "Buteo jamaicensis": {
+        "latinName": "Buteo jamaicensis",
+        "germanName": ""
     },
-    {
-        "label": "Arenaria melanocephala"
+    "Buteo lagopus": {
+        "latinName": "Buteo lagopus",
+        "germanName": "Raufussbussard"
     },
-    {
-        "label": "Rhipidura fuliginosa placabilis"
+    "Buteo lineatus": {
+        "latinName": "Buteo lineatus",
+        "germanName": ""
     },
-    {
-        "label": "Limosa limosa"
+    "Buteo lineatus elegans": {
+        "latinName": "Buteo lineatus elegans",
+        "germanName": ""
     },
-    {
-        "label": "Limosa haemastica"
+    "Buteo plagiatus": {
+        "latinName": "Buteo plagiatus",
+        "germanName": ""
     },
-    {
-        "label": "Limosa fedoa"
+    "Buteo platypterus": {
+        "latinName": "Buteo platypterus",
+        "germanName": ""
     },
-    {
-        "label": "Phalaropus lobatus"
+    "Buteo regalis": {
+        "latinName": "Buteo regalis",
+        "germanName": ""
     },
-    {
-        "label": "Bartramia longicauda"
+    "Buteo swainsoni": {
+        "latinName": "Buteo swainsoni",
+        "germanName": ""
     },
-    {
-        "label": "Limosa lapponica"
+    "Buteogallus anthracinus": {
+        "latinName": "Buteogallus anthracinus",
+        "germanName": ""
     },
-    {
-        "label": "Aegolius acadicus"
+    "Butorides striata": {
+        "latinName": "Butorides striata",
+        "germanName": ""
     },
-    {
-        "label": "Actitis hypoleucos"
+    "Butorides virescens": {
+        "latinName": "Butorides virescens",
+        "germanName": ""
     },
-    {
-        "label": "Trichoglossus haematodus"
+    "Cacatua galerita": {
+        "latinName": "Cacatua galerita",
+        "germanName": ""
     },
-    {
-        "label": "Surnia ulula"
+    "Cairina moschata": {
+        "latinName": "Cairina moschata",
+        "germanName": "Moschusente"
     },
-    {
-        "label": "Polioptila caerulea"
+    "Cairina moschata domestica": {
+        "latinName": "Cairina moschata domestica",
+        "germanName": ""
     },
-    {
-        "label": "Spizella passerina"
+    "Calamospiza melanocorys": {
+        "latinName": "Calamospiza melanocorys",
+        "germanName": ""
     },
-    {
-        "label": "Pycnonotus jocosus"
+    "Calcarius lapponicus": {
+        "latinName": "Calcarius lapponicus",
+        "germanName": "Spornammer"
     },
-    {
-        "label": "Passerina cyanea"
+    "Calidris alba": {
+        "latinName": "Calidris alba",
+        "germanName": "Sanderling"
     },
-    {
-        "label": "Passerina versicolor"
+    "Calidris alpina": {
+        "latinName": "Calidris alpina",
+        "germanName": "Alpenstrandlaeufer"
     },
-    {
-        "label": "Manorina melanocephala"
+    "Calidris bairdii": {
+        "latinName": "Calidris bairdii",
+        "germanName": "Bairdstrandlaeufer"
     },
-    {
-        "label": "Ocyphaps lophotes"
+    "Calidris canutus": {
+        "latinName": "Calidris canutus",
+        "germanName": "Knutt"
     },
-    {
-        "label": "Jabiru mycteria"
+    "Calidris ferruginea": {
+        "latinName": "Calidris ferruginea",
+        "germanName": "Sichelstrandlaeufer"
     },
-    {
-        "label": "Pycnonotus cafer"
+    "Calidris fuscicollis": {
+        "latinName": "Calidris fuscicollis",
+        "germanName": "Weissbuerzel-Strandlaeufer"
     },
-    {
-        "label": "Anser cygnoides domesticus"
+    "Calidris himantopus": {
+        "latinName": "Calidris himantopus",
+        "germanName": "Bindenstrandlaeufer"
     },
-    {
-        "label": "Picus viridis"
+    "Calidris maritima": {
+        "latinName": "Calidris maritima",
+        "germanName": "Meerstrandlaeufer"
     },
-    {
-        "label": "Phoebastria nigripes"
+    "Calidris mauri": {
+        "latinName": "Calidris mauri",
+        "germanName": ""
     },
-    {
-        "label": "Struthio camelus"
+    "Calidris melanotos": {
+        "latinName": "Calidris melanotos",
+        "germanName": "Graubrust-Strandlaeufer"
     },
-    {
-        "label": "Phoebastria immutabilis"
+    "Calidris minutilla": {
+        "latinName": "Calidris minutilla",
+        "germanName": "Wiesenstrandlaeufer"
     },
-    {
-        "label": "Fulmarus glacialis"
+    "Calidris pugnax": {
+        "latinName": "Calidris pugnax",
+        "germanName": "Kampflaeufer"
     },
-    {
-        "label": "Francolinus pondicerianus"
+    "Calidris pusilla": {
+        "latinName": "Calidris pusilla",
+        "germanName": "Sandstrandlaeufer"
     },
-    {
-        "label": "Cynanthus latirostris"
+    "Calidris subruficollis": {
+        "latinName": "Calidris subruficollis",
+        "germanName": "Graslaeufer"
     },
-    {
-        "label": "Podiceps nigricollis"
+    "Calidris virgata": {
+        "latinName": "Calidris virgata",
+        "germanName": ""
     },
-    {
-        "label": "Podiceps cristatus"
+    "Callipepla californica": {
+        "latinName": "Callipepla californica",
+        "germanName": ""
     },
-    {
-        "label": "Podiceps auritus"
+    "Callipepla gambelii": {
+        "latinName": "Callipepla gambelii",
+        "germanName": ""
     },
-    {
-        "label": "Dendrocopos major"
+    "Callipepla squamata": {
+        "latinName": "Callipepla squamata",
+        "germanName": ""
     },
-    {
-        "label": "Podiceps grisegena"
+    "Calocitta colliei": {
+        "latinName": "Calocitta colliei",
+        "germanName": ""
     },
-    {
-        "label": "Tachybaptus ruficollis"
+    "Calocitta formosa": {
+        "latinName": "Calocitta formosa",
+        "germanName": ""
     },
-    {
-        "label": "Charadrius montanus"
+    "Calothorax lucifer": {
+        "latinName": "Calothorax lucifer",
+        "germanName": ""
     },
-    {
-        "label": "Phalacrocorax auritus"
+    "Calypte anna": {
+        "latinName": "Calypte anna",
+        "germanName": ""
     },
-    {
-        "label": "Phalacrocorax carbo"
+    "Calypte costae": {
+        "latinName": "Calypte costae",
+        "germanName": ""
     },
-    {
-        "label": "Phalacrocorax penicillatus"
+    "Campephilus guatemalensis": {
+        "latinName": "Campephilus guatemalensis",
+        "germanName": ""
     },
-    {
-        "label": "Aechmophorus clarkii"
+    "Camptostoma imberbe": {
+        "latinName": "Camptostoma imberbe",
+        "germanName": ""
     },
-    {
-        "label": "Pelecanus onocrotalus"
+    "Campylopterus hemileucurus": {
+        "latinName": "Campylopterus hemileucurus",
+        "germanName": ""
     },
-    {
-        "label": "Pelecanus erythrorhynchos"
+    "Campylorhynchus brunneicapillus": {
+        "latinName": "Campylorhynchus brunneicapillus",
+        "germanName": ""
     },
-    {
-        "label": "Zenaida macroura"
+    "Campylorhynchus rufinucha": {
+        "latinName": "Campylorhynchus rufinucha",
+        "germanName": ""
     },
-    {
-        "label": "Vanellus miles"
+    "Caracara cheriway": {
+        "latinName": "Caracara cheriway",
+        "germanName": ""
     },
-    {
-        "label": "Larus occidentalis"
+    "Caracara plancus": {
+        "latinName": "Caracara plancus",
+        "germanName": ""
     },
-    {
-        "label": "Trogon massena"
+    "Cardellina canadensis": {
+        "latinName": "Cardellina canadensis",
+        "germanName": ""
     },
-    {
-        "label": "Larus thayeri"
+    "Cardellina pusilla": {
+        "latinName": "Cardellina pusilla",
+        "germanName": ""
     },
-    {
-        "label": "Larus heermanni"
+    "Cardellina rubra": {
+        "latinName": "Cardellina rubra",
+        "germanName": ""
     },
-    {
-        "label": "Larus livens"
+    "Cardinalis cardinalis": {
+        "latinName": "Cardinalis cardinalis",
+        "germanName": ""
     },
-    {
-        "label": "Larus canus"
+    "Cardinalis sinuatus": {
+        "latinName": "Cardinalis sinuatus",
+        "germanName": ""
     },
-    {
-        "label": "Larus glaucoides"
+    "Carduelis cannabina": {
+        "latinName": "Carduelis cannabina",
+        "germanName": ""
     },
-    {
-        "label": "Larus delawarensis"
+    "Carduelis carduelis": {
+        "latinName": "Carduelis carduelis",
+        "germanName": "Stieglitz"
     },
-    {
-        "label": "Trogon collaris"
+    "Cassiculus melanicterus": {
+        "latinName": "Cassiculus melanicterus",
+        "germanName": ""
     },
-    {
-        "label": "Zenaida asiatica"
+    "Cathartes aura": {
+        "latinName": "Cathartes aura",
+        "germanName": ""
     },
-    {
-        "label": "Larus fuscus"
+    "Cathartes burrovianus": {
+        "latinName": "Cathartes burrovianus",
+        "germanName": ""
     },
-    {
-        "label": "Larus californicus"
+    "Catharus fuscescens": {
+        "latinName": "Catharus fuscescens",
+        "germanName": ""
     },
-    {
-        "label": "Prosthemadera novaeseelandiae"
+    "Catharus guttatus": {
+        "latinName": "Catharus guttatus",
+        "germanName": "Einsiedler-Musendrossel"
     },
-    {
-        "label": "Trogon elegans"
+    "Catharus minimus": {
+        "latinName": "Catharus minimus",
+        "germanName": "Grauwangen-Musendrossel"
     },
-    {
-        "label": "Larus glaucescens"
+    "Catharus ustulatus": {
+        "latinName": "Catharus ustulatus",
+        "germanName": "Zwergmusendrossel"
     },
-    {
-        "label": "Trogon citreolus"
+    "Catherpes mexicanus": {
+        "latinName": "Catherpes mexicanus",
+        "germanName": ""
     },
-    {
-        "label": "Cepphus columba"
+    "Cepphus columba": {
+        "latinName": "Cepphus columba",
+        "germanName": ""
     },
-    {
-        "label": "Himantopus leucocephalus"
+    "Cepphus grylle": {
+        "latinName": "Cepphus grylle",
+        "germanName": "Gryllteiste"
     },
-    {
-        "label": "Cepphus grylle"
+    "Cerorhinca monocerata": {
+        "latinName": "Cerorhinca monocerata",
+        "germanName": ""
     },
-    {
-        "label": "Anthornis melanura"
+    "Certhia americana": {
+        "latinName": "Certhia americana",
+        "germanName": ""
     },
-    {
-        "label": "Leptoptilos crumenifer"
+    "Ceryle rudis": {
+        "latinName": "Ceryle rudis",
+        "germanName": ""
     },
-    {
-        "label": "Threskiornis moluccus"
+    "Chaetura pelagica": {
+        "latinName": "Chaetura pelagica",
+        "germanName": ""
     },
-    {
-        "label": "Thraupis episcopus"
+    "Chaetura vauxi": {
+        "latinName": "Chaetura vauxi",
+        "germanName": ""
     },
-    {
-        "label": "Geranoaetus albicaudatus"
+    "Chamaea fasciata": {
+        "latinName": "Chamaea fasciata",
+        "germanName": ""
     },
-    {
-        "label": "Sterna paradisaea"
+    "Charadrius dubius": {
+        "latinName": "Charadrius dubius",
+        "germanName": "Flussregenpfeifer"
     },
-    {
-        "label": "Sterna hirundo"
+    "Charadrius hiaticula": {
+        "latinName": "Charadrius hiaticula",
+        "germanName": "Sandregenpfeifer"
     },
-    {
-        "label": "Sterna forsteri"
+    "Charadrius melodus": {
+        "latinName": "Charadrius melodus",
+        "germanName": ""
     },
-    {
-        "label": "Lanius excubitor"
+    "Charadrius montanus": {
+        "latinName": "Charadrius montanus",
+        "germanName": ""
     },
-    {
-        "label": "Pharomachrus mocinno"
+    "Charadrius nivosus": {
+        "latinName": "Charadrius nivosus",
+        "germanName": ""
     },
-    {
-        "label": "Sterna striata"
+    "Charadrius semipalmatus": {
+        "latinName": "Charadrius semipalmatus",
+        "germanName": ""
     },
-    {
-        "label": "Stercorarius parasiticus"
+    "Charadrius vociferus": {
+        "latinName": "Charadrius vociferus",
+        "germanName": ""
     },
-    {
-        "label": "Stercorarius pomarinus"
+    "Charadrius wilsonia": {
+        "latinName": "Charadrius wilsonia",
+        "germanName": ""
     },
-    {
-        "label": "Anas gracilis"
+    "Chen caerulescens": {
+        "latinName": "Chen caerulescens",
+        "germanName": ""
     },
-    {
-        "label": "Rissa tridactyla"
+    "Chen rossii": {
+        "latinName": "Chen rossii",
+        "germanName": ""
     },
-    {
-        "label": "Rynchops niger"
+    "Chenonetta jubata": {
+        "latinName": "Chenonetta jubata",
+        "germanName": ""
     },
-    {
-        "label": "Alca torda"
+    "Chlidonias niger": {
+        "latinName": "Chlidonias niger",
+        "germanName": "Trauerseeschwalbe"
     },
-    {
-        "label": "Fratercula arctica"
+    "Chloris chloris": {
+        "latinName": "Chloris chloris",
+        "germanName": "Gruenfink"
     },
-    {
-        "label": "Fratercula cirrhata"
+    "Chloroceryle aenea": {
+        "latinName": "Chloroceryle aenea",
+        "germanName": ""
     },
-    {
-        "label": "Turdus merula"
+    "Chloroceryle amazona": {
+        "latinName": "Chloroceryle amazona",
+        "germanName": ""
     },
-    {
-        "label": "Turdus plumbeus"
+    "Chloroceryle americana": {
+        "latinName": "Chloroceryle americana",
+        "germanName": ""
     },
-    {
-        "label": "Turdus grayi"
+    "Chlorophanes spiza": {
+        "latinName": "Chlorophanes spiza",
+        "germanName": ""
     },
-    {
-        "label": "Turdus migratorius"
+    "Chondestes grammacus": {
+        "latinName": "Chondestes grammacus",
+        "germanName": ""
     },
-    {
-        "label": "Turdus viscivorus"
+    "Chordeiles acutipennis": {
+        "latinName": "Chordeiles acutipennis",
+        "germanName": ""
     },
-    {
-        "label": "Cerorhinca monocerata"
+    "Chordeiles minor": {
+        "latinName": "Chordeiles minor",
+        "germanName": ""
     },
-    {
-        "label": "Turdus philomelos"
+    "Chroicocephalus novaehollandiae": {
+        "latinName": "Chroicocephalus novaehollandiae",
+        "germanName": ""
     },
-    {
-        "label": "Galbula ruficauda"
+    "Chroicocephalus philadelphia": {
+        "latinName": "Chroicocephalus philadelphia",
+        "germanName": "Bonapartemoewe"
     },
-    {
-        "label": "Jacana spinosa"
+    "Chroicocephalus ridibundus": {
+        "latinName": "Chroicocephalus ridibundus",
+        "germanName": "Lachmoewe"
     },
-    {
-        "label": "Saxicola rubicola"
+    "Chroicocephalus scopulinus": {
+        "latinName": "Chroicocephalus scopulinus",
+        "germanName": ""
     },
-    {
-        "label": "Upupa epops"
+    "Ciccaba virgata": {
+        "latinName": "Ciccaba virgata",
+        "germanName": ""
     },
-    {
-        "label": "Euphagus carolinus"
+    "Ciconia ciconia": {
+        "latinName": "Ciconia ciconia",
+        "germanName": "Weissstorch"
     },
-    {
-        "label": "Gavia pacifica"
+    "Cinclus cinclus": {
+        "latinName": "Cinclus cinclus",
+        "germanName": "Wasseramsel"
     },
-    {
-        "label": "Mimus gilvus"
+    "Cinclus mexicanus": {
+        "latinName": "Cinclus mexicanus",
+        "germanName": ""
     },
-    {
-        "label": "Passer italiae"
+    "Cinnyris jugularis": {
+        "latinName": "Cinnyris jugularis",
+        "germanName": ""
     },
-    {
-        "label": "Gavia immer"
+    "Circaetus gallicus": {
+        "latinName": "Circaetus gallicus",
+        "germanName": "Schlangenadler"
     },
-    {
-        "label": "Gavia stellata"
+    "Circus aeruginosus": {
+        "latinName": "Circus aeruginosus",
+        "germanName": "Rohrweihe"
     },
-    {
-        "label": "Oenanthe oenanthe"
+    "Circus approximans": {
+        "latinName": "Circus approximans",
+        "germanName": ""
     },
-    {
-        "label": "Fregata magnificens"
+    "Circus cyaneus": {
+        "latinName": "Circus cyaneus",
+        "germanName": "Kornweihe"
     },
-    {
-        "label": "Fregata minor"
+    "Circus cyaneus hudsonius": {
+        "latinName": "Circus cyaneus hudsonius",
+        "germanName": ""
     },
-    {
-        "label": "Falco subbuteo"
+    "Cistothorus palustris": {
+        "latinName": "Cistothorus palustris",
+        "germanName": ""
     },
-    {
-        "label": "Falco mexicanus"
+    "Cistothorus platensis": {
+        "latinName": "Cistothorus platensis",
+        "germanName": ""
     },
-    {
-        "label": "Falco femoralis"
+    "Clangula hyemalis": {
+        "latinName": "Clangula hyemalis",
+        "germanName": "Eisente"
     },
-    {
-        "label": "Falco peregrinus"
+    "Coccothraustes coccothraustes": {
+        "latinName": "Coccothraustes coccothraustes",
+        "germanName": "Kernbeisser"
     },
-    {
-        "label": "Falco rufigularis"
+    "Coccothraustes vespertinus": {
+        "latinName": "Coccothraustes vespertinus",
+        "germanName": ""
     },
-    {
-        "label": "Falco sparverius"
+    "Coccyzus americanus": {
+        "latinName": "Coccyzus americanus",
+        "germanName": ""
     },
-    {
-        "label": "Strix varia"
+    "Coccyzus erythropthalmus": {
+        "latinName": "Coccyzus erythropthalmus",
+        "germanName": "Schwarzschnabelkuckuck"
     },
-    {
-        "label": "Falco columbarius"
+    "Coccyzus minor": {
+        "latinName": "Coccyzus minor",
+        "germanName": ""
     },
-    {
-        "label": "Gallinula chloropus"
+    "Cochlearius cochlearius": {
+        "latinName": "Cochlearius cochlearius",
+        "germanName": ""
     },
-    {
-        "label": "Cardellina pusilla"
+    "Coereba flaveola": {
+        "latinName": "Coereba flaveola",
+        "germanName": ""
     },
-    {
-        "label": "Catharus ustulatus"
+    "Colaptes auratus": {
+        "latinName": "Colaptes auratus",
+        "germanName": ""
     },
-    {
-        "label": "Falco novaeseelandiae"
+    "Colaptes auratus auratus": {
+        "latinName": "Colaptes auratus auratus",
+        "germanName": ""
     },
-    {
-        "label": "Catharus guttatus"
+    "Colaptes auratus cafer": {
+        "latinName": "Colaptes auratus cafer",
+        "germanName": ""
     },
-    {
-        "label": "Catharus fuscescens"
+    "Colaptes rubiginosus": {
+        "latinName": "Colaptes rubiginosus",
+        "germanName": ""
     },
-    {
-        "label": "Caracara cheriway"
+    "Colinus virginianus": {
+        "latinName": "Colinus virginianus",
+        "germanName": ""
     },
-    {
-        "label": "Herpetotheres cachinnans"
+    "Columba livia": {
+        "latinName": "Columba livia",
+        "germanName": ""
     },
-    {
-        "label": "Calcarius lapponicus"
+    "Columba livia domestica": {
+        "latinName": "Columba livia domestica",
+        "germanName": ""
     },
-    {
-        "label": "Milvago chimachima"
+    "Columba palumbus": {
+        "latinName": "Columba palumbus",
+        "germanName": "Ringeltaube"
     },
-    {
-        "label": "Ciconia ciconia"
+    "Columbina inca": {
+        "latinName": "Columbina inca",
+        "germanName": ""
     },
-    {
-        "label": "Mycteria americana"
+    "Columbina passerina": {
+        "latinName": "Columbina passerina",
+        "germanName": ""
     },
-    {
-        "label": "Mycteria ibis"
+    "Columbina talpacoti": {
+        "latinName": "Columbina talpacoti",
+        "germanName": ""
     },
-    {
-        "label": "Sialia mexicana"
+    "Contopus cooperi": {
+        "latinName": "Contopus cooperi",
+        "germanName": ""
     },
-    {
-        "label": "Ephippiorhynchus senegalensis"
+    "Contopus pertinax": {
+        "latinName": "Contopus pertinax",
+        "germanName": ""
     },
-    {
-        "label": "Cathartes aura"
+    "Contopus sordidulus": {
+        "latinName": "Contopus sordidulus",
+        "germanName": ""
     },
-    {
-        "label": "Myadestes townsendi"
+    "Contopus virens": {
+        "latinName": "Contopus virens",
+        "germanName": ""
     },
-    {
-        "label": "Cathartes burrovianus"
+    "Copsychus malabaricus": {
+        "latinName": "Copsychus malabaricus",
+        "germanName": ""
     },
-    {
-        "label": "Sarcoramphus papa"
+    "Copsychus saularis": {
+        "latinName": "Copsychus saularis",
+        "germanName": ""
     },
-    {
-        "label": "Coragyps atratus"
+    "Coracias benghalensis": {
+        "latinName": "Coracias benghalensis",
+        "germanName": ""
     },
-    {
-        "label": "Strix nebulosa"
+    "Coracias caudatus": {
+        "latinName": "Coracias caudatus",
+        "germanName": ""
     },
-    {
-        "label": "Anastomus lamelligerus"
+    "Coracias garrulus": {
+        "latinName": "Coracias garrulus",
+        "germanName": "Blauracke"
     },
-    {
-        "label": "Pluvialis squatarola"
+    "Coragyps atratus": {
+        "latinName": "Coragyps atratus",
+        "germanName": ""
     },
-    {
-        "label": "Gymnogyps californianus"
+    "Corvus albus": {
+        "latinName": "Corvus albus",
+        "germanName": ""
     },
-    {
-        "label": "Muscicapa striata"
+    "Corvus brachyrhynchos": {
+        "latinName": "Corvus brachyrhynchos",
+        "germanName": ""
     },
-    {
-        "label": "Charadrius vociferus"
+    "Corvus caurinus": {
+        "latinName": "Corvus caurinus",
+        "germanName": ""
     },
-    {
-        "label": "Charadrius wilsonia"
+    "Corvus corax": {
+        "latinName": "Corvus corax",
+        "germanName": "Kolkrabe"
     },
-    {
-        "label": "Charadrius melodus"
+    "Corvus cornix": {
+        "latinName": "Corvus cornix",
+        "germanName": "Nebelkraehe"
     },
-    {
-        "label": "Phoenicurus phoenicurus"
+    "Corvus corone": {
+        "latinName": "Corvus corone",
+        "germanName": "Rabenkraehe"
     },
-    {
-        "label": "Phoenicurus ochruros"
+    "Corvus frugilegus": {
+        "latinName": "Corvus frugilegus",
+        "germanName": "Saatkraehe"
     },
-    {
-        "label": "Charadrius dubius"
+    "Corvus monedula": {
+        "latinName": "Corvus monedula",
+        "germanName": ""
     },
-    {
-        "label": "Eumomota superciliosa"
+    "Corvus ossifragus": {
+        "latinName": "Corvus ossifragus",
+        "germanName": ""
     },
-    {
-        "label": "Anas querquedula"
+    "Corvus splendens": {
+        "latinName": "Corvus splendens",
+        "germanName": ""
     },
-    {
-        "label": "Himantopus mexicanus"
+    "Crax rubra": {
+        "latinName": "Crax rubra",
+        "germanName": ""
     },
-    {
-        "label": "Haematopus bachmani"
+    "Crotophaga ani": {
+        "latinName": "Crotophaga ani",
+        "germanName": ""
     },
-    {
-        "label": "Pica pica"
+    "Crotophaga sulcirostris": {
+        "latinName": "Crotophaga sulcirostris",
+        "germanName": ""
     },
-    {
-        "label": "Haematopus ostralegus"
+    "Cuculus canorus": {
+        "latinName": "Cuculus canorus",
+        "germanName": "Kuckuck"
     },
-    {
-        "label": "Haematopus unicolor"
+    "Cyanerpes cyaneus": {
+        "latinName": "Cyanerpes cyaneus",
+        "germanName": ""
     },
-    {
-        "label": "Vanellus vanellus"
+    "Cyanistes caeruleus": {
+        "latinName": "Cyanistes caeruleus",
+        "germanName": "Blaumeise"
     },
-    {
-        "label": "Vanellus spinosus"
+    "Cyanocitta cristata": {
+        "latinName": "Cyanocitta cristata",
+        "germanName": ""
     },
-    {
-        "label": "Vanellus armatus"
+    "Cyanocitta stelleri": {
+        "latinName": "Cyanocitta stelleri",
+        "germanName": ""
     },
-    {
-        "label": "Luscinia svecica"
+    "Cyanocompsa parellina": {
+        "latinName": "Cyanocompsa parellina",
+        "germanName": ""
     },
-    {
-        "label": "Columbina inca"
+    "Cyanocorax yncas": {
+        "latinName": "Cyanocorax yncas",
+        "germanName": ""
     },
-    {
-        "label": "Recurvirostra avosetta"
+    "Cyanocorax yucatanicus": {
+        "latinName": "Cyanocorax yucatanicus",
+        "germanName": ""
     },
-    {
-        "label": "Phasianus colchicus"
+    "Cyanoramphus novaezelandiae": {
+        "latinName": "Cyanoramphus novaezelandiae",
+        "germanName": ""
     },
-    {
-        "label": "Pluvialis dominica"
+    "Cygnus atratus": {
+        "latinName": "Cygnus atratus",
+        "germanName": "Schwarzschwan"
     },
-    {
-        "label": "Cinclus mexicanus"
+    "Cygnus buccinator": {
+        "latinName": "Cygnus buccinator",
+        "germanName": ""
     },
-    {
-        "label": "Erithacus rubecula"
+    "Cygnus columbianus": {
+        "latinName": "Cygnus columbianus",
+        "germanName": "Zwergschwan"
     },
-    {
-        "label": "Melanerpes aurifrons"
+    "Cygnus cygnus": {
+        "latinName": "Cygnus cygnus",
+        "germanName": "Singschwan"
     },
-    {
-        "label": "Charadrius hiaticula"
+    "Cygnus olor": {
+        "latinName": "Cygnus olor",
+        "germanName": "Hoeckerschwan"
     },
-    {
-        "label": "Egretta gularis"
+    "Cynanthus latirostris": {
+        "latinName": "Cynanthus latirostris",
+        "germanName": ""
     },
-    {
-        "label": "Egretta caerulea"
+    "Cyrtonyx montezumae": {
+        "latinName": "Cyrtonyx montezumae",
+        "germanName": ""
     },
-    {
-        "label": "Egretta tricolor"
+    "Dacelo novaeguineae": {
+        "latinName": "Dacelo novaeguineae",
+        "germanName": ""
     },
-    {
-        "label": "Egretta thula"
+    "Delichon urbicum": {
+        "latinName": "Delichon urbicum",
+        "germanName": "Mehlschwalbe"
     },
-    {
-        "label": "Egretta garzetta"
+    "Dendragapus fuliginosus": {
+        "latinName": "Dendragapus fuliginosus",
+        "germanName": ""
     },
-    {
-        "label": "Egretta sacra"
+    "Dendragapus obscurus": {
+        "latinName": "Dendragapus obscurus",
+        "germanName": ""
     },
-    {
-        "label": "Monticola solitarius"
+    "Dendrocopos major": {
+        "latinName": "Dendrocopos major",
+        "germanName": "Buntspecht"
     },
-    {
-        "label": "Ardea cocoi"
+    "Dendrocygna autumnalis": {
+        "latinName": "Dendrocygna autumnalis",
+        "germanName": ""
     },
-    {
-        "label": "Ardea cinerea"
+    "Dendrocygna bicolor": {
+        "latinName": "Dendrocygna bicolor",
+        "germanName": ""
     },
-    {
-        "label": "Ardea herodias"
+    "Dendrocygna viduata": {
+        "latinName": "Dendrocygna viduata",
+        "germanName": ""
     },
-    {
-        "label": "Nycticorax nycticorax"
+    "Dicrurus adsimilis": {
+        "latinName": "Dicrurus adsimilis",
+        "germanName": ""
     },
-    {
-        "label": "Turdus rufopalliatus"
+    "Diglossa baritula": {
+        "latinName": "Diglossa baritula",
+        "germanName": ""
     },
-    {
-        "label": "Ardeola ralloides"
+    "Dives dives": {
+        "latinName": "Dives dives",
+        "germanName": ""
     },
-    {
-        "label": "Nyctanassa violacea"
+    "Dolichonyx oryzivorus": {
+        "latinName": "Dolichonyx oryzivorus",
+        "germanName": ""
     },
-    {
-        "label": "Aramides cajaneus"
+    "Dryocopus lineatus": {
+        "latinName": "Dryocopus lineatus",
+        "germanName": ""
     },
-    {
-        "label": "Bubulcus ibis"
+    "Dryocopus pileatus": {
+        "latinName": "Dryocopus pileatus",
+        "germanName": ""
     },
-    {
-        "label": "Butorides virescens"
+    "Dumetella carolinensis": {
+        "latinName": "Dumetella carolinensis",
+        "germanName": "Katzenspottdrossel"
     },
-    {
-        "label": "Porphyrio martinicus"
+    "Egretta caerulea": {
+        "latinName": "Egretta caerulea",
+        "germanName": ""
     },
-    {
-        "label": "Botaurus lentiginosus"
+    "Egretta garzetta": {
+        "latinName": "Egretta garzetta",
+        "germanName": "Seidenreiher"
     },
-    {
-        "label": "Cochlearius cochlearius"
+    "Egretta gularis": {
+        "latinName": "Egretta gularis",
+        "germanName": "Kuestenreiher"
     },
-    {
-        "label": "Anhinga novaehollandiae"
+    "Egretta novaehollandiae": {
+        "latinName": "Egretta novaehollandiae",
+        "germanName": ""
     },
-    {
-        "label": "Anhinga rufa"
+    "Egretta rufescens": {
+        "latinName": "Egretta rufescens",
+        "germanName": ""
     },
-    {
-        "label": "Melozone fusca"
+    "Egretta sacra": {
+        "latinName": "Egretta sacra",
+        "germanName": ""
     },
-    {
-        "label": "Aquila chrysaetos"
+    "Egretta thula": {
+        "latinName": "Egretta thula",
+        "germanName": "Schmuckreiher"
     },
-    {
-        "label": "Hylocichla mustelina"
+    "Egretta tricolor": {
+        "latinName": "Egretta tricolor",
+        "germanName": "Dreifarbenreiher"
     },
-    {
-        "label": "Aphelocoma wollweberi"
+    "Elanoides forficatus": {
+        "latinName": "Elanoides forficatus",
+        "germanName": ""
     },
-    {
-        "label": "Accipiter striatus"
+    "Elanus leucurus": {
+        "latinName": "Elanus leucurus",
+        "germanName": ""
     },
-    {
-        "label": "Accipiter nisus"
+    "Emberiza calandra": {
+        "latinName": "Emberiza calandra",
+        "germanName": "Grauammer"
     },
-    {
-        "label": "Accipiter gentilis"
+    "Emberiza citrinella": {
+        "latinName": "Emberiza citrinella",
+        "germanName": "Goldammer"
     },
-    {
-        "label": "Egretta rufescens"
+    "Emberiza schoeniclus": {
+        "latinName": "Emberiza schoeniclus",
+        "germanName": "Rohrammer"
     },
-    {
-        "label": "Bucephala clangula"
+    "Empidonax difficilis": {
+        "latinName": "Empidonax difficilis",
+        "germanName": ""
     },
-    {
-        "label": "Anous stolidus"
+    "Empidonax fulvifrons": {
+        "latinName": "Empidonax fulvifrons",
+        "germanName": ""
     },
-    {
-        "label": "Actitis macularius"
+    "Empidonax hammondii": {
+        "latinName": "Empidonax hammondii",
+        "germanName": ""
     },
-    {
-        "label": "Ardea purpurea"
+    "Empidonax minimus": {
+        "latinName": "Empidonax minimus",
+        "germanName": ""
     },
-    {
-        "label": "Todiramphus chloris"
+    "Empidonax occidentalis": {
+        "latinName": "Empidonax occidentalis",
+        "germanName": ""
     },
-    {
-        "label": "Grus americana"
+    "Empidonax traillii": {
+        "latinName": "Empidonax traillii",
+        "germanName": ""
     },
-    {
-        "label": "Himantopus himantopus"
+    "Eolophus roseicapilla": {
+        "latinName": "Eolophus roseicapilla",
+        "germanName": ""
     },
-    {
-        "label": "Glaucidium gnoma"
+    "Ephippiorhynchus senegalensis": {
+        "latinName": "Ephippiorhynchus senegalensis",
+        "germanName": ""
     },
-    {
-        "label": "Circus approximans"
+    "Eremophila alpestris": {
+        "latinName": "Eremophila alpestris",
+        "germanName": "Ohrenlerche"
     },
-    {
-        "label": "Circus aeruginosus"
+    "Erithacus rubecula": {
+        "latinName": "Erithacus rubecula",
+        "germanName": "Rotkehlchen"
     },
-    {
-        "label": "Phalacrocorax sulcirostris"
+    "Estrilda astrild": {
+        "latinName": "Estrilda astrild",
+        "germanName": ""
     },
-    {
-        "label": "Buteo albonotatus"
+    "Eudocimus albus": {
+        "latinName": "Eudocimus albus",
+        "germanName": ""
     },
-    {
-        "label": "Butorides striata"
+    "Eudyptula minor": {
+        "latinName": "Eudyptula minor",
+        "germanName": ""
     },
-    {
-        "label": "Platalea ajaja"
+    "Eugenes fulgens": {
+        "latinName": "Eugenes fulgens",
+        "germanName": ""
     },
-    {
-        "label": "Buteo brachyurus"
+    "Eumomota superciliosa": {
+        "latinName": "Eumomota superciliosa",
+        "germanName": ""
     },
-    {
-        "label": "Ardea alba"
+    "Euphagus carolinus": {
+        "latinName": "Euphagus carolinus",
+        "germanName": ""
     },
-    {
-        "label": "Buteo swainsoni"
+    "Euphagus cyanocephalus": {
+        "latinName": "Euphagus cyanocephalus",
+        "germanName": ""
     },
-    {
-        "label": "Alectoris rufa"
+    "Euphonia affinis": {
+        "latinName": "Euphonia affinis",
+        "germanName": ""
     },
-    {
-        "label": "Buteo lineatus"
+    "Euphonia elegantissima": {
+        "latinName": "Euphonia elegantissima",
+        "germanName": ""
     },
-    {
-        "label": "Buteo jamaicensis"
+    "Euphonia hirundinacea": {
+        "latinName": "Euphonia hirundinacea",
+        "germanName": ""
     },
-    {
-        "label": "Charadrius nivosus"
+    "Eupsittula canicularis": {
+        "latinName": "Eupsittula canicularis",
+        "germanName": ""
     },
-    {
-        "label": "Tringa incana"
+    "Eupsittula nana": {
+        "latinName": "Eupsittula nana",
+        "germanName": ""
     },
-    {
-        "label": "Tringa semipalmata"
+    "Falcipennis canadensis": {
+        "latinName": "Falcipennis canadensis",
+        "germanName": ""
     },
-    {
-        "label": "Terathopius ecaudatus"
+    "Falco columbarius": {
+        "latinName": "Falco columbarius",
+        "germanName": "Merlin"
     },
-    {
-        "label": "Gallinago delicata"
+    "Falco femoralis": {
+        "latinName": "Falco femoralis",
+        "germanName": ""
     },
-    {
-        "label": "Buteogallus anthracinus"
+    "Falco mexicanus": {
+        "latinName": "Falco mexicanus",
+        "germanName": ""
     },
-    {
-        "label": "Chroicocephalus philadelphia"
+    "Falco novaeseelandiae": {
+        "latinName": "Falco novaeseelandiae",
+        "germanName": ""
     },
-    {
-        "label": "Circaetus gallicus"
+    "Falco peregrinus": {
+        "latinName": "Falco peregrinus",
+        "germanName": "Wanderfalke"
     },
-    {
-        "label": "Chroicocephalus novaehollandiae"
+    "Falco rufigularis": {
+        "latinName": "Falco rufigularis",
+        "germanName": ""
     },
-    {
-        "label": "Chroicocephalus ridibundus"
+    "Falco sparverius": {
+        "latinName": "Falco sparverius",
+        "germanName": "Buntfalke"
     },
-    {
-        "label": "Leucophaeus atricilla"
+    "Falco subbuteo": {
+        "latinName": "Falco subbuteo",
+        "germanName": "Baumfalke"
     },
-    {
-        "label": "Leucophaeus pipixcan"
+    "Falco tinnunculus": {
+        "latinName": "Falco tinnunculus",
+        "germanName": "Turmfalke"
     },
-    {
-        "label": "Onychoprion fuscatus"
+    "Ficedula hypoleuca": {
+        "latinName": "Ficedula hypoleuca",
+        "germanName": "Trauerschnaepper"
     },
-    {
-        "label": "Sternula antillarum"
+    "Florisuga mellivora": {
+        "latinName": "Florisuga mellivora",
+        "germanName": ""
     },
-    {
-        "label": "Hydroprogne caspia"
+    "Francolinus pondicerianus": {
+        "latinName": "Francolinus pondicerianus",
+        "germanName": ""
     },
-    {
-        "label": "Thalasseus maximus"
+    "Fratercula arctica": {
+        "latinName": "Fratercula arctica",
+        "germanName": "Papageitaucher"
     },
-    {
-        "label": "Thalasseus bergii"
+    "Fratercula cirrhata": {
+        "latinName": "Fratercula cirrhata",
+        "germanName": ""
     },
-    {
-        "label": "Elanus leucurus"
+    "Fregata magnificens": {
+        "latinName": "Fregata magnificens",
+        "germanName": ""
     },
-    {
-        "label": "Alopochen aegyptiaca"
+    "Fregata minor": {
+        "latinName": "Fregata minor",
+        "germanName": ""
     },
-    {
-        "label": "Streptopelia senegalensis"
+    "Fringilla coelebs": {
+        "latinName": "Fringilla coelebs",
+        "germanName": "Buchfink"
     },
-    {
-        "label": "Gerygone igata"
+    "Fringilla montifringilla": {
+        "latinName": "Fringilla montifringilla",
+        "germanName": "Bergfink"
     },
-    {
-        "label": "Haliaeetus leucocephalus"
+    "Fulica americana": {
+        "latinName": "Fulica americana",
+        "germanName": ""
     },
-    {
-        "label": "Cistothorus platensis"
+    "Fulica atra": {
+        "latinName": "Fulica atra",
+        "germanName": "Blaesshuhn"
     },
-    {
-        "label": "Haliaeetus vocifer"
+    "Fulmarus glacialis": {
+        "latinName": "Fulmarus glacialis",
+        "germanName": "Eissturmvogel"
     },
-    {
-        "label": "Bubo scandiacus"
+    "Galbula ruficauda": {
+        "latinName": "Galbula ruficauda",
+        "germanName": ""
     },
-    {
-        "label": "Ciccaba virgata"
+    "Galerida cristata": {
+        "latinName": "Galerida cristata",
+        "germanName": "Haubenlerche"
     },
-    {
-        "label": "Bonasa umbellus"
+    "Gallinago delicata": {
+        "latinName": "Gallinago delicata",
+        "germanName": ""
     },
-    {
-        "label": "Busarellus nigricollis"
+    "Gallinago gallinago": {
+        "latinName": "Gallinago gallinago",
+        "germanName": "Bekassine"
     },
-    {
-        "label": "Rostrhamus sociabilis"
+    "Gallinula chloropus": {
+        "latinName": "Gallinula chloropus",
+        "germanName": "Teichhuhn"
     },
-    {
-        "label": "Milvus milvus"
+    "Gallinula galeata": {
+        "latinName": "Gallinula galeata",
+        "germanName": ""
     },
-    {
-        "label": "Gyps fulvus"
+    "Gallinula tenebrosa": {
+        "latinName": "Gallinula tenebrosa",
+        "germanName": ""
     },
-    {
-        "label": "Ficedula hypoleuca"
+    "Gallirallus australis": {
+        "latinName": "Gallirallus australis",
+        "germanName": ""
     },
-    {
-        "label": "Momotus coeruliceps"
+    "Gallus gallus": {
+        "latinName": "Gallus gallus",
+        "germanName": ""
     },
-    {
-        "label": "Charadrius semipalmatus"
+    "Gallus gallus domesticus": {
+        "latinName": "Gallus gallus domesticus",
+        "germanName": ""
     },
-    {
-        "label": "Haliastur indus"
+    "Garrulus glandarius": {
+        "latinName": "Garrulus glandarius",
+        "germanName": "Eichelhaeher"
     },
-    {
-        "label": "Gyps africanus"
+    "Gavia immer": {
+        "latinName": "Gavia immer",
+        "germanName": "Eistaucher"
     },
-    {
-        "label": "Ictinia mississippiensis"
+    "Gavia pacifica": {
+        "latinName": "Gavia pacifica",
+        "germanName": ""
     },
-    {
-        "label": "Dives dives"
+    "Gavia stellata": {
+        "latinName": "Gavia stellata",
+        "germanName": "Sterntaucher"
     },
-    {
-        "label": "Baeolophus atricristatus"
+    "Gelochelidon nilotica": {
+        "latinName": "Gelochelidon nilotica",
+        "germanName": "Lachseeschwalbe"
     },
-    {
-        "label": "Baeolophus bicolor"
+    "Geococcyx californianus": {
+        "latinName": "Geococcyx californianus",
+        "germanName": ""
     },
-    {
-        "label": "Baeolophus inornatus"
+    "Geococcyx velox": {
+        "latinName": "Geococcyx velox",
+        "germanName": ""
     },
-    {
-        "label": "Melospiza melodia"
+    "Geopelia striata": {
+        "latinName": "Geopelia striata",
+        "germanName": ""
     },
-    {
-        "label": "Spinus spinus"
+    "Geothlypis formosa": {
+        "latinName": "Geothlypis formosa",
+        "germanName": ""
     },
-    {
-        "label": "Motacilla alba"
+    "Geothlypis philadelphia": {
+        "latinName": "Geothlypis philadelphia",
+        "germanName": ""
     },
-    {
-        "label": "Certhia americana"
+    "Geothlypis tolmiei": {
+        "latinName": "Geothlypis tolmiei",
+        "germanName": ""
     },
-    {
-        "label": "Bucorvus leadbeateri"
+    "Geothlypis trichas": {
+        "latinName": "Geothlypis trichas",
+        "germanName": ""
     },
-    {
-        "label": "Anthus pratensis"
+    "Geranoaetus albicaudatus": {
+        "latinName": "Geranoaetus albicaudatus",
+        "germanName": ""
     },
-    {
-        "label": "Anthus rubescens"
+    "Gerygone igata": {
+        "latinName": "Gerygone igata",
+        "germanName": ""
     },
-    {
-        "label": "Tachycineta albilinea"
+    "Glaucidium brasilianum": {
+        "latinName": "Glaucidium brasilianum",
+        "germanName": ""
     },
-    {
-        "label": "Poecile carolinensis"
+    "Glaucidium gnoma": {
+        "latinName": "Glaucidium gnoma",
+        "germanName": ""
     },
-    {
-        "label": "Poecile atricapillus"
+    "Grallina cyanoleuca": {
+        "latinName": "Grallina cyanoleuca",
+        "germanName": ""
     },
-    {
-        "label": "Poecile gambeli"
+    "Grus americana": {
+        "latinName": "Grus americana",
+        "germanName": ""
     },
-    {
-        "label": "Poecile rufescens"
+    "Grus grus": {
+        "latinName": "Grus grus",
+        "germanName": "Kranich"
     },
-    {
-        "label": "Periparus ater"
+    "Gygis alba": {
+        "latinName": "Gygis alba",
+        "germanName": ""
     },
-    {
-        "label": "Chlorophanes spiza"
+    "Gymnogyps californianus": {
+        "latinName": "Gymnogyps californianus",
+        "germanName": ""
     },
-    {
-        "label": "Estrilda astrild"
+    "Gymnorhina tibicen": {
+        "latinName": "Gymnorhina tibicen",
+        "germanName": ""
     },
-    {
-        "label": "Cyanistes caeruleus"
+    "Gyps africanus": {
+        "latinName": "Gyps africanus",
+        "germanName": ""
     },
-    {
-        "label": "Sphyrapicus varius"
+    "Gyps fulvus": {
+        "latinName": "Gyps fulvus",
+        "germanName": "Gaensegeier"
     },
-    {
-        "label": "Petrochelidon pyrrhonota"
+    "Haematopus bachmani": {
+        "latinName": "Haematopus bachmani",
+        "germanName": ""
     },
-    {
-        "label": "Troglodytes pacificus"
+    "Haematopus finschi": {
+        "latinName": "Haematopus finschi",
+        "germanName": ""
     },
-    {
-        "label": "Troglodytes hiemalis"
+    "Haematopus ostralegus": {
+        "latinName": "Haematopus ostralegus",
+        "germanName": "Austernfischer"
     },
-    {
-        "label": "Passer montanus"
+    "Haematopus palliatus": {
+        "latinName": "Haematopus palliatus",
+        "germanName": ""
     },
-    {
-        "label": "Passer domesticus"
+    "Haematopus unicolor": {
+        "latinName": "Haematopus unicolor",
+        "germanName": ""
     },
-    {
-        "label": "Aphelocoma californica"
+    "Haemorhous cassinii": {
+        "latinName": "Haemorhous cassinii",
+        "germanName": ""
     },
-    {
-        "label": "Amazilia yucatanensis"
+    "Haemorhous mexicanus": {
+        "latinName": "Haemorhous mexicanus",
+        "germanName": ""
     },
-    {
-        "label": "Amazilia tzacatl"
+    "Haemorhous purpureus": {
+        "latinName": "Haemorhous purpureus",
+        "germanName": ""
     },
-    {
-        "label": "Dicrurus adsimilis"
+    "Halcyon smyrnensis": {
+        "latinName": "Halcyon smyrnensis",
+        "germanName": ""
     },
-    {
-        "label": "Amazilia violiceps"
+    "Haliaeetus leucocephalus": {
+        "latinName": "Haliaeetus leucocephalus",
+        "germanName": "Weisskopf-Seeadler"
     },
-    {
-        "label": "Lonchura punctulata"
+    "Haliaeetus leucogaster": {
+        "latinName": "Haliaeetus leucogaster",
+        "germanName": ""
     },
-    {
-        "label": "Tigrisoma mexicanum"
+    "Haliaeetus vocifer": {
+        "latinName": "Haliaeetus vocifer",
+        "germanName": ""
     },
-    {
-        "label": "Porphyrio melanotus melanotus"
+    "Haliastur indus": {
+        "latinName": "Haliastur indus",
+        "germanName": ""
     },
-    {
-        "label": "Melanitta americana"
+    "Helmitheros vermivorum": {
+        "latinName": "Helmitheros vermivorum",
+        "germanName": ""
     },
-    {
-        "label": "Spizella pallida"
+    "Hemiphaga novaeseelandiae": {
+        "latinName": "Hemiphaga novaeseelandiae",
+        "germanName": ""
     },
-    {
-        "label": "Amazilia rutila"
+    "Herpetotheres cachinnans": {
+        "latinName": "Herpetotheres cachinnans",
+        "germanName": ""
     },
-    {
-        "label": "Zenaida aurita"
+    "Himantopus himantopus": {
+        "latinName": "Himantopus himantopus",
+        "germanName": "Stelzenlaeufer"
     },
-    {
-        "label": "Prunella modularis"
+    "Himantopus leucocephalus": {
+        "latinName": "Himantopus leucocephalus",
+        "germanName": ""
     },
-    {
-        "label": "Falco tinnunculus"
+    "Himantopus mexicanus": {
+        "latinName": "Himantopus mexicanus",
+        "germanName": ""
     },
-    {
-        "label": "Ixoreus naevius"
+    "Hirundo neoxena": {
+        "latinName": "Hirundo neoxena",
+        "germanName": ""
     },
-    {
-        "label": "Archilochus colubris"
+    "Hirundo rustica": {
+        "latinName": "Hirundo rustica",
+        "germanName": "Rauchschwalbe"
     },
-    {
-        "label": "Lampornis clemenciae"
+    "Hirundo rustica erythrogaster": {
+        "latinName": "Hirundo rustica erythrogaster",
+        "germanName": ""
     },
-    {
-        "label": "Myiarchus tuberculifer"
+    "Histrionicus histrionicus": {
+        "latinName": "Histrionicus histrionicus",
+        "germanName": "Kragenente"
     },
-    {
-        "label": "Setophaga ruticilla"
+    "Hydroprogne caspia": {
+        "latinName": "Hydroprogne caspia",
+        "germanName": "Raubseeschwalbe"
     },
-    {
-        "label": "Myiarchus tyrannulus"
+    "Hylocharis leucotis": {
+        "latinName": "Hylocharis leucotis",
+        "germanName": ""
     },
-    {
-        "label": "Zosterops lateralis"
+    "Hylocichla mustelina": {
+        "latinName": "Hylocichla mustelina",
+        "germanName": ""
     },
-    {
-        "label": "Zonotrichia leucophrys"
+    "Hymenolaimus malacorhynchos": {
+        "latinName": "Hymenolaimus malacorhynchos",
+        "germanName": ""
     },
-    {
-        "label": "Agelaius phoeniceus"
+    "Icteria virens": {
+        "latinName": "Icteria virens",
+        "germanName": ""
     },
-    {
-        "label": "Parus major"
+    "Icterus abeillei": {
+        "latinName": "Icterus abeillei",
+        "germanName": ""
     },
-    {
-        "label": "Zonotrichia capensis"
+    "Icterus bullockii": {
+        "latinName": "Icterus bullockii",
+        "germanName": ""
     },
-    {
-        "label": "Oreothlypis peregrina"
+    "Icterus cucullatus": {
+        "latinName": "Icterus cucullatus",
+        "germanName": ""
     },
-    {
-        "label": "Oreothlypis celata"
+    "Icterus galbula": {
+        "latinName": "Icterus galbula",
+        "germanName": ""
     },
-    {
-        "label": "Oreothlypis ruficapilla"
+    "Icterus graduacauda": {
+        "latinName": "Icterus graduacauda",
+        "germanName": ""
     },
-    {
-        "label": "Geothlypis philadelphia"
+    "Icterus gularis": {
+        "latinName": "Icterus gularis",
+        "germanName": ""
     },
-    {
-        "label": "Geothlypis formosa"
+    "Icterus parisorum": {
+        "latinName": "Icterus parisorum",
+        "germanName": ""
     },
-    {
-        "label": "Setophaga tigrina"
+    "Icterus pustulatus": {
+        "latinName": "Icterus pustulatus",
+        "germanName": ""
     },
-    {
-        "label": "Setophaga americana"
+    "Icterus spurius": {
+        "latinName": "Icterus spurius",
+        "germanName": ""
     },
-    {
-        "label": "Setophaga magnolia"
+    "Icterus wagleri": {
+        "latinName": "Icterus wagleri",
+        "germanName": ""
     },
-    {
-        "label": "Setophaga castanea"
+    "Ictinia mississippiensis": {
+        "latinName": "Ictinia mississippiensis",
+        "germanName": ""
     },
-    {
-        "label": "Setophaga fusca"
+    "Ixobrychus exilis": {
+        "latinName": "Ixobrychus exilis",
+        "germanName": ""
     },
-    {
-        "label": "Setophaga petechia"
+    "Ixoreus naevius": {
+        "latinName": "Ixoreus naevius",
+        "germanName": ""
     },
-    {
-        "label": "Setophaga striata"
+    "Jabiru mycteria": {
+        "latinName": "Jabiru mycteria",
+        "germanName": ""
     },
-    {
-        "label": "Setophaga palmarum"
+    "Jacana jacana": {
+        "latinName": "Jacana jacana",
+        "germanName": ""
     },
-    {
-        "label": "Setophaga pinus"
+    "Jacana spinosa": {
+        "latinName": "Jacana spinosa",
+        "germanName": ""
     },
-    {
-        "label": "Setophaga coronata"
+    "Junco hyemalis": {
+        "latinName": "Junco hyemalis",
+        "germanName": ""
     },
-    {
-        "label": "Setophaga dominica"
+    "Junco hyemalis caniceps": {
+        "latinName": "Junco hyemalis caniceps",
+        "germanName": ""
     },
-    {
-        "label": "Campylopterus hemileucurus"
+    "Junco hyemalis hyemalis": {
+        "latinName": "Junco hyemalis hyemalis",
+        "germanName": ""
     },
-    {
-        "label": "Vireo cassinii"
+    "Junco hyemalis oreganus": {
+        "latinName": "Junco hyemalis oreganus",
+        "germanName": ""
     },
-    {
-        "label": "Setophaga nigrescens"
+    "Junco phaeonotus": {
+        "latinName": "Junco phaeonotus",
+        "germanName": ""
     },
-    {
-        "label": "Setophaga townsendi"
+    "Lagopus lagopus": {
+        "latinName": "Lagopus lagopus",
+        "germanName": ""
     },
-    {
-        "label": "Setophaga occidentalis"
+    "Lampornis clemenciae": {
+        "latinName": "Lampornis clemenciae",
+        "germanName": ""
     },
-    {
-        "label": "Setophaga chrysoparia"
+    "Lanius collurio": {
+        "latinName": "Lanius collurio",
+        "germanName": "Neuntoeter"
     },
-    {
-        "label": "Setophaga virens"
+    "Lanius excubitor": {
+        "latinName": "Lanius excubitor",
+        "germanName": "Raubwuerger"
     },
-    {
-        "label": "Cardellina canadensis"
+    "Lanius ludovicianus": {
+        "latinName": "Lanius ludovicianus",
+        "germanName": ""
     },
-    {
-        "label": "Cardellina rubra"
+    "Larus argentatus": {
+        "latinName": "Larus argentatus",
+        "germanName": "Silbermoewe"
     },
-    {
-        "label": "Aphelocoma coerulescens"
+    "Larus argentatus smithsonianus": {
+        "latinName": "Larus argentatus smithsonianus",
+        "germanName": ""
     },
-    {
-        "label": "Melanerpes erythrocephalus"
+    "Larus californicus": {
+        "latinName": "Larus californicus",
+        "germanName": ""
     },
-    {
-        "label": "Emberiza calandra"
+    "Larus canus": {
+        "latinName": "Larus canus",
+        "germanName": "Sturmmoewe"
     },
-    {
-        "label": "Acanthis flammea"
+    "Larus delawarensis": {
+        "latinName": "Larus delawarensis",
+        "germanName": "Ringschnabelmoewe"
     },
-    {
-        "label": "Spinus pinus"
+    "Larus dominicanus": {
+        "latinName": "Larus dominicanus",
+        "germanName": ""
     },
-    {
-        "label": "Thraupis abbas"
+    "Larus dominicanus dominicanus": {
+        "latinName": "Larus dominicanus dominicanus",
+        "germanName": ""
     },
-    {
-        "label": "Spinus psaltria"
+    "Larus fuscus": {
+        "latinName": "Larus fuscus",
+        "germanName": "Heringsmoewe"
     },
-    {
-        "label": "Spinus lawrencei"
+    "Larus glaucescens": {
+        "latinName": "Larus glaucescens",
+        "germanName": ""
     },
-    {
-        "label": "Spinus tristis"
+    "Larus glaucescens \u00c3\u2014 occidentalis": {
+        "latinName": "Larus glaucescens \u00c3\u2014 occidentalis",
+        "germanName": ""
     },
-    {
-        "label": "Threskiornis aethiopicus"
+    "Larus glaucoides": {
+        "latinName": "Larus glaucoides",
+        "germanName": "Polarmoewe"
     },
-    {
-        "label": "Gygis alba"
+    "Larus heermanni": {
+        "latinName": "Larus heermanni",
+        "germanName": ""
     },
-    {
-        "label": "Tachycineta bicolor"
+    "Larus hyperboreus": {
+        "latinName": "Larus hyperboreus",
+        "germanName": "Eismoewe"
     },
-    {
-        "label": "Larus dominicanus dominicanus"
+    "Larus livens": {
+        "latinName": "Larus livens",
+        "germanName": ""
     },
-    {
-        "label": "Lonchura oryzivora"
+    "Larus marinus": {
+        "latinName": "Larus marinus",
+        "germanName": "Mantelmoewe"
     },
-    {
-        "label": "Haematopus palliatus"
+    "Larus michahellis": {
+        "latinName": "Larus michahellis",
+        "germanName": "Mittelmeermoewe"
     },
-    {
-        "label": "Chloris chloris"
+    "Larus occidentalis": {
+        "latinName": "Larus occidentalis",
+        "germanName": ""
     },
-    {
-        "label": "Accipiter cooperii"
+    "Larus thayeri": {
+        "latinName": "Larus thayeri",
+        "germanName": ""
     },
-    {
-        "label": "Vireo solitarius"
+    "Leptoptilos crumenifer": {
+        "latinName": "Leptoptilos crumenifer",
+        "germanName": ""
     },
-    {
-        "label": "Selasphorus platycercus"
+    "Leptotila verreauxi": {
+        "latinName": "Leptotila verreauxi",
+        "germanName": ""
     },
-    {
-        "label": "Chroicocephalus scopulinus"
+    "Leucophaeus atricilla": {
+        "latinName": "Leucophaeus atricilla",
+        "germanName": "Aztekenmoewe"
     },
-    {
-        "label": "Aechmophorus occidentalis"
+    "Leucophaeus pipixcan": {
+        "latinName": "Leucophaeus pipixcan",
+        "germanName": "Praeriemoewe"
     },
-    {
-        "label": "Hemiphaga novaeseelandiae"
+    "Limnodromus griseus": {
+        "latinName": "Limnodromus griseus",
+        "germanName": "Moorschlammlaeufer"
     },
-    {
-        "label": "Xema sabini"
+    "Limnodromus scolopaceus": {
+        "latinName": "Limnodromus scolopaceus",
+        "germanName": "Tundraschlammlaeufer"
     },
-    {
-        "label": "Ramphastos sulfuratus"
+    "Limosa fedoa": {
+        "latinName": "Limosa fedoa",
+        "germanName": ""
     },
-    {
-        "label": "Dacelo novaeguineae"
+    "Limosa haemastica": {
+        "latinName": "Limosa haemastica",
+        "germanName": ""
     },
-    {
-        "label": "Fulica atra"
+    "Limosa lapponica": {
+        "latinName": "Limosa lapponica",
+        "germanName": "Pfuhlschnepfe"
     },
-    {
-        "label": "Hirundo rustica erythrogaster"
+    "Limosa limosa": {
+        "latinName": "Limosa limosa",
+        "germanName": "Uferschnepfe"
     },
-    {
-        "label": "Calypte costae"
+    "Lonchura oryzivora": {
+        "latinName": "Lonchura oryzivora",
+        "germanName": ""
     },
-    {
-        "label": "Calypte anna"
+    "Lonchura punctulata": {
+        "latinName": "Lonchura punctulata",
+        "germanName": ""
     },
-    {
-        "label": "Colaptes auratus cafer"
+    "Lophodytes cucullatus": {
+        "latinName": "Lophodytes cucullatus",
+        "germanName": "Kappensaeger"
     },
-    {
-        "label": "Sula nebouxii"
+    "Lophura leucomelanos": {
+        "latinName": "Lophura leucomelanos",
+        "germanName": ""
     },
-    {
-        "label": "Copsychus saularis"
+    "Loxia curvirostra": {
+        "latinName": "Loxia curvirostra",
+        "germanName": "Fichtenkreuzschnabel"
     },
-    {
-        "label": "Selasphorus sasin"
+    "Loxia leucoptera": {
+        "latinName": "Loxia leucoptera",
+        "germanName": "Bindenkreuzschnabel"
     },
-    {
-        "label": "Selasphorus rufus"
+    "Luscinia svecica": {
+        "latinName": "Luscinia svecica",
+        "germanName": "Blaukehlchen"
     },
-    {
-        "label": "Calothorax lucifer"
+    "Malurus cyaneus": {
+        "latinName": "Malurus cyaneus",
+        "germanName": ""
     },
-    {
-        "label": "Pycnonotus barbatus"
+    "Manorina melanocephala": {
+        "latinName": "Manorina melanocephala",
+        "germanName": ""
     },
-    {
-        "label": "Larus glaucescens \u00c3\u2014 occidentalis"
+    "Megaceryle alcyon": {
+        "latinName": "Megaceryle alcyon",
+        "germanName": ""
     },
-    {
-        "label": "Aphelocoma woodhouseii"
+    "Megaceryle torquata": {
+        "latinName": "Megaceryle torquata",
+        "germanName": ""
     },
-    {
-        "label": "Florisuga mellivora"
+    "Megadyptes antipodes": {
+        "latinName": "Megadyptes antipodes",
+        "germanName": ""
     },
-    {
-        "label": "Haematopus finschi"
+    "Megarynchus pitangua": {
+        "latinName": "Megarynchus pitangua",
+        "germanName": ""
     },
-    {
-        "label": "Falcipennis canadensis"
+    "Megascops asio": {
+        "latinName": "Megascops asio",
+        "germanName": ""
     },
-    {
-        "label": "Archilochus alexandri"
+    "Megascops kennicottii": {
+        "latinName": "Megascops kennicottii",
+        "germanName": ""
     },
-    {
-        "label": "Circus cyaneus"
+    "Melanerpes aurifrons": {
+        "latinName": "Melanerpes aurifrons",
+        "germanName": ""
     },
-    {
-        "label": "Ardea alba modesta"
+    "Melanerpes carolinus": {
+        "latinName": "Melanerpes carolinus",
+        "germanName": ""
     },
-    {
-        "label": "Myiarchus crinitus"
+    "Melanerpes chrysogenys": {
+        "latinName": "Melanerpes chrysogenys",
+        "germanName": ""
     },
-    {
-        "label": "Buteo regalis"
+    "Melanerpes erythrocephalus": {
+        "latinName": "Melanerpes erythrocephalus",
+        "germanName": ""
     },
-    {
-        "label": "Aeronautes saxatalis"
+    "Melanerpes formicivorus": {
+        "latinName": "Melanerpes formicivorus",
+        "germanName": ""
     },
-    {
-        "label": "Chaetura vauxi"
+    "Melanerpes lewis": {
+        "latinName": "Melanerpes lewis",
+        "germanName": ""
     },
-    {
-        "label": "Chaetura pelagica"
+    "Melanerpes pucherani": {
+        "latinName": "Melanerpes pucherani",
+        "germanName": ""
     },
-    {
-        "label": "Setophaga pensylvanica"
+    "Melanerpes uropygialis": {
+        "latinName": "Melanerpes uropygialis",
+        "germanName": ""
     },
-    {
-        "label": "Lanius ludovicianus"
+    "Melanitta americana": {
+        "latinName": "Melanitta americana",
+        "germanName": "Pazifiktrauerente"
     },
-    {
-        "label": "Anhinga anhinga"
+    "Melanitta fusca": {
+        "latinName": "Melanitta fusca",
+        "germanName": "Samtente"
     },
-    {
-        "label": "Acridotheres tristis"
+    "Melanitta perspicillata": {
+        "latinName": "Melanitta perspicillata",
+        "germanName": "Brillenente"
     },
-    {
-        "label": "Sitta pygmaea"
+    "Melanotis caerulescens": {
+        "latinName": "Melanotis caerulescens",
+        "germanName": ""
     },
-    {
-        "label": "Actophilornis africanus"
+    "Meleagris gallopavo": {
+        "latinName": "Meleagris gallopavo",
+        "germanName": "Truthuhn"
     },
-    {
-        "label": "Sitta canadensis"
+    "Meleagris gallopavo intermedia": {
+        "latinName": "Meleagris gallopavo intermedia",
+        "germanName": ""
     },
-    {
-        "label": "Sitta europaea"
+    "Meleagris gallopavo silvestris": {
+        "latinName": "Meleagris gallopavo silvestris",
+        "germanName": ""
     },
-    {
-        "label": "Sitta pusilla"
+    "Meleagris ocellata": {
+        "latinName": "Meleagris ocellata",
+        "germanName": ""
     },
-    {
-        "label": "Apus apus"
+    "Melopsittacus undulatus": {
+        "latinName": "Melopsittacus undulatus",
+        "germanName": ""
     },
-    {
-        "label": "Sturnus vulgaris"
+    "Melospiza georgiana": {
+        "latinName": "Melospiza georgiana",
+        "germanName": ""
     },
-    {
-        "label": "Seiurus aurocapilla"
+    "Melospiza lincolnii": {
+        "latinName": "Melospiza lincolnii",
+        "germanName": ""
     },
-    {
-        "label": "Motacilla flava"
+    "Melospiza melodia": {
+        "latinName": "Melospiza melodia",
+        "germanName": "Singammer"
     },
-    {
-        "label": "Vireo griseus"
+    "Melozone aberti": {
+        "latinName": "Melozone aberti",
+        "germanName": ""
     },
-    {
-        "label": "Toxostoma longirostre"
+    "Melozone crissalis": {
+        "latinName": "Melozone crissalis",
+        "germanName": ""
     },
-    {
-        "label": "Calidris alba"
+    "Melozone fusca": {
+        "latinName": "Melozone fusca",
+        "germanName": ""
     },
-    {
-        "label": "Toxostoma redivivum"
+    "Mergus merganser": {
+        "latinName": "Mergus merganser",
+        "germanName": "Gaensesaeger"
     },
-    {
-        "label": "Gallinula galeata"
+    "Mergus serrator": {
+        "latinName": "Mergus serrator",
+        "germanName": "Mittelsaeger"
     },
-    {
-        "label": "Calidris himantopus"
+    "Merops apiaster": {
+        "latinName": "Merops apiaster",
+        "germanName": "Bienenfresser"
     },
-    {
-        "label": "Eugenes fulgens"
+    "Merops orientalis": {
+        "latinName": "Merops orientalis",
+        "germanName": ""
     },
-    {
-        "label": "Icterus wagleri"
+    "Merops pusillus": {
+        "latinName": "Merops pusillus",
+        "germanName": ""
     },
-    {
-        "label": "Icterus parisorum"
+    "Microcarbo melanoleucos": {
+        "latinName": "Microcarbo melanoleucos",
+        "germanName": ""
     },
-    {
-        "label": "Buteo platypterus"
+    "Microcarbo melanoleucos brevirostris": {
+        "latinName": "Microcarbo melanoleucos brevirostris",
+        "germanName": ""
     },
-    {
-        "label": "Gallinago gallinago"
+    "Milvago chimachima": {
+        "latinName": "Milvago chimachima",
+        "germanName": ""
     },
-    {
-        "label": "Icterus spurius"
+    "Milvus migrans": {
+        "latinName": "Milvus migrans",
+        "germanName": "Schwarzmilan"
     },
-    {
-        "label": "Calidris minutilla"
+    "Milvus milvus": {
+        "latinName": "Milvus milvus",
+        "germanName": "Rotmilan"
     },
-    {
-        "label": "Dumetella carolinensis"
+    "Mimus gilvus": {
+        "latinName": "Mimus gilvus",
+        "germanName": ""
     },
-    {
-        "label": "Porphyrio hochstetteri"
+    "Mimus polyglottos": {
+        "latinName": "Mimus polyglottos",
+        "germanName": ""
     },
-    {
-        "label": "Calidris fuscicollis"
+    "Mitrephanes phaeocercus": {
+        "latinName": "Mitrephanes phaeocercus",
+        "germanName": ""
     },
-    {
-        "label": "Phalaropus tricolor"
+    "Mniotilta varia": {
+        "latinName": "Mniotilta varia",
+        "germanName": ""
     },
-    {
-        "label": "Colaptes auratus auratus"
+    "Molothrus aeneus": {
+        "latinName": "Molothrus aeneus",
+        "germanName": ""
     },
-    {
-        "label": "Melanotis caerulescens"
+    "Molothrus ater": {
+        "latinName": "Molothrus ater",
+        "germanName": "Braunkopf-Kuhstaerling"
     },
-    {
-        "label": "Tiaris olivaceus"
+    "Momotus coeruliceps": {
+        "latinName": "Momotus coeruliceps",
+        "germanName": ""
     },
-    {
-        "label": "Oreoscoptes montanus"
+    "Momotus lessonii": {
+        "latinName": "Momotus lessonii",
+        "germanName": ""
     },
-    {
-        "label": "Limnodromus scolopaceus"
+    "Momotus mexicanus": {
+        "latinName": "Momotus mexicanus",
+        "germanName": ""
     },
-    {
-        "label": "Tringa solitaria"
+    "Monticola solitarius": {
+        "latinName": "Monticola solitarius",
+        "germanName": "Blaumerle"
     },
-    {
-        "label": "Sitta carolinensis"
+    "Morus bassanus": {
+        "latinName": "Morus bassanus",
+        "germanName": "Basstoelpel"
     },
-    {
-        "label": "Tringa totanus"
+    "Morus serrator": {
+        "latinName": "Morus serrator",
+        "germanName": ""
     },
-    {
-        "label": "Dendrocygna autumnalis"
+    "Motacilla aguimp": {
+        "latinName": "Motacilla aguimp",
+        "germanName": ""
     },
-    {
-        "label": "Dendrocygna viduata"
+    "Motacilla alba": {
+        "latinName": "Motacilla alba",
+        "germanName": "Bachstelze"
     },
-    {
-        "label": "Dendrocygna bicolor"
+    "Motacilla cinerea": {
+        "latinName": "Motacilla cinerea",
+        "germanName": "Gebirgsstelze"
     },
-    {
-        "label": "Icterus abeillei"
+    "Motacilla flava": {
+        "latinName": "Motacilla flava",
+        "germanName": "Schafstelze"
     },
-    {
-        "label": "Vanellus chilensis"
+    "Muscicapa striata": {
+        "latinName": "Muscicapa striata",
+        "germanName": "Grauschnaepper"
     },
-    {
-        "label": "Cygnus buccinator"
+    "Myadestes townsendi": {
+        "latinName": "Myadestes townsendi",
+        "germanName": ""
     },
-    {
-        "label": "Cygnus cygnus"
+    "Mycteria americana": {
+        "latinName": "Mycteria americana",
+        "germanName": ""
     },
-    {
-        "label": "Cygnus columbianus"
+    "Mycteria ibis": {
+        "latinName": "Mycteria ibis",
+        "germanName": ""
     },
-    {
-        "label": "Cygnus olor"
+    "Myiarchus cinerascens": {
+        "latinName": "Myiarchus cinerascens",
+        "germanName": ""
     },
-    {
-        "label": "Icterus galbula"
+    "Myiarchus crinitus": {
+        "latinName": "Myiarchus crinitus",
+        "germanName": ""
     },
-    {
-        "label": "Anas platyrhynchos"
+    "Myiarchus tuberculifer": {
+        "latinName": "Myiarchus tuberculifer",
+        "germanName": ""
     },
-    {
-        "label": "Anas acuta"
+    "Myiarchus tyrannulus": {
+        "latinName": "Myiarchus tyrannulus",
+        "germanName": ""
     },
-    {
-        "label": "Anas crecca"
+    "Myioborus miniatus": {
+        "latinName": "Myioborus miniatus",
+        "germanName": ""
     },
-    {
-        "label": "Anas cyanoptera"
+    "Myioborus pictus": {
+        "latinName": "Myioborus pictus",
+        "germanName": ""
     },
-    {
-        "label": "Anas fulvigula"
+    "Myiodynastes luteiventris": {
+        "latinName": "Myiodynastes luteiventris",
+        "germanName": ""
     },
-    {
-        "label": "Anas discors"
+    "Myiopsitta monachus": {
+        "latinName": "Myiopsitta monachus",
+        "germanName": ""
     },
-    {
-        "label": "Anas strepera"
+    "Myiozetetes similis": {
+        "latinName": "Myiozetetes similis",
+        "germanName": ""
     },
-    {
-        "label": "Anas clypeata"
+    "Nestor meridionalis": {
+        "latinName": "Nestor meridionalis",
+        "germanName": ""
     },
-    {
-        "label": "Anas chlorotis"
+    "Nestor meridionalis septentrionalis": {
+        "latinName": "Nestor meridionalis septentrionalis",
+        "germanName": ""
     },
-    {
-        "label": "Rhipidura leucophrys"
+    "Nestor notabilis": {
+        "latinName": "Nestor notabilis",
+        "germanName": ""
     },
-    {
-        "label": "Anas americana"
+    "Netta rufina": {
+        "latinName": "Netta rufina",
+        "germanName": "Kolbenente"
     },
-    {
-        "label": "Bucephala albeola"
+    "Ninox novaeseelandiae novaeseelandiae": {
+        "latinName": "Ninox novaeseelandiae novaeseelandiae",
+        "germanName": ""
     },
-    {
-        "label": "Mergus serrator"
+    "None": {
+        "latinName": "None",
+        "germanName": ""
     },
-    {
-        "label": "Mergus merganser"
+    "Notiomystis cincta": {
+        "latinName": "Notiomystis cincta",
+        "germanName": ""
     },
-    {
-        "label": "Anser anser"
+    "Nucifraga columbiana": {
+        "latinName": "Nucifraga columbiana",
+        "germanName": ""
     },
-    {
-        "label": "Anser albifrons"
+    "Numenius americanus": {
+        "latinName": "Numenius americanus",
+        "germanName": ""
     },
-    {
-        "label": "Somateria mollissima"
+    "Numenius arquata": {
+        "latinName": "Numenius arquata",
+        "germanName": "Brachvogel"
     },
-    {
-        "label": "Rallus obsoletus"
+    "Numenius phaeopus": {
+        "latinName": "Numenius phaeopus",
+        "germanName": "Regenbrachvogel"
     },
-    {
-        "label": "Platycercus elegans"
+    "Numida meleagris": {
+        "latinName": "Numida meleagris",
+        "germanName": ""
     },
-    {
-        "label": "Melanitta fusca"
+    "Nyctanassa violacea": {
+        "latinName": "Nyctanassa violacea",
+        "germanName": ""
     },
-    {
-        "label": "Milvus migrans"
+    "Nyctibius jamaicensis": {
+        "latinName": "Nyctibius jamaicensis",
+        "germanName": ""
     },
-    {
-        "label": "Gelochelidon nilotica"
+    "Nycticorax nycticorax": {
+        "latinName": "Nycticorax nycticorax",
+        "germanName": "Nachtreiher"
     },
-    {
-        "label": "Ninox novaeseelandiae novaeseelandiae"
+    "Nyctidromus albicollis": {
+        "latinName": "Nyctidromus albicollis",
+        "germanName": ""
     },
-    {
-        "label": "Melanitta perspicillata"
+    "Oceanites oceanicus": {
+        "latinName": "Oceanites oceanicus",
+        "germanName": "Buntfuss-Sturmschwalbe"
     },
-    {
-        "label": "Aythya collaris"
+    "Ocyphaps lophotes": {
+        "latinName": "Ocyphaps lophotes",
+        "germanName": ""
     },
-    {
-        "label": "Aythya ferina"
+    "Oenanthe oenanthe": {
+        "latinName": "Oenanthe oenanthe",
+        "germanName": "Steinschmaetzer"
     },
-    {
-        "label": "Aythya fuligula"
+    "Onychognathus morio": {
+        "latinName": "Onychognathus morio",
+        "germanName": ""
     },
-    {
-        "label": "Numenius americanus"
+    "Onychoprion fuscatus": {
+        "latinName": "Onychoprion fuscatus",
+        "germanName": "Russseeschwalbe"
     },
-    {
-        "label": "Chen caerulescens"
+    "Opisthocomus hoazin": {
+        "latinName": "Opisthocomus hoazin",
+        "germanName": ""
     },
-    {
-        "label": "Chamaea fasciata"
+    "Oreoscoptes montanus": {
+        "latinName": "Oreoscoptes montanus",
+        "germanName": ""
     },
-    {
-        "label": "Branta canadensis"
+    "Oreothlypis celata": {
+        "latinName": "Oreothlypis celata",
+        "germanName": ""
     },
-    {
-        "label": "Thalasseus elegans"
+    "Oreothlypis peregrina": {
+        "latinName": "Oreothlypis peregrina",
+        "germanName": ""
     },
-    {
-        "label": "Branta sandvicensis"
+    "Oreothlypis ruficapilla": {
+        "latinName": "Oreothlypis ruficapilla",
+        "germanName": ""
     },
-    {
-        "label": "Aythya americana"
+    "Oriturus superciliosus": {
+        "latinName": "Oriturus superciliosus",
+        "germanName": ""
     },
-    {
-        "label": "Aix sponsa"
+    "Ortalis poliocephala": {
+        "latinName": "Ortalis poliocephala",
+        "germanName": ""
     },
-    {
-        "label": "Lophodytes cucullatus"
+    "Ortalis vetula": {
+        "latinName": "Ortalis vetula",
+        "germanName": ""
     },
-    {
-        "label": "Histrionicus histrionicus"
+    "Oxyura jamaicensis": {
+        "latinName": "Oxyura jamaicensis",
+        "germanName": "Schwarzkopf-Ruderente"
     },
-    {
-        "label": "Aratinga nenday"
+    "Pachyramphus aglaiae": {
+        "latinName": "Pachyramphus aglaiae",
+        "germanName": ""
     },
-    {
-        "label": "Psittacara holochlorus"
+    "Pandion haliaetus": {
+        "latinName": "Pandion haliaetus",
+        "germanName": "Fischadler"
     },
-    {
-        "label": "Cairina moschata"
+    "Parabuteo unicinctus": {
+        "latinName": "Parabuteo unicinctus",
+        "germanName": ""
     },
-    {
-        "label": "Netta rufina"
+    "Parkesia motacilla": {
+        "latinName": "Parkesia motacilla",
+        "germanName": ""
     },
-    {
-        "label": "Psittacara erythrogenys"
+    "Parkesia noveboracensis": {
+        "latinName": "Parkesia noveboracensis",
+        "germanName": ""
     },
-    {
-        "label": "Sayornis saya"
+    "Paroaria capitata": {
+        "latinName": "Paroaria capitata",
+        "germanName": ""
     },
-    {
-        "label": "Aythya valisineria"
+    "Paroaria coronata": {
+        "latinName": "Paroaria coronata",
+        "germanName": ""
     },
-    {
-        "label": "Picoides albolarvatus"
+    "Parus major": {
+        "latinName": "Parus major",
+        "germanName": "Kohlmeise"
     },
-    {
-        "label": "Vermivora cyanoptera"
+    "Passer domesticus": {
+        "latinName": "Passer domesticus",
+        "germanName": "Haussperling"
     },
-    {
-        "label": "Corvus caurinus"
+    "Passer italiae": {
+        "latinName": "Passer italiae",
+        "germanName": ""
     },
-    {
-        "label": "Asio otus"
+    "Passer montanus": {
+        "latinName": "Passer montanus",
+        "germanName": "Feldsperling"
     },
-    {
-        "label": "Corvus brachyrhynchos"
+    "Passerculus sandwichensis": {
+        "latinName": "Passerculus sandwichensis",
+        "germanName": ""
     },
-    {
-        "label": "Clangula hyemalis"
+    "Passerella iliaca": {
+        "latinName": "Passerella iliaca",
+        "germanName": "Fuchsammer"
     },
-    {
-        "label": "Chenonetta jubata"
+    "Passerina amoena": {
+        "latinName": "Passerina amoena",
+        "germanName": "Lazulifink"
     },
-    {
-        "label": "Thalasseus sandvicensis"
+    "Passerina caerulea": {
+        "latinName": "Passerina caerulea",
+        "germanName": ""
     },
-    {
-        "label": "Eolophus roseicapilla"
+    "Passerina ciris": {
+        "latinName": "Passerina ciris",
+        "germanName": ""
     },
-    {
-        "label": "Colaptes rubiginosus"
+    "Passerina cyanea": {
+        "latinName": "Passerina cyanea",
+        "germanName": "Indigofink"
     },
-    {
-        "label": "Meleagris gallopavo silvestris"
+    "Passerina leclancherii": {
+        "latinName": "Passerina leclancherii",
+        "germanName": ""
     },
-    {
-        "label": "Ptiliogonys cinereus"
+    "Passerina versicolor": {
+        "latinName": "Passerina versicolor",
+        "germanName": ""
     },
-    {
-        "label": "Elanoides forficatus"
+    "Patagioenas fasciata": {
+        "latinName": "Patagioenas fasciata",
+        "germanName": ""
     },
-    {
-        "label": "Carduelis carduelis"
+    "Patagioenas flavirostris": {
+        "latinName": "Patagioenas flavirostris",
+        "germanName": ""
     },
-    {
-        "label": "Cassiculus melanicterus"
+    "Patagioenas leucocephala": {
+        "latinName": "Patagioenas leucocephala",
+        "germanName": ""
     },
-    {
-        "label": "Dendragapus fuliginosus"
+    "Pavo cristatus": {
+        "latinName": "Pavo cristatus",
+        "germanName": ""
     },
-    {
-        "label": "Psaltriparus minimus"
+    "Pelecanus conspicillatus": {
+        "latinName": "Pelecanus conspicillatus",
+        "germanName": ""
     },
-    {
-        "label": "Aegithalos caudatus"
+    "Pelecanus erythrorhynchos": {
+        "latinName": "Pelecanus erythrorhynchos",
+        "germanName": ""
     },
-    {
-        "label": "Zosterops lateralis lateralis"
+    "Pelecanus occidentalis": {
+        "latinName": "Pelecanus occidentalis",
+        "germanName": ""
     },
-    {
-        "label": "Haliaeetus leucogaster"
+    "Pelecanus occidentalis californicus": {
+        "latinName": "Pelecanus occidentalis californicus",
+        "germanName": ""
     },
-    {
-        "label": "Uria aalge"
+    "Pelecanus occidentalis carolinensis": {
+        "latinName": "Pelecanus occidentalis carolinensis",
+        "germanName": ""
     },
-    {
-        "label": "Tringa semipalmata inornatus"
+    "Pelecanus onocrotalus": {
+        "latinName": "Pelecanus onocrotalus",
+        "germanName": "Rosapelikan"
     },
-    {
-        "label": "Alauda arvensis"
+    "Penelope purpurascens": {
+        "latinName": "Penelope purpurascens",
+        "germanName": ""
     },
-    {
-        "label": "Galerida cristata"
+    "Periparus ater": {
+        "latinName": "Periparus ater",
+        "germanName": "Tannenmeise"
     },
-    {
-        "label": "Delichon urbicum"
+    "Perisoreus canadensis": {
+        "latinName": "Perisoreus canadensis",
+        "germanName": ""
     },
-    {
-        "label": "Helmitheros vermivorum"
+    "Petrochelidon fulva": {
+        "latinName": "Petrochelidon fulva",
+        "germanName": ""
     },
-    {
-        "label": "Hylocharis leucotis"
+    "Petrochelidon pyrrhonota": {
+        "latinName": "Petrochelidon pyrrhonota",
+        "germanName": ""
     },
-    {
-        "label": "Mimus polyglottos"
+    "Petroica australis australis": {
+        "latinName": "Petroica australis australis",
+        "germanName": ""
     },
-    {
-        "label": "Gymnorhina tibicen"
+    "Petroica australis longipes": {
+        "latinName": "Petroica australis longipes",
+        "germanName": ""
     },
-    {
-        "label": "Alcedo atthis"
+    "Petroica macrocephala macrocephala": {
+        "latinName": "Petroica macrocephala macrocephala",
+        "germanName": ""
     },
-    {
-        "label": "Streptopelia chinensis"
+    "Peucaea ruficauda": {
+        "latinName": "Peucaea ruficauda",
+        "germanName": ""
     },
-    {
-        "label": "Bombycilla cedrorum"
+    "Phaethon aethereus": {
+        "latinName": "Phaethon aethereus",
+        "germanName": ""
     },
-    {
-        "label": "Bombycilla garrulus"
+    "Phainopepla nitens": {
+        "latinName": "Phainopepla nitens",
+        "germanName": ""
     },
-    {
-        "label": "Tadorna tadorna"
+    "Phalacrocorax auritus": {
+        "latinName": "Phalacrocorax auritus",
+        "germanName": "Ohrenscharbe"
     },
-    {
-        "label": "Petroica australis australis"
+    "Phalacrocorax brasilianus": {
+        "latinName": "Phalacrocorax brasilianus",
+        "germanName": ""
     },
-    {
-        "label": "Amazona autumnalis"
+    "Phalacrocorax carbo": {
+        "latinName": "Phalacrocorax carbo",
+        "germanName": "Kormoran"
     },
-    {
-        "label": "Dendragapus obscurus"
+    "Phalacrocorax carbo novaehollandiae": {
+        "latinName": "Phalacrocorax carbo novaehollandiae",
+        "germanName": ""
     },
-    {
-        "label": "Catherpes mexicanus"
+    "Phalacrocorax pelagicus": {
+        "latinName": "Phalacrocorax pelagicus",
+        "germanName": ""
     },
-    {
-        "label": "Tadorna ferruginea"
+    "Phalacrocorax penicillatus": {
+        "latinName": "Phalacrocorax penicillatus",
+        "germanName": ""
     },
-    {
-        "label": "Campylorhynchus brunneicapillus"
+    "Phalacrocorax sulcirostris": {
+        "latinName": "Phalacrocorax sulcirostris",
+        "germanName": ""
     },
-    {
-        "label": "Campylorhynchus rufinucha"
+    "Phalacrocorax varius": {
+        "latinName": "Phalacrocorax varius",
+        "germanName": ""
     },
-    {
-        "label": "Rhipidura fuliginosa"
+    "Phalacrocorax varius varius": {
+        "latinName": "Phalacrocorax varius varius",
+        "germanName": ""
     },
-    {
-        "label": "Polioptila melanura"
+    "Phalaenoptilus nuttallii": {
+        "latinName": "Phalaenoptilus nuttallii",
+        "germanName": ""
     },
-    {
-        "label": "Pelecanus occidentalis carolinensis"
+    "Phalaropus fulicarius": {
+        "latinName": "Phalaropus fulicarius",
+        "germanName": "Thorshuehnchen"
     },
-    {
-        "label": "Melozone aberti"
+    "Phalaropus lobatus": {
+        "latinName": "Phalaropus lobatus",
+        "germanName": "Odinshuehnchen"
     },
-    {
-        "label": "Melozone crissalis"
+    "Phalaropus tricolor": {
+        "latinName": "Phalaropus tricolor",
+        "germanName": "Wilsonwassertreter"
     },
-    {
-        "label": "Thryothorus ludovicianus"
+    "Pharomachrus mocinno": {
+        "latinName": "Pharomachrus mocinno",
+        "germanName": ""
     },
-    {
-        "label": "Parabuteo unicinctus"
+    "Phasianus colchicus": {
+        "latinName": "Phasianus colchicus",
+        "germanName": "Jagdfasan"
     },
-    {
-        "label": "Anas platyrhynchos domesticus"
+    "Pheucticus ludovicianus": {
+        "latinName": "Pheucticus ludovicianus",
+        "germanName": "Rosenbrust-Kernknacker"
     },
-    {
-        "label": "Troglodytes aedon"
+    "Pheucticus melanocephalus": {
+        "latinName": "Pheucticus melanocephalus",
+        "germanName": ""
     },
-    {
-        "label": "Buteo lineatus elegans"
+    "Philesturnus rufusater": {
+        "latinName": "Philesturnus rufusater",
+        "germanName": ""
     },
-    {
-        "label": "Thamnophilus doliatus"
+    "Phoebastria immutabilis": {
+        "latinName": "Phoebastria immutabilis",
+        "germanName": ""
     },
-    {
-        "label": "Thryomanes bewickii"
+    "Phoebastria nigripes": {
+        "latinName": "Phoebastria nigripes",
+        "germanName": ""
     },
-    {
-        "label": "Tadorna variegata"
+    "Phoenicopterus roseus": {
+        "latinName": "Phoenicopterus roseus",
+        "germanName": "Rosaflamingo"
     },
-    {
-        "label": "Myioborus miniatus"
+    "Phoenicopterus ruber": {
+        "latinName": "Phoenicopterus ruber",
+        "germanName": "Kubaflamingo"
     },
-    {
-        "label": "Phalacrocorax varius varius"
+    "Phoenicurus ochruros": {
+        "latinName": "Phoenicurus ochruros",
+        "germanName": "Hausrotschwanz"
     },
-    {
-        "label": "Myioborus pictus"
+    "Phoenicurus phoenicurus": {
+        "latinName": "Phoenicurus phoenicurus",
+        "germanName": "Gartenrotschwanz"
     },
-    {
-        "label": "Larus argentatus smithsonianus"
+    "Phylloscopus collybita": {
+        "latinName": "Phylloscopus collybita",
+        "germanName": "Zilpzalp"
     },
-    {
-        "label": "Parkesia motacilla"
+    "Piaya cayana": {
+        "latinName": "Piaya cayana",
+        "germanName": ""
     },
-    {
-        "label": "Sula granti"
+    "Pica hudsonia": {
+        "latinName": "Pica hudsonia",
+        "germanName": ""
     },
-    {
-        "label": "Ara macao"
+    "Pica nuttalli": {
+        "latinName": "Pica nuttalli",
+        "germanName": ""
     },
-    {
-        "label": "Peucaea ruficauda"
+    "Pica pica": {
+        "latinName": "Pica pica",
+        "germanName": "Elster"
     },
-    {
-        "label": "Calidris subruficollis"
+    "Picoides albolarvatus": {
+        "latinName": "Picoides albolarvatus",
+        "germanName": ""
     },
-    {
-        "label": "Phoenicopterus roseus"
+    "Picoides arcticus": {
+        "latinName": "Picoides arcticus",
+        "germanName": ""
     },
-    {
-        "label": "Morus bassanus"
+    "Picoides dorsalis": {
+        "latinName": "Picoides dorsalis",
+        "germanName": ""
     },
-    {
-        "label": "Pelecanus occidentalis californicus"
+    "Picoides nuttallii": {
+        "latinName": "Picoides nuttallii",
+        "germanName": ""
     },
-    {
-        "label": "Glaucidium brasilianum"
+    "Picoides pubescens": {
+        "latinName": "Picoides pubescens",
+        "germanName": ""
     },
-    {
-        "label": "Oxyura jamaicensis"
+    "Picoides scalaris": {
+        "latinName": "Picoides scalaris",
+        "germanName": ""
     },
-    {
-        "label": "Myiarchus cinerascens"
+    "Picoides villosus": {
+        "latinName": "Picoides villosus",
+        "germanName": ""
     },
-    {
-        "label": "Chloroceryle americana"
+    "Picus viridis": {
+        "latinName": "Picus viridis",
+        "germanName": "Gruenspecht"
     },
-    {
-        "label": "Sturnella neglecta"
+    "Pinicola enucleator": {
+        "latinName": "Pinicola enucleator",
+        "germanName": "Hakengimpel"
     },
-    {
-        "label": "Ramphastos ambiguus"
+    "Pipilo chlorurus": {
+        "latinName": "Pipilo chlorurus",
+        "germanName": ""
     },
-    {
-        "label": "Paroaria coronata"
+    "Pipilo erythrophthalmus": {
+        "latinName": "Pipilo erythrophthalmus",
+        "germanName": ""
     },
-    {
-        "label": "Buteo buteo"
+    "Pipilo maculatus": {
+        "latinName": "Pipilo maculatus",
+        "germanName": ""
     },
-    {
-        "label": "Myiodynastes luteiventris"
+    "Piranga bidentata": {
+        "latinName": "Piranga bidentata",
+        "germanName": ""
     },
-    {
-        "label": "Contopus sordidulus"
+    "Piranga flava": {
+        "latinName": "Piranga flava",
+        "germanName": ""
     },
-    {
-        "label": "Corvus corone"
+    "Piranga ludoviciana": {
+        "latinName": "Piranga ludoviciana",
+        "germanName": ""
     },
-    {
-        "label": "Cyanoramphus novaezelandiae"
+    "Piranga olivacea": {
+        "latinName": "Piranga olivacea",
+        "germanName": ""
     },
-    {
-        "label": "Contopus virens"
+    "Piranga rubra": {
+        "latinName": "Piranga rubra",
+        "germanName": ""
     },
-    {
-        "label": "Contopus pertinax"
+    "Pitangus sulphuratus": {
+        "latinName": "Pitangus sulphuratus",
+        "germanName": ""
     },
-    {
-        "label": "Contopus cooperi"
+    "Platalea ajaja": {
+        "latinName": "Platalea ajaja",
+        "germanName": ""
     },
-    {
-        "label": "Larus argentatus"
+    "Platalea alba": {
+        "latinName": "Platalea alba",
+        "germanName": "Rotgesichtloeffler"
     },
-    {
-        "label": "Halcyon smyrnensis"
+    "Platalea leucorodia": {
+        "latinName": "Platalea leucorodia",
+        "germanName": "Loeffler"
     },
-    {
-        "label": "Onychognathus morio"
+    "Platalea regia": {
+        "latinName": "Platalea regia",
+        "germanName": ""
     },
-    {
-        "label": "Cyanocompsa parellina"
+    "Platycercus elegans": {
+        "latinName": "Platycercus elegans",
+        "germanName": ""
     },
-    {
-        "label": "Cistothorus palustris"
+    "Platycercus eximius": {
+        "latinName": "Platycercus eximius",
+        "germanName": ""
     },
-    {
-        "label": "Tyto alba"
+    "Plectrophenax nivalis": {
+        "latinName": "Plectrophenax nivalis",
+        "germanName": "Schneeammer"
     },
-    {
-        "label": "Trogon caligatus"
+    "Plegadis chihi": {
+        "latinName": "Plegadis chihi",
+        "germanName": ""
     },
-    {
-        "label": "Corvus monedula"
+    "Plegadis falcinellus": {
+        "latinName": "Plegadis falcinellus",
+        "germanName": "Sichler"
     },
-    {
-        "label": "Corvus ossifragus"
+    "Pluvialis dominica": {
+        "latinName": "Pluvialis dominica",
+        "germanName": "Praerie-Goldregenpfeifer"
     },
-    {
-        "label": "Spheniscus demersus"
+    "Pluvialis fulva": {
+        "latinName": "Pluvialis fulva",
+        "germanName": "Tundra-Goldregenpfeifer"
     },
-    {
-        "label": "Corvus frugilegus"
+    "Pluvialis squatarola": {
+        "latinName": "Pluvialis squatarola",
+        "germanName": "Kiebitzregenpfeifer"
     },
-    {
-        "label": "Corvus splendens"
+    "Podiceps auritus": {
+        "latinName": "Podiceps auritus",
+        "germanName": "Ohrentaucher"
     },
-    {
-        "label": "Branta bernicla"
+    "Podiceps cristatus": {
+        "latinName": "Podiceps cristatus",
+        "germanName": "Haubentaucher"
     },
-    {
-        "label": "Larus hyperboreus"
+    "Podiceps grisegena": {
+        "latinName": "Podiceps grisegena",
+        "germanName": "Rothalstaucher"
     },
-    {
-        "label": "Columba livia domestica"
+    "Podiceps nigricollis": {
+        "latinName": "Podiceps nigricollis",
+        "germanName": "Schwarzhalstaucher"
     },
-    {
-        "label": "Garrulus glandarius"
+    "Podilymbus podiceps": {
+        "latinName": "Podilymbus podiceps",
+        "germanName": "Bindentaucher"
     },
-    {
-        "label": "Anser anser domesticus"
+    "Poecile atricapillus": {
+        "latinName": "Poecile atricapillus",
+        "germanName": ""
     },
-    {
-        "label": "Mitrephanes phaeocercus"
+    "Poecile carolinensis": {
+        "latinName": "Poecile carolinensis",
+        "germanName": ""
     },
-    {
-        "label": "Ardenna creatopus"
+    "Poecile gambeli": {
+        "latinName": "Poecile gambeli",
+        "germanName": ""
     },
-    {
-        "label": "Ardenna gravis"
+    "Poecile rufescens": {
+        "latinName": "Poecile rufescens",
+        "germanName": ""
     },
-    {
-        "label": "None"
+    "Polioptila caerulea": {
+        "latinName": "Polioptila caerulea",
+        "germanName": ""
+    },
+    "Polioptila melanura": {
+        "latinName": "Polioptila melanura",
+        "germanName": ""
+    },
+    "Pooecetes gramineus": {
+        "latinName": "Pooecetes gramineus",
+        "germanName": ""
+    },
+    "Porphyrio hochstetteri": {
+        "latinName": "Porphyrio hochstetteri",
+        "germanName": ""
+    },
+    "Porphyrio martinicus": {
+        "latinName": "Porphyrio martinicus",
+        "germanName": ""
+    },
+    "Porphyrio melanotus": {
+        "latinName": "Porphyrio melanotus",
+        "germanName": ""
+    },
+    "Porphyrio melanotus melanotus": {
+        "latinName": "Porphyrio melanotus melanotus",
+        "germanName": ""
+    },
+    "Porphyrio poliocephalus": {
+        "latinName": "Porphyrio poliocephalus",
+        "germanName": "Graukopf-Purpurhuhn"
+    },
+    "Porzana carolina": {
+        "latinName": "Porzana carolina",
+        "germanName": ""
+    },
+    "Progne subis": {
+        "latinName": "Progne subis",
+        "germanName": ""
+    },
+    "Prosthemadera novaeseelandiae": {
+        "latinName": "Prosthemadera novaeseelandiae",
+        "germanName": ""
+    },
+    "Prosthemadera novaeseelandiae novaeseelandiae": {
+        "latinName": "Prosthemadera novaeseelandiae novaeseelandiae",
+        "germanName": ""
+    },
+    "Protonotaria citrea": {
+        "latinName": "Protonotaria citrea",
+        "germanName": ""
+    },
+    "Prunella modularis": {
+        "latinName": "Prunella modularis",
+        "germanName": "Heckenbraunelle"
+    },
+    "Psaltriparus minimus": {
+        "latinName": "Psaltriparus minimus",
+        "germanName": ""
+    },
+    "Psarocolius montezuma": {
+        "latinName": "Psarocolius montezuma",
+        "germanName": ""
+    },
+    "Psilorhinus morio": {
+        "latinName": "Psilorhinus morio",
+        "germanName": ""
+    },
+    "Psittacara erythrogenys": {
+        "latinName": "Psittacara erythrogenys",
+        "germanName": ""
+    },
+    "Psittacara holochlorus": {
+        "latinName": "Psittacara holochlorus",
+        "germanName": ""
+    },
+    "Psittacula krameri": {
+        "latinName": "Psittacula krameri",
+        "germanName": "Halsbandsittich"
+    },
+    "Pteroglossus torquatus": {
+        "latinName": "Pteroglossus torquatus",
+        "germanName": ""
+    },
+    "Ptiliogonys cinereus": {
+        "latinName": "Ptiliogonys cinereus",
+        "germanName": ""
+    },
+    "Pycnonotus barbatus": {
+        "latinName": "Pycnonotus barbatus",
+        "germanName": ""
+    },
+    "Pycnonotus cafer": {
+        "latinName": "Pycnonotus cafer",
+        "germanName": ""
+    },
+    "Pycnonotus jocosus": {
+        "latinName": "Pycnonotus jocosus",
+        "germanName": ""
+    },
+    "Pyrocephalus rubinus": {
+        "latinName": "Pyrocephalus rubinus",
+        "germanName": ""
+    },
+    "Pyrrhocorax graculus": {
+        "latinName": "Pyrrhocorax graculus",
+        "germanName": "Alpendohle"
+    },
+    "Pyrrhula pyrrhula": {
+        "latinName": "Pyrrhula pyrrhula",
+        "germanName": "Gimpel"
+    },
+    "Quiscalus major": {
+        "latinName": "Quiscalus major",
+        "germanName": ""
+    },
+    "Quiscalus mexicanus": {
+        "latinName": "Quiscalus mexicanus",
+        "germanName": ""
+    },
+    "Quiscalus niger": {
+        "latinName": "Quiscalus niger",
+        "germanName": ""
+    },
+    "Quiscalus quiscula": {
+        "latinName": "Quiscalus quiscula",
+        "germanName": ""
+    },
+    "Rallus crepitans": {
+        "latinName": "Rallus crepitans",
+        "germanName": ""
+    },
+    "Rallus limicola": {
+        "latinName": "Rallus limicola",
+        "germanName": ""
+    },
+    "Rallus obsoletus": {
+        "latinName": "Rallus obsoletus",
+        "germanName": ""
+    },
+    "Ramphastos ambiguus": {
+        "latinName": "Ramphastos ambiguus",
+        "germanName": ""
+    },
+    "Ramphastos sulfuratus": {
+        "latinName": "Ramphastos sulfuratus",
+        "germanName": ""
+    },
+    "Ramphocelus passerinii": {
+        "latinName": "Ramphocelus passerinii",
+        "germanName": ""
+    },
+    "Recurvirostra americana": {
+        "latinName": "Recurvirostra americana",
+        "germanName": ""
+    },
+    "Recurvirostra avosetta": {
+        "latinName": "Recurvirostra avosetta",
+        "germanName": "Saebelschnaebler"
+    },
+    "Regulus calendula": {
+        "latinName": "Regulus calendula",
+        "germanName": ""
+    },
+    "Regulus ignicapilla": {
+        "latinName": "Regulus ignicapilla",
+        "germanName": "Sommergoldhaehnchen"
+    },
+    "Regulus regulus": {
+        "latinName": "Regulus regulus",
+        "germanName": "Wintergoldhaehnchen"
+    },
+    "Regulus satrapa": {
+        "latinName": "Regulus satrapa",
+        "germanName": ""
+    },
+    "Rhipidura fuliginosa": {
+        "latinName": "Rhipidura fuliginosa",
+        "germanName": ""
+    },
+    "Rhipidura fuliginosa fuliginosa": {
+        "latinName": "Rhipidura fuliginosa fuliginosa",
+        "germanName": ""
+    },
+    "Rhipidura fuliginosa placabilis": {
+        "latinName": "Rhipidura fuliginosa placabilis",
+        "germanName": ""
+    },
+    "Rhipidura leucophrys": {
+        "latinName": "Rhipidura leucophrys",
+        "germanName": ""
+    },
+    "Riparia riparia": {
+        "latinName": "Riparia riparia",
+        "germanName": "Uferschwalbe"
+    },
+    "Rissa tridactyla": {
+        "latinName": "Rissa tridactyla",
+        "germanName": "Dreizehenmoewe"
+    },
+    "Rostrhamus sociabilis": {
+        "latinName": "Rostrhamus sociabilis",
+        "germanName": ""
+    },
+    "Rupornis magnirostris": {
+        "latinName": "Rupornis magnirostris",
+        "germanName": ""
+    },
+    "Rynchops niger": {
+        "latinName": "Rynchops niger",
+        "germanName": ""
+    },
+    "Sagittarius serpentarius": {
+        "latinName": "Sagittarius serpentarius",
+        "germanName": ""
+    },
+    "Salpinctes obsoletus": {
+        "latinName": "Salpinctes obsoletus",
+        "germanName": ""
+    },
+    "Saltator atriceps": {
+        "latinName": "Saltator atriceps",
+        "germanName": ""
+    },
+    "Saltator coerulescens": {
+        "latinName": "Saltator coerulescens",
+        "germanName": ""
+    },
+    "Sarcoramphus papa": {
+        "latinName": "Sarcoramphus papa",
+        "germanName": ""
+    },
+    "Saxicola rubetra": {
+        "latinName": "Saxicola rubetra",
+        "germanName": "Braunkehlchen"
+    },
+    "Saxicola rubicola": {
+        "latinName": "Saxicola rubicola",
+        "germanName": "Schwarzkehlchen"
+    },
+    "Sayornis nigricans": {
+        "latinName": "Sayornis nigricans",
+        "germanName": ""
+    },
+    "Sayornis phoebe": {
+        "latinName": "Sayornis phoebe",
+        "germanName": ""
+    },
+    "Sayornis saya": {
+        "latinName": "Sayornis saya",
+        "germanName": ""
+    },
+    "Scolopax minor": {
+        "latinName": "Scolopax minor",
+        "germanName": ""
+    },
+    "Scopus umbretta": {
+        "latinName": "Scopus umbretta",
+        "germanName": ""
+    },
+    "Seiurus aurocapilla": {
+        "latinName": "Seiurus aurocapilla",
+        "germanName": ""
+    },
+    "Selasphorus calliope": {
+        "latinName": "Selasphorus calliope",
+        "germanName": ""
+    },
+    "Selasphorus platycercus": {
+        "latinName": "Selasphorus platycercus",
+        "germanName": ""
+    },
+    "Selasphorus rufus": {
+        "latinName": "Selasphorus rufus",
+        "germanName": ""
+    },
+    "Selasphorus sasin": {
+        "latinName": "Selasphorus sasin",
+        "germanName": ""
+    },
+    "Serinus mozambicus": {
+        "latinName": "Serinus mozambicus",
+        "germanName": ""
+    },
+    "Serinus serinus": {
+        "latinName": "Serinus serinus",
+        "germanName": "Girlitz"
+    },
+    "Setophaga americana": {
+        "latinName": "Setophaga americana",
+        "germanName": "Meisenwaldsaenger"
+    },
+    "Setophaga caerulescens": {
+        "latinName": "Setophaga caerulescens",
+        "germanName": ""
+    },
+    "Setophaga castanea": {
+        "latinName": "Setophaga castanea",
+        "germanName": ""
+    },
+    "Setophaga cerulea": {
+        "latinName": "Setophaga cerulea",
+        "germanName": ""
+    },
+    "Setophaga chrysoparia": {
+        "latinName": "Setophaga chrysoparia",
+        "germanName": ""
+    },
+    "Setophaga citrina": {
+        "latinName": "Setophaga citrina",
+        "germanName": ""
+    },
+    "Setophaga coronata": {
+        "latinName": "Setophaga coronata",
+        "germanName": ""
+    },
+    "Setophaga coronata auduboni": {
+        "latinName": "Setophaga coronata auduboni",
+        "germanName": ""
+    },
+    "Setophaga coronata coronata": {
+        "latinName": "Setophaga coronata coronata",
+        "germanName": ""
+    },
+    "Setophaga discolor": {
+        "latinName": "Setophaga discolor",
+        "germanName": ""
+    },
+    "Setophaga dominica": {
+        "latinName": "Setophaga dominica",
+        "germanName": ""
+    },
+    "Setophaga fusca": {
+        "latinName": "Setophaga fusca",
+        "germanName": ""
+    },
+    "Setophaga magnolia": {
+        "latinName": "Setophaga magnolia",
+        "germanName": ""
+    },
+    "Setophaga nigrescens": {
+        "latinName": "Setophaga nigrescens",
+        "germanName": ""
+    },
+    "Setophaga occidentalis": {
+        "latinName": "Setophaga occidentalis",
+        "germanName": ""
+    },
+    "Setophaga palmarum": {
+        "latinName": "Setophaga palmarum",
+        "germanName": ""
+    },
+    "Setophaga pensylvanica": {
+        "latinName": "Setophaga pensylvanica",
+        "germanName": ""
+    },
+    "Setophaga petechia": {
+        "latinName": "Setophaga petechia",
+        "germanName": ""
+    },
+    "Setophaga pinus": {
+        "latinName": "Setophaga pinus",
+        "germanName": ""
+    },
+    "Setophaga ruticilla": {
+        "latinName": "Setophaga ruticilla",
+        "germanName": ""
+    },
+    "Setophaga striata": {
+        "latinName": "Setophaga striata",
+        "germanName": ""
+    },
+    "Setophaga tigrina": {
+        "latinName": "Setophaga tigrina",
+        "germanName": ""
+    },
+    "Setophaga townsendi": {
+        "latinName": "Setophaga townsendi",
+        "germanName": ""
+    },
+    "Setophaga virens": {
+        "latinName": "Setophaga virens",
+        "germanName": "Gruenmantel-Waldsaenger"
+    },
+    "Sialia currucoides": {
+        "latinName": "Sialia currucoides",
+        "germanName": ""
+    },
+    "Sialia mexicana": {
+        "latinName": "Sialia mexicana",
+        "germanName": ""
+    },
+    "Sialia sialis": {
+        "latinName": "Sialia sialis",
+        "germanName": ""
+    },
+    "Sicalis flaveola": {
+        "latinName": "Sicalis flaveola",
+        "germanName": ""
+    },
+    "Sitta canadensis": {
+        "latinName": "Sitta canadensis",
+        "germanName": ""
+    },
+    "Sitta carolinensis": {
+        "latinName": "Sitta carolinensis",
+        "germanName": ""
+    },
+    "Sitta europaea": {
+        "latinName": "Sitta europaea",
+        "germanName": "Kleiber"
+    },
+    "Sitta pusilla": {
+        "latinName": "Sitta pusilla",
+        "germanName": ""
+    },
+    "Sitta pygmaea": {
+        "latinName": "Sitta pygmaea",
+        "germanName": ""
+    },
+    "Somateria mollissima": {
+        "latinName": "Somateria mollissima",
+        "germanName": "Eiderente"
+    },
+    "Spheniscus demersus": {
+        "latinName": "Spheniscus demersus",
+        "germanName": ""
+    },
+    "Sphyrapicus nuchalis": {
+        "latinName": "Sphyrapicus nuchalis",
+        "germanName": ""
+    },
+    "Sphyrapicus ruber": {
+        "latinName": "Sphyrapicus ruber",
+        "germanName": ""
+    },
+    "Sphyrapicus thyroideus": {
+        "latinName": "Sphyrapicus thyroideus",
+        "germanName": ""
+    },
+    "Sphyrapicus varius": {
+        "latinName": "Sphyrapicus varius",
+        "germanName": ""
+    },
+    "Spinus lawrencei": {
+        "latinName": "Spinus lawrencei",
+        "germanName": ""
+    },
+    "Spinus pinus": {
+        "latinName": "Spinus pinus",
+        "germanName": ""
+    },
+    "Spinus psaltria": {
+        "latinName": "Spinus psaltria",
+        "germanName": ""
+    },
+    "Spinus spinus": {
+        "latinName": "Spinus spinus",
+        "germanName": "Erlenzeisig"
+    },
+    "Spinus tristis": {
+        "latinName": "Spinus tristis",
+        "germanName": ""
+    },
+    "Spiza americana": {
+        "latinName": "Spiza americana",
+        "germanName": ""
+    },
+    "Spizella atrogularis": {
+        "latinName": "Spizella atrogularis",
+        "germanName": ""
+    },
+    "Spizella breweri": {
+        "latinName": "Spizella breweri",
+        "germanName": ""
+    },
+    "Spizella pallida": {
+        "latinName": "Spizella pallida",
+        "germanName": ""
+    },
+    "Spizella passerina": {
+        "latinName": "Spizella passerina",
+        "germanName": ""
+    },
+    "Spizella pusilla": {
+        "latinName": "Spizella pusilla",
+        "germanName": ""
+    },
+    "Spizelloides arborea": {
+        "latinName": "Spizelloides arborea",
+        "germanName": ""
+    },
+    "Sporophila torqueola": {
+        "latinName": "Sporophila torqueola",
+        "germanName": ""
+    },
+    "Stelgidopteryx serripennis": {
+        "latinName": "Stelgidopteryx serripennis",
+        "germanName": ""
+    },
+    "Stercorarius parasiticus": {
+        "latinName": "Stercorarius parasiticus",
+        "germanName": "Schmarotzerraubmoewe"
+    },
+    "Stercorarius pomarinus": {
+        "latinName": "Stercorarius pomarinus",
+        "germanName": "Spatelraubmoewe"
+    },
+    "Sterna forsteri": {
+        "latinName": "Sterna forsteri",
+        "germanName": ""
+    },
+    "Sterna hirundo": {
+        "latinName": "Sterna hirundo",
+        "germanName": "Flussseeschwalbe"
+    },
+    "Sterna paradisaea": {
+        "latinName": "Sterna paradisaea",
+        "germanName": "Kuestenseeschwalbe"
+    },
+    "Sterna striata": {
+        "latinName": "Sterna striata",
+        "germanName": ""
+    },
+    "Sternula antillarum": {
+        "latinName": "Sternula antillarum",
+        "germanName": ""
+    },
+    "Streptopelia chinensis": {
+        "latinName": "Streptopelia chinensis",
+        "germanName": ""
+    },
+    "Streptopelia decaocto": {
+        "latinName": "Streptopelia decaocto",
+        "germanName": "Tuerkentaube"
+    },
+    "Streptopelia senegalensis": {
+        "latinName": "Streptopelia senegalensis",
+        "germanName": ""
+    },
+    "Streptopelia turtur": {
+        "latinName": "Streptopelia turtur",
+        "germanName": "Turteltaube"
+    },
+    "Strix nebulosa": {
+        "latinName": "Strix nebulosa",
+        "germanName": ""
+    },
+    "Strix varia": {
+        "latinName": "Strix varia",
+        "germanName": ""
+    },
+    "Struthio camelus": {
+        "latinName": "Struthio camelus",
+        "germanName": ""
+    },
+    "Sturnella magna": {
+        "latinName": "Sturnella magna",
+        "germanName": ""
+    },
+    "Sturnella neglecta": {
+        "latinName": "Sturnella neglecta",
+        "germanName": ""
+    },
+    "Sturnus vulgaris": {
+        "latinName": "Sturnus vulgaris",
+        "germanName": "Star"
+    },
+    "Sula dactylatra": {
+        "latinName": "Sula dactylatra",
+        "germanName": ""
+    },
+    "Sula granti": {
+        "latinName": "Sula granti",
+        "germanName": ""
+    },
+    "Sula leucogaster": {
+        "latinName": "Sula leucogaster",
+        "germanName": "Weissbauchtoelpel"
+    },
+    "Sula nebouxii": {
+        "latinName": "Sula nebouxii",
+        "germanName": ""
+    },
+    "Sula sula": {
+        "latinName": "Sula sula",
+        "germanName": ""
+    },
+    "Surnia ulula": {
+        "latinName": "Surnia ulula",
+        "germanName": "Sperbereule"
+    },
+    "Sylvia atricapilla": {
+        "latinName": "Sylvia atricapilla",
+        "germanName": "Moenchsgrasmuecke"
+    },
+    "Sylvia communis": {
+        "latinName": "Sylvia communis",
+        "germanName": "Dorngrasmuecke"
+    },
+    "Tachybaptus dominicus": {
+        "latinName": "Tachybaptus dominicus",
+        "germanName": ""
+    },
+    "Tachybaptus ruficollis": {
+        "latinName": "Tachybaptus ruficollis",
+        "germanName": "Zwergtaucher"
+    },
+    "Tachycineta albilinea": {
+        "latinName": "Tachycineta albilinea",
+        "germanName": ""
+    },
+    "Tachycineta bicolor": {
+        "latinName": "Tachycineta bicolor",
+        "germanName": ""
+    },
+    "Tachycineta thalassina": {
+        "latinName": "Tachycineta thalassina",
+        "germanName": ""
+    },
+    "Tadorna ferruginea": {
+        "latinName": "Tadorna ferruginea",
+        "germanName": "Rostgans"
+    },
+    "Tadorna tadorna": {
+        "latinName": "Tadorna tadorna",
+        "germanName": "Brandgans"
+    },
+    "Tadorna variegata": {
+        "latinName": "Tadorna variegata",
+        "germanName": ""
+    },
+    "Terathopius ecaudatus": {
+        "latinName": "Terathopius ecaudatus",
+        "germanName": ""
+    },
+    "Thalasseus bergii": {
+        "latinName": "Thalasseus bergii",
+        "germanName": ""
+    },
+    "Thalasseus elegans": {
+        "latinName": "Thalasseus elegans",
+        "germanName": "Schmuckseeschwalbe"
+    },
+    "Thalasseus maximus": {
+        "latinName": "Thalasseus maximus",
+        "germanName": ""
+    },
+    "Thalasseus sandvicensis": {
+        "latinName": "Thalasseus sandvicensis",
+        "germanName": "Brandseeschwalbe"
+    },
+    "Thamnophilus doliatus": {
+        "latinName": "Thamnophilus doliatus",
+        "germanName": ""
+    },
+    "Thraupis abbas": {
+        "latinName": "Thraupis abbas",
+        "germanName": ""
+    },
+    "Thraupis episcopus": {
+        "latinName": "Thraupis episcopus",
+        "germanName": ""
+    },
+    "Thraupis palmarum": {
+        "latinName": "Thraupis palmarum",
+        "germanName": ""
+    },
+    "Threskiornis aethiopicus": {
+        "latinName": "Threskiornis aethiopicus",
+        "germanName": "Pharaonenibis"
+    },
+    "Threskiornis moluccus": {
+        "latinName": "Threskiornis moluccus",
+        "germanName": ""
+    },
+    "Thryomanes bewickii": {
+        "latinName": "Thryomanes bewickii",
+        "germanName": ""
+    },
+    "Thryothorus ludovicianus": {
+        "latinName": "Thryothorus ludovicianus",
+        "germanName": ""
+    },
+    "Tiaris olivaceus": {
+        "latinName": "Tiaris olivaceus",
+        "germanName": ""
+    },
+    "Tigrisoma mexicanum": {
+        "latinName": "Tigrisoma mexicanum",
+        "germanName": ""
+    },
+    "Tityra semifasciata": {
+        "latinName": "Tityra semifasciata",
+        "germanName": ""
+    },
+    "Todiramphus chloris": {
+        "latinName": "Todiramphus chloris",
+        "germanName": ""
+    },
+    "Todiramphus sanctus": {
+        "latinName": "Todiramphus sanctus",
+        "germanName": ""
+    },
+    "Todiramphus sanctus vagans": {
+        "latinName": "Todiramphus sanctus vagans",
+        "germanName": ""
+    },
+    "Toxostoma curvirostre": {
+        "latinName": "Toxostoma curvirostre",
+        "germanName": ""
+    },
+    "Toxostoma longirostre": {
+        "latinName": "Toxostoma longirostre",
+        "germanName": ""
+    },
+    "Toxostoma redivivum": {
+        "latinName": "Toxostoma redivivum",
+        "germanName": ""
+    },
+    "Toxostoma rufum": {
+        "latinName": "Toxostoma rufum",
+        "germanName": ""
+    },
+    "Trichoglossus haematodus": {
+        "latinName": "Trichoglossus haematodus",
+        "germanName": ""
+    },
+    "Tringa flavipes": {
+        "latinName": "Tringa flavipes",
+        "germanName": "Gelbschenkel"
+    },
+    "Tringa glareola": {
+        "latinName": "Tringa glareola",
+        "germanName": "Bruchwasserlaeufer"
+    },
+    "Tringa incana": {
+        "latinName": "Tringa incana",
+        "germanName": ""
+    },
+    "Tringa melanoleuca": {
+        "latinName": "Tringa melanoleuca",
+        "germanName": ""
+    },
+    "Tringa nebularia": {
+        "latinName": "Tringa nebularia",
+        "germanName": "Gruenschenkel"
+    },
+    "Tringa ochropus": {
+        "latinName": "Tringa ochropus",
+        "germanName": "Waldwasserlaeufer"
+    },
+    "Tringa semipalmata": {
+        "latinName": "Tringa semipalmata",
+        "germanName": ""
+    },
+    "Tringa semipalmata inornatus": {
+        "latinName": "Tringa semipalmata inornatus",
+        "germanName": ""
+    },
+    "Tringa solitaria": {
+        "latinName": "Tringa solitaria",
+        "germanName": ""
+    },
+    "Tringa totanus": {
+        "latinName": "Tringa totanus",
+        "germanName": "Rotschenkel"
+    },
+    "Troglodytes aedon": {
+        "latinName": "Troglodytes aedon",
+        "germanName": ""
+    },
+    "Troglodytes hiemalis": {
+        "latinName": "Troglodytes hiemalis",
+        "germanName": ""
+    },
+    "Troglodytes pacificus": {
+        "latinName": "Troglodytes pacificus",
+        "germanName": ""
+    },
+    "Troglodytes troglodytes": {
+        "latinName": "Troglodytes troglodytes",
+        "germanName": "Zaunkoenig"
+    },
+    "Trogon caligatus": {
+        "latinName": "Trogon caligatus",
+        "germanName": ""
+    },
+    "Trogon citreolus": {
+        "latinName": "Trogon citreolus",
+        "germanName": ""
+    },
+    "Trogon collaris": {
+        "latinName": "Trogon collaris",
+        "germanName": ""
+    },
+    "Trogon elegans": {
+        "latinName": "Trogon elegans",
+        "germanName": ""
+    },
+    "Trogon massena": {
+        "latinName": "Trogon massena",
+        "germanName": ""
+    },
+    "Trogon melanocephalus": {
+        "latinName": "Trogon melanocephalus",
+        "germanName": ""
+    },
+    "Turdus grayi": {
+        "latinName": "Turdus grayi",
+        "germanName": ""
+    },
+    "Turdus merula": {
+        "latinName": "Turdus merula",
+        "germanName": "Amsel"
+    },
+    "Turdus migratorius": {
+        "latinName": "Turdus migratorius",
+        "germanName": "Wanderdrossel"
+    },
+    "Turdus philomelos": {
+        "latinName": "Turdus philomelos",
+        "germanName": "Singdrossel"
+    },
+    "Turdus pilaris": {
+        "latinName": "Turdus pilaris",
+        "germanName": "Wacholderdrossel"
+    },
+    "Turdus plumbeus": {
+        "latinName": "Turdus plumbeus",
+        "germanName": ""
+    },
+    "Turdus rufopalliatus": {
+        "latinName": "Turdus rufopalliatus",
+        "germanName": ""
+    },
+    "Turdus viscivorus": {
+        "latinName": "Turdus viscivorus",
+        "germanName": "Misteldrossel"
+    },
+    "Tyrannus couchii": {
+        "latinName": "Tyrannus couchii",
+        "germanName": ""
+    },
+    "Tyrannus crassirostris": {
+        "latinName": "Tyrannus crassirostris",
+        "germanName": ""
+    },
+    "Tyrannus dominicensis": {
+        "latinName": "Tyrannus dominicensis",
+        "germanName": ""
+    },
+    "Tyrannus forficatus": {
+        "latinName": "Tyrannus forficatus",
+        "germanName": ""
+    },
+    "Tyrannus melancholicus": {
+        "latinName": "Tyrannus melancholicus",
+        "germanName": ""
+    },
+    "Tyrannus savana": {
+        "latinName": "Tyrannus savana",
+        "germanName": ""
+    },
+    "Tyrannus tyrannus": {
+        "latinName": "Tyrannus tyrannus",
+        "germanName": ""
+    },
+    "Tyrannus verticalis": {
+        "latinName": "Tyrannus verticalis",
+        "germanName": ""
+    },
+    "Tyrannus vociferans": {
+        "latinName": "Tyrannus vociferans",
+        "germanName": ""
+    },
+    "Tyto alba": {
+        "latinName": "Tyto alba",
+        "germanName": "Schleiereule"
+    },
+    "Upupa epops": {
+        "latinName": "Upupa epops",
+        "germanName": "Wiedehopf"
+    },
+    "Uria aalge": {
+        "latinName": "Uria aalge",
+        "germanName": "Trottellumme"
+    },
+    "Vanellus armatus": {
+        "latinName": "Vanellus armatus",
+        "germanName": ""
+    },
+    "Vanellus chilensis": {
+        "latinName": "Vanellus chilensis",
+        "germanName": ""
+    },
+    "Vanellus miles": {
+        "latinName": "Vanellus miles",
+        "germanName": ""
+    },
+    "Vanellus spinosus": {
+        "latinName": "Vanellus spinosus",
+        "germanName": "Spornkiebitz"
+    },
+    "Vanellus vanellus": {
+        "latinName": "Vanellus vanellus",
+        "germanName": "Kiebitz"
+    },
+    "Vermivora chrysoptera": {
+        "latinName": "Vermivora chrysoptera",
+        "germanName": ""
+    },
+    "Vermivora cyanoptera": {
+        "latinName": "Vermivora cyanoptera",
+        "germanName": ""
+    },
+    "Vireo bellii": {
+        "latinName": "Vireo bellii",
+        "germanName": ""
+    },
+    "Vireo cassinii": {
+        "latinName": "Vireo cassinii",
+        "germanName": ""
+    },
+    "Vireo flavifrons": {
+        "latinName": "Vireo flavifrons",
+        "germanName": "Gelbkehlvireo"
+    },
+    "Vireo gilvus": {
+        "latinName": "Vireo gilvus",
+        "germanName": ""
+    },
+    "Vireo griseus": {
+        "latinName": "Vireo griseus",
+        "germanName": ""
+    },
+    "Vireo huttoni": {
+        "latinName": "Vireo huttoni",
+        "germanName": ""
+    },
+    "Vireo olivaceus": {
+        "latinName": "Vireo olivaceus",
+        "germanName": "Rotaugenvireo"
+    },
+    "Vireo philadelphicus": {
+        "latinName": "Vireo philadelphicus",
+        "germanName": ""
+    },
+    "Vireo plumbeus": {
+        "latinName": "Vireo plumbeus",
+        "germanName": ""
+    },
+    "Vireo solitarius": {
+        "latinName": "Vireo solitarius",
+        "germanName": ""
+    },
+    "Volatinia jacarina": {
+        "latinName": "Volatinia jacarina",
+        "germanName": ""
+    },
+    "Xanthocephalus xanthocephalus": {
+        "latinName": "Xanthocephalus xanthocephalus",
+        "germanName": ""
+    },
+    "Xema sabini": {
+        "latinName": "Xema sabini",
+        "germanName": "Schwalbenmoewe"
+    },
+    "Xiphorhynchus flavigaster": {
+        "latinName": "Xiphorhynchus flavigaster",
+        "germanName": ""
+    },
+    "Zenaida asiatica": {
+        "latinName": "Zenaida asiatica",
+        "germanName": ""
+    },
+    "Zenaida auriculata": {
+        "latinName": "Zenaida auriculata",
+        "germanName": ""
+    },
+    "Zenaida aurita": {
+        "latinName": "Zenaida aurita",
+        "germanName": ""
+    },
+    "Zenaida macroura": {
+        "latinName": "Zenaida macroura",
+        "germanName": "Carolinataube"
+    },
+    "Zonotrichia albicollis": {
+        "latinName": "Zonotrichia albicollis",
+        "germanName": "Weisskehlammer"
+    },
+    "Zonotrichia atricapilla": {
+        "latinName": "Zonotrichia atricapilla",
+        "germanName": ""
+    },
+    "Zonotrichia capensis": {
+        "latinName": "Zonotrichia capensis",
+        "germanName": ""
+    },
+    "Zonotrichia leucophrys": {
+        "latinName": "Zonotrichia leucophrys",
+        "germanName": "Dachsammer"
+    },
+    "Zonotrichia querula": {
+        "latinName": "Zonotrichia querula",
+        "germanName": ""
+    },
+    "Zosterops japonicus": {
+        "latinName": "Zosterops japonicus",
+        "germanName": ""
+    },
+    "Zosterops lateralis": {
+        "latinName": "Zosterops lateralis",
+        "germanName": ""
+    },
+    "Zosterops lateralis lateralis": {
+        "latinName": "Zosterops lateralis lateralis",
+        "germanName": ""
     }
-]
+}
+
 export default options;

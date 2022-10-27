@@ -19,10 +19,9 @@
                 //Prepare form data
                 var data = new FormData();
                 file= $("#image")[0].files[0]
-                console.log(file)
                 data.append("image", file);
                 for (var p of data) {
-                  console.log(p);
+                  //console.log(p);
                 }                 
           
                 jQuery.ajax({

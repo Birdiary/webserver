@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import options from '../helpers/labels';
 import { Grid, Tab, Box, Button, Autocomplete, TextField } from "@mui/material";
+import language from "../languages/languages";
 
 
 function ValidationForm(props) {
     function handleInputChange(event, value) {
-        console.log(value);
+        //console.log(value);
         props.setBird(value)
       }
 
@@ -14,11 +15,11 @@ function ValidationForm(props) {
     <Autocomplete
     freeSolo
     id="combo-box-demo"
-    options={options}
-    value = {props.bird}
+    options={Object.keys(options)}
     sx={{ width: 300 }}
     onInputChange= {handleInputChange}
-    renderInput={(params) => <TextField {...params} label="Correct bird" />}
+    value={props.bird}
+    renderInput={(params) => <TextField {...params} label={language[props.language]["validation"]["form"]}/>}
   />
 
 

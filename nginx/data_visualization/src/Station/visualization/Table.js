@@ -6,7 +6,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { Button } from '@mui/material';
+import { Button, Checkbox } from '@mui/material';
 import language from '../../languages/languages';
 
 
@@ -39,6 +39,7 @@ export default function BasicTable(props) {
             <TableCell>{language[props.language]["table"]["species"]}</TableCell>
             <TableCell>{language[props.language]["table"]["name"]}</TableCell>
             <TableCell align="right">{language[props.language]["table"]["propability"]}</TableCell>
+            <TableCell>{language[props.language]["table"]["validation"]}</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -52,6 +53,9 @@ export default function BasicTable(props) {
               </TableCell>
               {row.germanName == "" ?  <TableCell>  </TableCell>: <TableCell><a href={"https://www.nabu.de/tiere-und-pflanzen/voegel/portraets/" + row.germanName} target="_blank">{row.germanName} </a> </TableCell>}
               <TableCell align="right">{row.prop}</TableCell>
+              <TableCell>
+              <Checkbox checked={row.name===props.bird} onChange={() => props.setBird(row.name)} />
+              </TableCell>
               
             </TableRow>
           ))}

@@ -24,16 +24,56 @@ function getMovement() {
     return axios.get(_env.api + '/movement');
 }
 
+
+function getSingleMovement(station_id, mov_id) {
+    return axios.get(_env.api + '/movement/' + station_id + "/" + mov_id);
+}
+
+
 function sendValdation(station_id, movement_id, validation){
     var _url = _env.api + "/validate/" + station_id + "/" + movement_id
     return axios.put(_url, validation);
 }
 
+function searchForSpecies(station_id, species, numberOfMovements, date){
+    var query= "?"
+    if (species){
+            species = species.replace(" ", "_")
+        	query += "species=" + species
+    }
+    if(numberOfMovements){
+        if (query.length >1){
+            query+= "&"
+        }
+        query += "movements=" +numberOfMovements
+    }
+    if(date){
+        if (query.length >1){
+            query+= "&"
+        }
+        query += "date=" +date
+    }
+    var _url = _env.api + "/movement/" + station_id
+    if (query.length >1){
+        _url+= query
+    }
+    return axios.get(_url)
+    
+}
+
+function getEnvironment(station_id){
+    var _url = _env.api + "/environment/" + station_id
+    return axios.get(_url)
+
+}
 module.exports = {
     getStation : getStation,
     sendStation : sendStation,
     getStations : getStations,
     getMovement : getMovement,
     sendValidation : sendValdation,
+    searchForSpecies : searchForSpecies,
+    getEnvironment : getEnvironment,
+    getSingleMovement : getSingleMovement
     
 };

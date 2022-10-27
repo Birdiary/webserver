@@ -27,27 +27,9 @@ ChartJS.register(
   );
 
 
-export default function TimelineChart(props) {
-    console.log(props.series)
+function TimelineChart(props) {
 
-    const values = [
-        {
-          x: new Date("2020-01-01"),
-          y: 100.2
-        },
-        {
-          x: new Date("2020-01-02"),
-          y: 102.2
-        },
-        {
-          x: new Date("2020-01-03"),
-          y: 105.3
-        },
-        {
-          x: new Date("2020-01-11"),
-          y: 104.4
-        }
-      ];
+
 
     const lineChart = props.series[0] ? (
         <Line
@@ -84,3 +66,10 @@ export default function TimelineChart(props) {
 
     return <div>{lineChart}</div>;
 }
+
+function areEqual(prevProps, nextProps) {
+  if (prevProps.series.length == nextProps.series.length){
+    return true
+  }
+}
+export default React.memo(TimelineChart, areEqual);

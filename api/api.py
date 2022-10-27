@@ -7,8 +7,7 @@ from scripts.classify_birds import classify
 from scripts.email_service import send_email
 from sys import modules
 from os.path import basename, splitext
-from datetime import datetime
-from datetime import date
+from datetime import datetime, timedelta, date
 import random
 
 import json
@@ -509,13 +508,15 @@ def station(station_id: str):
             movements = list(db["movements_" + station_id].find({}, {'_id' : False}).sort("start_date",-1))
         station["measurements"] = dict()
         station["measurements"]["movements"] = movements
-        environment= db["environments_"+station_id].find({}, {'_id' : False}).sort("month",-1)
-        environment = list(environment)
-        #print(environment, flush=True)
-        environments = []
-        for months in environment:
-            environments= environments + months["measurements"]
-        station["measurements"]["environment"] = environments
+        envWanted = request.args.get('environment')
+        if envWanted:
+            environment= db["environments_"+station_id].find({}, {'_id' : False}).sort("month",-1)
+            environment = list(environment)
+            #print(environment, flush=True)
+            environments = []
+            for months in environment:
+                environments= environments + months["measurements"]
+            station["measurements"]["environment"] = environments
         return jsonify(station), 200
     if request.method=="PUT":
         apikey= request.args.get("apikey")
@@ -617,13 +618,34 @@ def handle_movement(station_id: str, movement_id: str):
 @app.route('/api/movement/<station_id>', methods=['GET'])
 def insert_station_id(station_id: str):
     species = request.args.get('species')
+    date = request.args.get('date')
     
     numberOfMovements = request.args.get('movements')
     query = {}
-    if species != "":
+    print(species, flush=True)
+    if date and species:
+        date = date.split()[0]
+        date_object = datetime.strptime(date, '%Y-%m-%d').date()
+        date2_object = date_object + timedelta(days=1)
+        date2 = date2_object.strftime("%Y-%m-%d")
+        species = species.replace("_", " ")
+        query = {"$and": [{"detections": { "$elemMatch" : {"latinName": { "$in": [species] } } }},{"start_date": {
+        "$gte": date,
+        "$lt": date2
+    } }]}
+    elif species:
         species = species.replace("_", " ")
         print(species, flush=True)
         query = {"detections": { "$elemMatch" : {"latinName": { "$in": [species] } } } }
+    elif date:
+        date = date.split()[0]
+        date_object = datetime.strptime(date, '%Y-%m-%d').date()
+        date2_object = date_object + timedelta(days=1)
+        date2 = date2_object.strftime("%Y-%m-%d")
+        query = {"start_date": {
+        "$gte": date,
+        "$lt": date2
+    } }
     if numberOfMovements and int(numberOfMovements) > 0:
             movements = list(db["movements_" + station_id].find(query, {'_id' : False}).sort("start_date",-1).limit(int(numberOfMovements)))
     else:
@@ -698,6 +720,9 @@ def addValidation(station_id: str, movement_id: str):
     validation= body["validation"]
     newValidation = dict()
     movement = db["movements_"+station_id].find({"mov_id": movement_id}, {'_id' : False})
+    movementList = list(movement)
+    if len(movementList) == 0:
+        return "Not Found", 404
     movement = list(movement)[0]
     if "timestamp" not in validation:
         validation["timestamp"] = str(datetime.now())

@@ -33,7 +33,7 @@ class OwnMap extends React.Component {
         .then ( ( res ) => {
            
             stations= res.data;            
-            console.log(stations)
+            //console.log(stations)
             this.setState({
                             stations: stations
                         })

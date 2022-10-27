@@ -22,7 +22,6 @@
         var language = navigator.language || navigator.userLanguage;
         language = language.substring(0, 2);
         if (window.localStorage.getItem("language")) {
-            console.log(window.localStorage.getItem("language"))
             if (window.localStorage.getItem("language") == "de") {
                 window.location.replace("de");
             }
@@ -35,7 +34,6 @@
         }
 
         function setLang(lang) {
-            console.log("set")
             window.localStorage.setItem("language", lang);
             if (lang === "de") {
                 window.location.href = "/de"
@@ -299,7 +297,7 @@ https://templatemo.com/tm-526-vanilla
             </div>
             <div style="padding-bottom:10vh; margin-top: 30px;">
                 <div class="primary-button" style="display: inline-block; padding-right: 10px; padding-bottom: 5vh;">
-                    <a href="#our-story">Erfahre unsere Geschichte</a>
+                    <a href="#our-story">Learn our story</a>
                 </div>
             </div>
             <div class="container" style="padding-bottom: 100px;">
