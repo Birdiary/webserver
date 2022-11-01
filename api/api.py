@@ -293,11 +293,38 @@ def save_Environment_old(environments, station_id):
     db["environments_"+station_id].insert_many(environmentMonths)
     return environmentMonths
 
-@enqueueable
-def save_station_id(station_id):
-    db["movements_"+station_id].update_many({}, {"$set": { "station_id" : station_id }})
-    return station_id
 
+
+@enqueueable
+def saveValidation(validation, movement_id, station_id):
+    movement = db["movements_"+station_id].find({"mov_id": movement_id}, {'_id' : False})
+    movementList = list(movement)
+    movement = movementList[0]
+    newValidation=dict()
+    if "timestamp" not in validation:
+        validation["timestamp"] = str(datetime.now())
+    if "validation" in  movement:
+        validations = movement["validation"]["validations"]
+        latinName = validation["latinName"]
+        validations.append(validation)
+        summary = movement["validation"]["summary"]
+        found=False
+        for key in summary:
+            if key == latinName:
+                summary[latinName]["amount"] = summary[latinName]["amount"] + 1
+                found = True
+                break
+        if found == False:
+            summary[latinName] = {"latinName": latinName, "amount": 1}
+        newValidation["validations"] = validations
+        newValidation["summary"] = summary
+        db["movements_"+station_id].update_one({"mov_id": movement_id}, {'$set': {"validation" : newValidation} })
+    else:
+        latinName = validation["latinName"]
+        newValidation["validations"] = [validation]
+        newValidation["summary"] = {latinName: {"latinName": latinName, "amount": 1}}
+        db["movements_"+station_id].update_one({"mov_id": movement_id}, {'$set': {"validation" : newValidation} })
+    return newValidation
 
 @app.route('/')
 def index():
@@ -718,37 +745,12 @@ def getMovement():
 def addValidation(station_id: str, movement_id: str):
     body = request.get_json()
     validation= body["validation"]
-    newValidation = dict()
     movement = db["movements_"+station_id].find({"mov_id": movement_id}, {'_id' : False})
     movementList = list(movement)
     if len(movementList) == 0:
         return "Not Found", 404
-    movement = list(movement)[0]
-    if "timestamp" not in validation:
-        validation["timestamp"] = str(datetime.now())
-    if "validation" in  movement:
-        validations = movement["validation"]["validations"]
-        latinName = validation["latinName"]
-        validations.append(validation)
-        summary = movement["validation"]["summary"]
-        found=False
-        for key in summary:
-            if key == latinName:
-                summary[latinName]["amount"] = summary[latinName]["amount"] + 1
-                found = True
-                break
-        if found == False:
-            summary[latinName] = {"latinName": latinName, "amount": 1}
-        newValidation["validations"] = validations
-        newValidation["summary"] = summary
-        db["movements_"+station_id].update_one({"mov_id": movement_id}, {'$set': {"validation" : newValidation} })
-    else:
-        latinName = validation["latinName"]
-        newValidation["validations"] = [validation]
-        newValidation["summary"] = {latinName: {"latinName": latinName, "amount": 1}}
-        db["movements_"+station_id].update_one({"mov_id": movement_id}, {'$set': {"validation" : newValidation} })
-
-    return jsonify(movement)
+    job=q.enqueue(saveValidation, validation, movement_id, station_id)
+    return "ok", 200
 #@app.route('/api')
 #def api():
 #    return render_template('./redoc/redoc.html')

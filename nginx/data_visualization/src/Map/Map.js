@@ -55,7 +55,7 @@ class OwnMap extends React.Component {
             
           ]]
         return (
-            <MapContainer style={{ height: "90vh" }} bounds={bounds} zoom={15} ref="map" >
+            <MapContainer style={{ height: "calc(100vh - (2.5rem + 64px))" }} bounds={bounds} zoom={15} ref="map" >
                 <TileLayer
                     attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

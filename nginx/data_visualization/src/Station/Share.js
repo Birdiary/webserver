@@ -1,6 +1,6 @@
 import React from "react"
 import { Button, Menu, MenuItem, ListItem, ListItemText, ListItemIcon} from "@mui/material";
-import { Facebook, Twitter, Link } from '@mui/icons-material';
+import { Facebook, Twitter, Link, WhatsApp } from '@mui/icons-material';
 import language from "../languages/languages";
 
 export default function DropdownShareButton(props) {
@@ -30,6 +30,11 @@ export default function DropdownShareButton(props) {
 
             case "twitter":
                 link = "https://twitter.com/intent/tweet?url=" +encodedAhref
+                openLink(link)
+                break
+            
+            case "whatsapp":
+                link = "https://api.whatsapp.com/send?text=Schau mal welcher Vogel an meiner Station war: "+ahref
                 openLink(link)
                 break
 
@@ -76,6 +81,10 @@ export default function DropdownShareButton(props) {
                                         <Twitter />
                                     </ListItemIcon>
                                     <ListItemText primary="Twitter" /></MenuItem>
+                                    <MenuItem id="whatsapp" onClick={handleShare}><ListItemIcon>
+                                        <WhatsApp />
+                                    </ListItemIcon>
+                                    <ListItemText primary="WhatsApp" /></MenuItem>
                 <MenuItem  id="copy"onClick={handleShare}><ListItemIcon>
                                         <Link />
                                     </ListItemIcon>

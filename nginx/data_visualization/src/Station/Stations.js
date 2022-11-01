@@ -4,7 +4,7 @@ import requests from "../helpers/requests";
 import ReactPlayer from 'react-player'
 import ReactAudioPlayer from 'react-audio-player';
 import ApexChart from "./visualization/Chart"
-import { Grid, Tab, Box, Button, Skeleton, TextField, Autocomplete, Snackbar, Alert } from "@mui/material";
+import { Grid, Tab, Box, Button, Skeleton, TextField, Autocomplete, Snackbar, Alert, Tabs } from "@mui/material";
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -46,7 +46,7 @@ function StationView(props) {
 
     ]
   });
-  const [value, setValue] = useState('1');
+  const [value, setValue] = useState(0);
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false)
   const [date, setDate] = useState(new Date(Date.now()))
@@ -69,7 +69,7 @@ function StationView(props) {
 
 
   const getStation = () => {
-    requests.getStation(id, 3)
+    requests.getStation(id, 30)
       .then((res) => {
         //console.log(res)
 
@@ -209,16 +209,16 @@ function StationView(props) {
     if (!value && searchValue) {
       search = options[searchValue]["latinName"]
     }
-    else if(value) {
+    else if (value) {
       search = value
     }
 
-    let searchDay=null
-    if(day){
+    let searchDay = null
+    if (day) {
       searchDay = day.format("YYYY-MM-DD")
     }
 
-    requests.searchForSpecies(id, search, 3,searchDay)
+    requests.searchForSpecies(id, search, 30, searchDay)
       .then((res) => {
         data.measurements.movements = res.data
         setData({ ...data })
@@ -264,11 +264,12 @@ function StationView(props) {
 
   }
 
+
   return <div>
 
     <Button variant="contained" onClick={() => { getStation() }} sx={{ display: { xs: 'none', md: 'block' } }} style={{ margin: "15px", position: "absolute", right: "25px", zIndex: "10000" }}>Refresh</Button>
     <h1 style={{ textAlign: "center" }}>Station: {data ? data.name : id}</h1>
-    <Grid container spacing={2}>
+    <Grid container spacing={2} style={{marginLeft: "20px"}}>
       <Grid item lg={3}>
         <Autocomplete
           id="combo-box-demo"
@@ -303,95 +304,52 @@ function StationView(props) {
       <div>
         {data.measurements.movements && data.measurements.movements.length > 0 ?
           <div>
-            <Box sx={{ width: '100%', typography: 'body1' }}>
-              <TabContext value={value}>
-                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                  <TabList onChange={handleChange} aria-label="lab API tabs example" centered>
-                    <Tab label={data.measurements.movements[0].start_date.split(".")[0]} value="1" />
-                    {data.measurements.movements.length > 1 ? <Tab label={data.measurements.movements[1].start_date.split(".")[0]} value="2" /> : ""}
-                    {data.measurements.movements.length > 2 ? <Tab label={data.measurements.movements[2].start_date.split(".")[0]} value="3" /> : ""}
-                  </TabList>
-                </Box>
-                <TabPanel value="1">
-                  <Grid container spacing={4}>
-                    <Grid item lg={8}>
-                      {data.measurements.movements[0].video == "pending" ? < div><p>{language[props.language]["stations"]["wait1"]}<br />  </p> <Button variant="contained" onClick={() => { getStation() }} style={{ margin: "15px" }}>Refresh</Button></div>
-                        :
-                        <ReactPlayer url={data.measurements.movements[0].video} loop={true} controls={true} width={"100%"} height="70vh" />}
-                    </Grid>
-                    <Grid item lg={4}>
-                    <DropdownShareButton language={props.language} station_id={id} mov_id={data.measurements.movements[0].mov_id}></DropdownShareButton>
-                      <h4>{language[props.language]["stations"]["audio"]}</h4>
-                      <ReactAudioPlayer src={data.measurements.movements[0].audio} controls />
-                      <h4>{language[props.language]["stations"]["weight"]}</h4>
-                      <p> {data.measurements.movements[0].weight.toFixed(0) + " gramm"} </p>
-                      <IconButton color="primary" aria-label="upload picture" component="span" onClick={() => { handleClickOpen("species") }} style={{ float: "right" }}>
-                        <InfoOutlinedIcon />
-                      </IconButton>
-                      <h4>{language[props.language]["stations"]["species"]}</h4>
+            <TabContext value={value}>
+            <Box sx={{ bgcolor: 'background.paper' }} style={{maxWidth:"94vw", marginLeft:"3vw"}}>
+            
+              <TabList
+                value={value}
+                onChange={handleChange}
+                variant="scrollable"
+                scrollButtons="auto"
+                aria-label="scrollable auto tabs example"
+              >
+                {data.measurements.movements.map((movement) => 
+                <Tab label={movement.start_date.split(".")[0]}></Tab>
+                 )}
+              </TabList>
+            </Box>
+            {data.measurements.movements.map((movement, i) => 
+            <TabPanel value={i}>
+            <Grid container spacing={4}>
+              <Grid item lg={8}>
+                {movement.video == "pending" ? < div><p>{language[props.language]["stations"]["wait1"]}<br />  </p> <Button variant="contained" onClick={() => { getStation() }} style={{ margin: "15px" }}>Refresh</Button></div>
+                  :
+                  <ReactPlayer url={movement.video} loop={true} controls={true} width="100%" height="min(95vw, 80vh)" style={{aspectRatio: 1}}/>}
+              </Grid>
+              <Grid item lg={4}>
+                <DropdownShareButton language={props.language} station_id={id} mov_id={movement.mov_id}></DropdownShareButton>
+                <h4>{language[props.language]["stations"]["audio"]}</h4>
+                <ReactAudioPlayer src={movement.audio} controls />
+                <h4>{language[props.language]["stations"]["weight"]}</h4>
+                <p> {movement.weight.toFixed(0) + " gramm"} </p>
+                <IconButton color="primary" aria-label="upload picture" component="span" onClick={() => { handleClickOpen("species") }} style={{ float: "right" }}>
+                  <InfoOutlinedIcon />
+                </IconButton>
+                <h4>{language[props.language]["stations"]["species"]}</h4>
 
-                      <BasicTable birds={data.measurements.movements[0].detections} finished={data.measurements.movements[0].video} getStation={event => getStation(event)} language={props.language} setBird={setBird} bird={bird}></BasicTable>
-                      <br />
-                      <ValidationForm setBird={setBird} bird={bird} language={props.language} />
-                      <br></br>
-                      <Button variant="contained" onClick={sendValidation} style={{ marginRight: "5px", marginBottom: "5px" }}>{language[props.language]["validation"]["send"]}</Button>
-                      <Button variant="contained" onClick={sendValidationNone} style={{ marginRight: "5px", marginBottom: "5px" }}>{language[props.language]["validation"]["noBird"]}</Button>
-                    </Grid>
-                  </Grid>
-                </TabPanel>
-                {data.measurements.movements.length > 1 ? <TabPanel value="2">                  <Grid container spacing={2}>
-                  <Grid item lg={8}>
-                    {data.measurements.movements[1].video == "pending" ? < div><p>{language[props.language]["stations"]["wait1"]}<br /> {language[props.language]["stations"]["wait2"]} </p> <Button variant="contained" onClick={() => { getStation() }} style={{ margin: "15px" }}>Refresh</Button></div>
-                      :
-                      <ReactPlayer url={data.measurements.movements[1].video} loop={true} controls={true} width={"100%"} height="70vh" />}
-                  </Grid>
-                  <Grid item lg={4}>
-                  <DropdownShareButton language={props.language} station_id={id} mov_id={data.measurements.movements[1].mov_id}></DropdownShareButton>
-                    
-                    <h4> {language[props.language]["stations"]["audio"]}</h4>
-                    <ReactAudioPlayer src={data.measurements.movements[1].audio} controls />
-                    <h4>{language[props.language]["stations"]["weight"]}</h4>
-                    <p> {data.measurements.movements[1].weight.toFixed(0) + " gramm"} </p>
-                    <IconButton color="primary" aria-label="upload picture" component="span" onClick={() => { handleClickOpen("species") }} style={{ float: "right" }}>
-                      <InfoOutlinedIcon />
-                    </IconButton>
-                    <h4>{language[props.language]["stations"]["species"]}</h4>
-                    <BasicTable birds={data.measurements.movements[1].detections} finished={data.measurements.movements[1].video} getStation={event => getStation(event)} language={props.language} setBird={setBird} bird={bird}></BasicTable>
-
-                    <br />
-                    <ValidationForm setBird={setBird} bird={bird} language={props.language} />
-                    <br></br>
-                    <Button variant="contained" onClick={sendValidation} style={{ marginRight: "5px", marginBottom: "5px" }}>{language[props.language]["validation"]["send"]}</Button>
-                    <Button variant="contained" onClick={sendValidationNone} style={{ marginRight: "5px", marginBottom: "5px" }}>{language[props.language]["validation"]["noBird"]}</Button>
-                  </Grid>
-                </Grid></TabPanel> : ""}
-                {data.measurements.movements.length > 2 ? <TabPanel value="3">                  <Grid container spacing={2}>
-                  <Grid item lg={8}>
-                    {data.measurements.movements[2].video == "pending" ? < div><p>{language[props.language]["stations"]["wait1"]}<br />  {language[props.language]["stations"]["wait2"]} </p> <Button variant="contained" onClick={() => { getStation() }} style={{ margin: "15px" }}>Refresh</Button></div>
-                      :
-                      <ReactPlayer url={data.measurements.movements[2].video} loop={true} controls={true} width={"100%"} height="70vh" />}
-                  </Grid>
-                  <Grid item lg={4}>
-                  <DropdownShareButton language={props.language} station_id={id} mov_id={data.measurements.movements[2].mov_id}></DropdownShareButton>
-                    
-                    <h4> {language[props.language]["stations"]["audio"]}</h4>
-                    <ReactAudioPlayer src={data.measurements.movements[2].audio} controls />
-                    <h4>{language[props.language]["stations"]["weight"]}</h4>
-                    <p> {data.measurements.movements[2].weight.toFixed(0) + " gramm"} </p>
-                    <IconButton color="primary" aria-label="upload picture" component="span" onClick={() => { handleClickOpen("species") }} style={{ float: "right" }}>
-                      <InfoOutlinedIcon />
-                    </IconButton>
-                    <h4>{language[props.language]["stations"]["species"]}</h4>
-                    <BasicTable birds={data.measurements.movements[2].detections} finished={data.measurements.movements[2].video} getStation={event => getStation(event)} language={props.language} setBird={setBird} bird={bird}></BasicTable>
-                    <br />
-                    <ValidationForm setBird={setBird} bird={bird} language={props.language} />
-                    <br></br>
-                    <Button variant="contained" onClick={sendValidation} style={{ marginRight: "5px", marginBottom: "5px" }}>{language[props.language]["validation"]["send"]}</Button>
-                    <Button variant="contained" onClick={sendValidationNone} style={{ marginRight: "5px", marginBottom: "5px" }}>{language[props.language]["validation"]["noBird"]}</Button>
-                  </Grid>
-                </Grid></TabPanel> : ""}
-              </TabContext>
-            </Box> </div> : <p>{language[props.language]["stations"]["noData1"]}</p>}
+                <BasicTable birds={movement.detections} finished={movement.video} getStation={event => getStation(event)} language={props.language} setBird={setBird} bird={bird}></BasicTable>
+                <br />
+                <ValidationForm setBird={setBird} bird={bird} language={props.language} />
+                <br></br>
+                <Button variant="contained" onClick={sendValidation} style={{ marginRight: "5px", marginBottom: "5px" }}>{language[props.language]["validation"]["send"]}</Button>
+                <Button variant="contained" onClick={sendValidationNone} style={{ marginRight: "5px", marginBottom: "5px" }}>{language[props.language]["validation"]["noBird"]}</Button>
+              </Grid>
+            </Grid>
+          </TabPanel>)}
+          </TabContext>
+          </div>
+          : <p>{language[props.language]["stations"]["noData1"]}</p>}
         {temperature[0].data ?
           (temperature[0].data.length > 0 ?
             <div>     <h3 style={{ "marginBlockEnd": "0px" }}>{language[props.language]["stations"]["environment"]}

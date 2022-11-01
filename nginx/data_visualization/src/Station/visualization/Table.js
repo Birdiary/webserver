@@ -33,7 +33,7 @@ export default function BasicTable(props) {
     :
     rows.length == 0 ?  <p> {language[props.language]["table"]["noBird"]} </p>  :
     <TableContainer component={Paper}>
-      <Table  aria-label="simple table">
+      <Table  aria-label="simple table" style={{ maxWidth: "100%", "table-layout": 'fixed' }} >
         <TableHead>
           <TableRow>
             <TableCell>{language[props.language]["table"]["species"]}</TableCell>
@@ -53,7 +53,7 @@ export default function BasicTable(props) {
               </TableCell>
               {row.germanName == "" ?  <TableCell>  </TableCell>: <TableCell><a href={"https://www.nabu.de/tiere-und-pflanzen/voegel/portraets/" + row.germanName} target="_blank">{row.germanName} </a> </TableCell>}
               <TableCell align="right">{row.prop}</TableCell>
-              <TableCell>
+              <TableCell padding="checkbox">
               <Checkbox checked={row.name===props.bird} onChange={() => props.setBird(row.name)} />
               </TableCell>
               

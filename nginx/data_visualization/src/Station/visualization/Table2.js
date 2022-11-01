@@ -37,7 +37,7 @@ export default function AmountTable(props) {
       {rows.length == 0 ? < div><p>{language[props.language]["table"]["noBirdDay"]}</p></div>
         :
         <TableContainer component={Paper}>
-          <Table aria-label="simple table">
+          <Table aria-label="simple table" style={{ maxWidth: "100%", "table-layout": 'fixed' }}>
             <TableHead>
               <TableRow>
 
