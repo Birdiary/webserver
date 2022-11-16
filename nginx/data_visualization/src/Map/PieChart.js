@@ -7,7 +7,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import language from "../languages/languages";
 import dayjs from "dayjs";
-
+import "./PieChart.css";
 /* In dieser Klasse wird das Diagramm mit seinen Eigenschaften definiert
 (Typ, Farben, Winkel, Höhe, Größe usw.) */
 
@@ -204,11 +204,11 @@ class ApexChart extends React.Component {
         </LocalizationProvider>
         </div>
           {this.state.data ? (this.state.series.length >0 ?
-          <div id="chartPie" style={{height: "40vh"}}>
-            <Chart options={this.state.options} series={this.state.series} type="pie" width={"100%"} height={"100%"} />
+          <div id="chartPie">
+            <Chart options={this.state.options} series={this.state.series} type="pie"  />
           </div>
           : <p>{language[this.props.language]["table"]["noBirdDay"]}</p> ) : 
-          <Skeleton width={"100%"} height={"40vh"}>
+          <Skeleton width={"100%"} height={"20vh"}>
             
           </Skeleton>}
 

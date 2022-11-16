@@ -68,10 +68,11 @@ class OwnMap extends React.Component {
     ]]
     return (
       <Grid container>
-        <Grid item lg={this.state.open? 8: 12} style={{position:"relative"}}>
+        <Grid item xs={12} md ={12}  lg={this.state.open? 8: 12} style={{position:"relative"}}>
+        {this.state.open ? "":
         <Button variant="contained" style={{top: 10, right:10, position:"absolute", zIndex:"5000", backgroundColor: "orange"}} onClick={this.handleClickOpen} >
             Show Statistics
-        </Button>
+        </Button> }
         <MapContainer style={{ height: "calc(100vh - (2.5rem + 64px))" }} bounds={bounds} zoom={15}  >
 
           <TileLayer
