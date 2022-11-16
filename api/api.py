@@ -189,7 +189,8 @@ def videoAnalysis(filename, movement_id, station_id, movement):
                 print("mail to " + mail + " failed") 
 
     db["movements_"+station_id].update_one({"mov_id": movement_id}, {'$set': newMovement})
-    stations.update_one({"station_id":station_id}, {'$set': {"count":count}})
+    completeMovement = db["movements_"+station_id].find_one({"mov_id": movement_id}, {'_id' : False})
+    stations.update_one({"station_id":station_id}, {'$set': {"count":count, "lastMovement" : completeMovement}})
 
     return birds
 
@@ -232,7 +233,7 @@ def saveEnvironment(body, env_id, station_id):
         measurements = insert(measurements ,environmentClass)
         #print(measurements, flush=True)
         db["environments_"+ station_id].update_one({"list_id":listID}, {'$set': {"measurements":measurements}})
-
+    db["stations"].update_one({"station_id":station_id}, {'$set': {"lastEnvironment":environmentClass}})
     # Send Temperature and Humidity to openSenseMap if sensebox id is defined for the station
     # print(station.sensebox_id, flush=True)
     station = stations.find_one({"station_id":station_id})
@@ -444,7 +445,7 @@ def add_station():
         environmentCollection.create_index( [( "month", -1 )] )
 
         return {"id": id}, 201
-    station = list(stations.find({}, {'_id' : False, "mail":False} ))
+    station = list(stations.find({ "test": {  "$ne": True } }, {'_id' : False, "mail":False} ))
     return  jsonify(station), 200
 
 @app.route('/api/station/old', methods=['GET', 'POST'])
@@ -519,6 +520,34 @@ def oldstation(station_id: str):
         result= db.stations.update_one({"station_id":station_id}, {'$set': {"count": count}})
 
         return station_id
+
+@app.route('/api/station/test', methods=['POST'])
+def addTestStation():
+        body = request.get_json()
+        location = dict()
+        location['lat'] = body['location']['lat']
+        location['lng']= body['location']['lng']
+        mail = dict()
+        mail["adresses"] = []
+        id = str(uuid.uuid4())
+        if "id" in body:
+            id = body["id"]
+        #print(mail)
+        count = dict()
+        # Add object to movie and save
+        station = stations.insert_one({"station_id": id, "location":location, "name":body['name'], "test":True, "mail": mail, "count": count})
+        movementsCollection = db["movements_"+ id]
+        movementsCollection.create_index( [( "start_date", -1 )] )
+        movementsCollection.create_index('createdAt', expireAfterSeconds=3600)
+        index= movementsCollection.list_indexes()
+        for i in index:
+                print(i, flush=True)
+        environmentCollection = db["environments_"+ id]
+        environmentCollection.create_index( [( "month", -1 )] )
+
+        return {"id": id}, 201
+
+
 
 @app.route('/api/station/<station_id>', methods=['GET', 'PUT', 'DELETE'])
 def station(station_id: str):
@@ -620,6 +649,7 @@ def add_movement(station_id: str):
     environmentClass["env_id"] = env_id
 
     movementsClass["environment"] = environmentClass
+    movementsClass["createdAt"] = datetime.utcnow()
     
     
     db["movements_"+station_id].insert_one(movementsClass)
@@ -696,7 +726,7 @@ def getVideos(filename):
 @app.route('/api/count')
 def count():
 
-    station=  stations.find({},{"count":1})
+    station=  stations.find({"test": {  "$ne": True }},{"count":1})
     counts= list(station)
     count = {}
     for countObjects in counts:
