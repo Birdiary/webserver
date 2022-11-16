@@ -19,6 +19,10 @@ const options = {
         "latinName": "Turdus merula",
         "germanName": "Amsel"
     },
+    "Eurasisches Eichhoernchen":{
+        "latinName": "Sciurus vulgaris",
+        "germanName": "Eurasisches Eichhoernchen"
+    },
     "Alpenstrandlaeufer": {
         "latinName": "Calidris alpina",
         "germanName": "Alpenstrandlaeufer"
@@ -4206,6 +4210,10 @@ const options = {
     "Sayornis saya": {
         "latinName": "Sayornis saya",
         "germanName": ""
+    },
+    "Sciurus vulgaris":{
+        "latinName": "Sciurus vulgaris",
+        "germanName": "Eurasisches Eichhoernchen"
     },
     "Scolopax minor": {
         "latinName": "Scolopax minor",

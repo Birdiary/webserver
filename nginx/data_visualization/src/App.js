@@ -21,7 +21,7 @@ const Footer = (props) => {
     <div style={{backgroundColor : "orange"}} className="mui-container mui--text-center" id="footer">
       <div id="links" style={{color: "white"}}>
           <a  id="link" href="/doc">API</a> |&nbsp;
-          Version&nbsp;<code>#dev#</code>
+          Version&nbsp;<code>1.0.0</code>
       </div>
     </div>
   );

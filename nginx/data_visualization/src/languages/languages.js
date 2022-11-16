@@ -10,7 +10,12 @@ const language = {
 
         map: {
             stationName: "Name of the station: ",
-            inspect: "Inspect station"
+            inspect: "Inspect station",
+            lastEnvironment: "Last measurement: ",
+            lastMovement: "Last Bird: ",
+        },
+        dashboard: {
+            header:  "Top 10 bird species, that were detected:"
         },
         share: {
             button: "Share observation",
@@ -22,20 +27,21 @@ const language = {
             infoenvironment: "The measured values are measured by a DHT humidity and temperature sensor. When the sensor is read out for the first time, it may happen that wrong values are read out. Therefore, measurements where the temperature is below -35°C are excluded",
             audio: "Audio:",
             weight: "Weight:",
-            species: "Detected species:",
+            species: "Detected species: ",
             wait1: "The video is being processed and the species will be determined! ",
             wait2: "Please wait a brief moment and then click the refresh button.",
             noData1: "So far, no bird has been detected",
             noData2: "No environmental data has been collected yet",
             environment: "Environmental sensors",
-            temperature: "Temperature in °C:",
-            humidity: "Humidity in %:",
+            temperature: "Temperature in °C: ",
+            humidity: "Humidity in %: ",
             birdsCount: "Counted Birds:",
             yesterday: "Yesterday",
             today: "Today",
             search: "Species to search for",
             search2: "Search for birds",
-            day: "Day to search for"
+            day: "Day to search for",
+            notFound: "The station was not found, you will be redirected to the home screen in 5 seconds:"
         },
         table: {
             noBird: "No bird was detected on the video",
@@ -83,7 +89,12 @@ const language = {
 
         map: {
             stationame: "Name der Station",
-            inspect: "Beobachte Station"
+            inspect: "Beobachte Station",
+            lastEnvironment: "Letzte Umweltmessung: ",
+            lastMovement: "Letzter Vogel: ",
+        },
+        dashboard: {
+            header:  "Top 10 Vogelarten, die an den Stationen erkannt wurden:"
         },
         share: {
             button: "Teile Beobachtung",
@@ -95,21 +106,21 @@ const language = {
             infoenvironment: "Die gemssennen Werte werden von einem DHT Luftfeuchte und Temperatur Sensor gemessen. Wenn der Sensor zum ersten mal ausgelesen wird, kann es vorkommen, dass falsche Werte ausgelesen werden. Daher werden Messungen, bei denen die Temperatur unter -35°C beträgt, ausgeschlossen.",
             audio: "Audio:",
             weight: "Gewicht:",
-            species: "Erkannte Arten:",
+            species: "Erkannte Arten: ",
             wait1: "Das Video wird gerade verabeitet und die Art bestimmt! ",
             wait2: "Bitte warte einen kurzen Moment und klicke dann auf den Refresh Button",
             noData1: "Bisher wurde noch kein Vogel erkannt",
             noData2: "Bisher wurden noch keine Umweltdaten gesammelt",
             environment: "Umweltsensoren",
-            temperature: "Temperatur in °C:",
-            humidity: "Luftfeuchte in %:",
+            temperature: "Temperatur in °C: ",
+            humidity: "Luftfeuchte in %: ",
             birdsCount: "Gezählte Vögel:",
             yesterday: "Gestern",
             today: "Heute",
             search: "Zu suchende Art",
             search2: "Durchsuche Vögel",
             day: "Zu suchender Tag",
-            notFound: "Die Station wurde nicht gefunden, du wirst in 10 Sekunden auf die Home Seite geleitet"
+            notFound: "Die Station wurde nicht gefunden, du wirst in 5 Sekunden auf die Home Seite geleitet"
         },
         table: {
             noBird: "Es wurde kein Vogel auf dem Video erkannt",

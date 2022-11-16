@@ -66,6 +66,11 @@ function getEnvironment(station_id){
     return axios.get(_url)
 
 }
+
+function getCount(){
+    return axios.get(_env.api +"/count")
+}
+
 module.exports = {
     getStation : getStation,
     sendStation : sendStation,
@@ -74,6 +79,7 @@ module.exports = {
     sendValidation : sendValdation,
     searchForSpecies : searchForSpecies,
     getEnvironment : getEnvironment,
-    getSingleMovement : getSingleMovement
+    getSingleMovement : getSingleMovement,
+    getCount :getCount,
     
 };
