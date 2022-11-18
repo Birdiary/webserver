@@ -25,22 +25,17 @@ import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 
 def traces_sampler(sampling_context):
+    #print(sampling_context, flush=True)
     # Examine provided context data (including parent decision, if any)
     # along with anything in the global namespace to compute the sample rate
     # or sampling decision for this transaction
 
-    if "uploads" in sampling_context.transaction_context.name:
+    if "static" == sampling_context["transaction_context"]["name"]:
         # These are important - take a big sample
-        return 0.01
-    elif "static" in sampling_context.transaction_context.name:
+        return 0.001
+    elif "add_environment" ==  sampling_context["transaction_context"]["name"] or "getVideos" == sampling_context["transaction_context"]["name"] or "add_movement" == sampling_context["transaction_context"]["name"] or "getAudios" ==sampling_context["transaction_context"]["name"]:
         # These are less important or happen much more frequently - only take 1%
         return 0.01
-    elif "environment" in sampling_context.transaction_context.name and "POST" in sampling_context.transaction_context.name:
-        # These are less important or happen much more frequently - only take 1%
-        return 0.01
-    elif "movement" in sampling_context.transaction_context.name and "POST" in sampling_context.transaction_context.name:
-        # These are less important or happen much more frequently - only take 1%
-        return 0.05
     else:
         # Default sample rate
         return 0.5
@@ -54,7 +49,7 @@ sentry_sdk.init(
     # Set traces_sample_rate to 1.0 to capture 100%
     # of transactions for performance monitoring.
     # We recommend adjusting this value in production.
-    traces_sample_rate=1.0
+    traces_sampler=traces_sampler
 )
 
 
