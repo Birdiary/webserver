@@ -68,10 +68,10 @@ class OwnMap extends React.Component {
     ]]
     return (
       <Grid container>
-        <Grid item xs={12} md ={12}  lg={this.state.open? 8: 12} style={{position:"relative"}}>
+        <Grid item xs={this.state.open ? 0:12} md ={this.state.open? 0:12}  lg={this.state.open? 8: 12} style={{position:"relative"}}>
         {this.state.open ? "":
         <Button variant="contained" style={{top: 10, right:10, position:"absolute", zIndex:"5000", backgroundColor: "orange"}} onClick={this.handleClickOpen} >
-            Show Statistics
+            {language[this.props.language]["map"]["statistics"]}
         </Button> }
         <MapContainer style={{ height: "calc(100vh - (2.5rem + 64px))" }} bounds={bounds} zoom={15}  >
 
@@ -145,7 +145,7 @@ class OwnMap extends React.Component {
         </MapContainer>
         </Grid>
         {this.state.open? 
-        <Grid item lg={this.state.open? 4: 0} style={{maxHeight: "calc(100vh - (2.5rem + 64px))"}}>
+        <Grid item xs={this.state.open ? 12:0} md ={this.state.open? 12:0} lg={this.state.open? 4: 0} style={{maxHeight: "calc(100vh - (2.5rem + 64px))"}}>
         <AppBar sx={{ position: 'relative' }} style={{backgroundColor : "orange"}} >
             <Toolbar>
               <IconButton

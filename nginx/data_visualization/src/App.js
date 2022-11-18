@@ -4,14 +4,23 @@ import Createstation from './CreateStation/CreateStation';
 import StationView from './Station/Stations'
 import Validation from './Validation/Validation';
 
-import { Route, Routes, BrowserRouter } from "react-router-dom";
+import {
+  Routes,
+  BrowserRouter,
+  Route,
+  useLocation,
+  useNavigationType,
+  createRoutesFromChildren,
+  matchRoutes,
+} from "react-router-dom";
 import Header from './Navbar/Navbar';
+import * as Sentry from "@sentry/react";
 
 import './App.css';
 import { useNavigate, Link } from 'react-router-dom'; 
 import Movement from './Movement/Movement';
 
-
+const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes)
 
 
 const Footer = (props) => {
@@ -62,13 +71,14 @@ class App extends React.Component {
 
       <div>
         <div className="content" id="mainView">
-          <Routes>
+          
+          <SentryRoutes>
           <Route exact path="/view" element={<OwnMap language={this.state.language} changeLang={this.changeLang}/>} />
           <Route exact path="/view/station/:id" element={<StationView language={this.state.language} />}></Route>
           <Route path="/view/station/:id/:mov_id" element={<Movement language={this.state.language} />}></Route>
           <Route path="/view/createStation" element={<Createstation language={this.state.language} />}></Route>
           <Route path="/view/validation" element={<Validation language={this.state.language} />}></Route>
-          </Routes>
+          </SentryRoutes>
         </div>
       </div>
       

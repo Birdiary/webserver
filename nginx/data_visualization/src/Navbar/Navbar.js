@@ -21,8 +21,8 @@ function Header(props){
 
       <div>
       <AppBar style={{backgroundColor : "orange"}} id="header">
-      <Container maxWidth="xl">
-        <Toolbar disableGutters>
+      <Container style={{width: "100%", maxWidth: "none"}}>
+        <Toolbar disableGutters >
           <Typography
             variant="h6"
             noWrap
@@ -107,7 +107,7 @@ function Header(props){
           >
             Birdiary
           </Typography>
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex', lg:"flex" } }} >
           <Typography variant="h4" color="inherit" style={{ flex: 1 }}>
             <Button style={{ fontWeight : "bold"}} color="inherit" component={Link} to="/view" >{language[props.language]["navbar"]["overview"]}</Button>
           </Typography>

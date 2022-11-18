@@ -4,7 +4,7 @@ const language = {
             create: "Create Station",
             more:
                 "Learn more about our project",
-            overview: "Overview",
+            overview: "Map",
             validation: "Validation"
         },
 
@@ -13,6 +13,7 @@ const language = {
             inspect: "Inspect station",
             lastEnvironment: "Last measurement: ",
             lastMovement: "Last Bird: ",
+            statistics: "Show statistics"
         },
         dashboard: {
             header:  "Top 10 bird species, that were detected:"
@@ -83,7 +84,7 @@ const language = {
             create: "Erstelle Station",
             more:
                 "Erfahre mehr über unser Projekt",
-            overview: "Übersicht",
+            overview: "Übersichtskarte",
             validation: "Validierung"
         },
 
@@ -92,6 +93,7 @@ const language = {
             inspect: "Beobachte Station",
             lastEnvironment: "Letzte Umweltmessung: ",
             lastMovement: "Letzter Vogel: ",
+            statistics: "Zeige Statistiken"
         },
         dashboard: {
             header:  "Top 10 Vogelarten, die an den Stationen erkannt wurden:"

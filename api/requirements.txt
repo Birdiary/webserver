@@ -64,3 +64,4 @@ zipp==1.0.0
 gunicorn==19.9.0
 redis
 rq
+sentry-sdk[flask]

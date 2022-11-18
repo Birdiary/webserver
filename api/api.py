@@ -20,10 +20,43 @@ from redis import Redis
 from rq import Queue
 
 import requests
-
-
-
 import csv 
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
+
+def traces_sampler(sampling_context):
+    # Examine provided context data (including parent decision, if any)
+    # along with anything in the global namespace to compute the sample rate
+    # or sampling decision for this transaction
+
+    if "uploads" in sampling_context.transaction_context.name:
+        # These are important - take a big sample
+        return 0.01
+    elif "static" in sampling_context.transaction_context.name:
+        # These are less important or happen much more frequently - only take 1%
+        return 0.01
+    elif "environment" in sampling_context.transaction_context.name and "POST" in sampling_context.transaction_context.name:
+        # These are less important or happen much more frequently - only take 1%
+        return 0.01
+    elif "movement" in sampling_context.transaction_context.name and "POST" in sampling_context.transaction_context.name:
+        # These are less important or happen much more frequently - only take 1%
+        return 0.05
+    else:
+        # Default sample rate
+        return 0.5
+
+sentry_sdk.init(
+    dsn="https://f7dc32893aa54ef5b2b3df3a3067c5cb@o4504179650723840.ingest.sentry.io/4504179659898880",
+    integrations=[
+        FlaskIntegration(),
+    ],
+
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    # We recommend adjusting this value in production.
+    traces_sample_rate=1.0
+)
+
 
 
 birdJSON = {}
@@ -785,6 +818,9 @@ def addValidation(station_id: str, movement_id: str):
 #def api():
 #    return render_template('./redoc/redoc.html')
 
+@app.route('/api/debug-sentry')
+def trigger_error():
+    division_by_zero = 1 / 0
 
 if __name__==('__main__'):
     app.run(host="0.0.0.0", debug=False)
