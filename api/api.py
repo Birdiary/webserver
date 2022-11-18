@@ -25,16 +25,21 @@ import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 
 def traces_sampler(sampling_context):
-    #print(sampling_context, flush=True)
     # Examine provided context data (including parent decision, if any)
     # along with anything in the global namespace to compute the sample rate
     # or sampling decision for this transaction
+    #print(sampling_context["wsgi_environ"], flush=True)
 
-    if "static" == sampling_context["transaction_context"]["name"]:
+    if "static" in sampling_context["wsgi_environ"]["PATH_INFO"]:
         # These are important - take a big sample
         return 0.001
-    elif "add_environment" ==  sampling_context["transaction_context"]["name"] or "getVideos" == sampling_context["transaction_context"]["name"] or "add_movement" == sampling_context["transaction_context"]["name"] or "getAudios" ==sampling_context["transaction_context"]["name"]:
+    elif ("environment" in  sampling_context["wsgi_environ"]["PATH_INFO"] or "movement" in sampling_context["wsgi_environ"]["PATH_INFO"]) and "POST" == sampling_context["wsgi_environ"]["REQUEST_METHOD"]:
         # These are less important or happen much more frequently - only take 1%
+        #print("first: " + sampling_context["wsgi_environ"]["PATH_INFO"], flush=True)
+        return 0.01
+    elif "uploads" == sampling_context["wsgi_environ"]["PATH_INFO"]:
+        # These are less important or happen much more frequently - only take 1%
+        #print(sampling_context["wsgi_environ"]["PATH_INFO"], flush=True)
         return 0.01
     else:
         # Default sample rate
