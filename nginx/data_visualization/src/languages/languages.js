@@ -15,6 +15,15 @@ const language = {
             lastMovement: "Last Bird: ",
             statistics: "Show statistics"
         },
+        legend: {
+            head: "Legend",
+            description: "The symbols represent the last 24 hours",
+            symbol: "Symbol",
+            meaning: "Meaning",
+            black: "No environmental data",
+            green: "Environmental data",
+            bird: "Environmental data and bird"
+        },
         dashboard: {
             header:  "Top 10 bird species, that were detected:"
         },
@@ -94,6 +103,15 @@ const language = {
             lastEnvironment: "Letzte Umweltmessung: ",
             lastMovement: "Letzter Vogel: ",
             statistics: "Zeige Statistiken"
+        },
+        legend: {
+            head: "Legende",
+            description: "Die Symbole repräsentieren die letzten 24 Stunden",
+            symbol: "Symbol",
+            meaning: "Bedeutung",
+            black: "Keine Umweltdaten",
+            green: "Umweltdaten",
+            bird: "Umweltdaten und Vogel"
         },
         dashboard: {
             header:  "Top 10 Vogelarten, die an den Stationen erkannt wurden:"

@@ -12,7 +12,7 @@ import ReactPlayer from 'react-player';
 import {  iconBlack, iconGreen, iconWithBird  } from '../helpers/icon';
 
 import { useNavigate, Link } from 'react-router-dom';
-export let map;
+import Legend from './Legend/Legend';
 
 
 class OwnMap extends React.Component {
@@ -20,12 +20,14 @@ class OwnMap extends React.Component {
     super(props);
     this.state = {
       stations: [],
-      open: false
+      open: false,
+      map: null,
+      legendOpen : true
     };
   };
 
+
   componentDidMount() {
-    map = this.refs.map;
     this.getStations()
   };
 
@@ -54,6 +56,15 @@ class OwnMap extends React.Component {
     this.setState({ open: false });
   };
 
+  handleCloseLegend = () => {
+    this.setState({ legendOpen: false });
+  };
+
+
+  setMap =(map) =>{
+    this.setState({ map });
+  }
+
 
 
   render() {
@@ -73,7 +84,7 @@ class OwnMap extends React.Component {
         <Button variant="contained" style={{top: 10, right:10, position:"absolute", zIndex:"5000", backgroundColor: "orange"}} onClick={this.handleClickOpen} >
             {language[this.props.language]["map"]["statistics"]}
         </Button> }
-        <MapContainer style={{ height: "calc(100vh - (2.5rem + 64px))" }} bounds={bounds} zoom={15}  >
+        <MapContainer style={{ height: "calc(100vh - (2.5rem + 64px))" }} bounds={bounds} zoom={15}  whenCreated={this.setMap} >
 
           <TileLayer
             attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -142,7 +153,17 @@ class OwnMap extends React.Component {
                 </div>
               </Popup> </Marker>
           })}
+          <Legend map={this.state.map} language={this.props.language} open ={this.state.legendOpen}/>
         </MapContainer>
+        {this.state.legendOpen?
+        <IconButton
+                color="inherit"
+                onClick={this.handleCloseLegend}
+                aria-label="close"
+                style={{position: "absolute",right: "10px", bottom: "280px", zIndex: 2000}}
+              >
+                <CloseIcon />
+              </IconButton>: ""}
         </Grid>
         {this.state.open? 
         <Grid item xs={this.state.open ? 12:0} md ={this.state.open? 12:0} lg={this.state.open? 4: 0} style={{maxHeight: "calc(100vh - (2.5rem + 64px))"}}>

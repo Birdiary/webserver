@@ -37,7 +37,7 @@ def traces_sampler(sampling_context):
         # These are less important or happen much more frequently - only take 1%
         #print("first: " + sampling_context["wsgi_environ"]["PATH_INFO"], flush=True)
         return 0.01
-    elif "uploads" == sampling_context["wsgi_environ"]["PATH_INFO"]:
+    elif "uploads" in sampling_context["wsgi_environ"]["PATH_INFO"]:
         # These are less important or happen much more frequently - only take 1%
         #print(sampling_context["wsgi_environ"]["PATH_INFO"], flush=True)
         return 0.01
