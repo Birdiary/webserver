@@ -308,7 +308,7 @@ function StationView(props) {
                   )}
                 </Tabs>
               </Box>
-              <SwipeableViews index={value} onChangeIndex={handleChange}>
+              <SwipeableViews index={value} onChangeIndex={handleChange} overscanSlideAfter={0} overscanSlideBefore={0} animateTransitions={false}>
               {data.measurements.movements.map((movement, i) =>
                 <div >
                   <Grid container spacing={4}>
