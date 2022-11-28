@@ -315,7 +315,7 @@ function StationView(props) {
                     <Grid item lg={8}>
                       {movement.video == "pending" ? < div><p>{language[props.language]["stations"]["wait1"]}<br />  </p> <Button variant="contained" onClick={() => { getStation() }} style={{ margin: "15px" }}>Refresh</Button></div>
                         :
-                        <ReactPlayer  playing url={movement.video} loop={true} controls={true} width="100%" height="min(95vw, 80vh)" style={{ aspectRatio: 1 }} playsinline  />}
+                        <ReactPlayer  playing={i==value} url={movement.video} loop={true} controls={true} width="100%" height="min(95vw, 80vh)" style={{ aspectRatio: 1 }} playsinline  />}
                     </Grid>
                     <Grid item lg={4}>
                       <DropdownShareButton language={props.language} station_id={id} mov_id={movement.mov_id}></DropdownShareButton>
