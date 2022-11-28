@@ -27,6 +27,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import DropdownShareButton from "./Share";
+import SwipeableViews from 'react-swipeable-views';
 
 
 function StationView(props) {
@@ -284,7 +285,7 @@ function StationView(props) {
         </LocalizationProvider>
       </Grid>
       <Grid item lg={1}>
-        <Button onClick={() => searchForSpecies("")}> {language[props.language]["stations"]["search2"]}</Button>
+        <Button disabled={!data} onClick={() => searchForSpecies("")}> {language[props.language]["stations"]["search2"]}</Button>
       </Grid>
     </Grid>
 
@@ -293,10 +294,9 @@ function StationView(props) {
       <div>
         {data.measurements.movements && data.measurements.movements.length > 0 ?
           <div>
-            <TabContext value={value}>
               <Box sx={{ bgcolor: 'background.paper' }} style={{ maxWidth: "94vw", marginLeft: "3vw" }}>
 
-                <TabList
+                <Tabs
                   value={value}
                   onChange={handleChange}
                   variant="scrollable"
@@ -306,15 +306,16 @@ function StationView(props) {
                   {data.measurements.movements.map((movement) =>
                     <Tab label={movement.start_date.split(".")[0]}></Tab>
                   )}
-                </TabList>
+                </Tabs>
               </Box>
+              <SwipeableViews index={value} onChangeIndex={handleChange}>
               {data.measurements.movements.map((movement, i) =>
-                <TabPanel value={i}>
+                <div >
                   <Grid container spacing={4}>
                     <Grid item lg={8}>
                       {movement.video == "pending" ? < div><p>{language[props.language]["stations"]["wait1"]}<br />  </p> <Button variant="contained" onClick={() => { getStation() }} style={{ margin: "15px" }}>Refresh</Button></div>
                         :
-                        <ReactPlayer url={movement.video} loop={true} controls={true} width="100%" height="min(95vw, 80vh)" style={{ aspectRatio: 1 }} playing={true}  />}
+                        <ReactPlayer  playing url={movement.video} loop={true} controls={true} width="100%" height="min(95vw, 80vh)" style={{ aspectRatio: 1 }} playsinline  />}
                     </Grid>
                     <Grid item lg={4}>
                       <DropdownShareButton language={props.language} station_id={id} mov_id={movement.mov_id}></DropdownShareButton>
@@ -335,8 +336,9 @@ function StationView(props) {
                       <Button variant="contained" onClick={sendValidationNone} style={{ marginRight: "5px", marginBottom: "5px" }}>{language[props.language]["validation"]["noBird"]}</Button>
                     </Grid>
                   </Grid>
-                </TabPanel>)}
-            </TabContext>
+                  </div>)}
+        </SwipeableViews>
+
           </div>
           : <p>{language[props.language]["stations"]["noData1"]}</p>}
         {temperature[0] ?

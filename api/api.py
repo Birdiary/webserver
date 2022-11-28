@@ -100,7 +100,6 @@ app.config['MONGODB_SETTINGS'] = {
 
 client = MongoClient('mongodb',27017)
 db = client.birdiary_database
-db_old = client.your_database
 
 stations= db.stations
 
@@ -141,8 +140,10 @@ def enqueueable(func):
 def videoAnalysis(filename, movement_id, station_id, movement):
     if  os.path.splitext(filename)[1] == ".h264":
         command = "MP4Box -add {} {}.mp4".format("./uploads/disk/videos/" + filename, "./uploads/disk/videos/" + os.path.splitext(filename)[0])
+        command2 = "rm ./uploads/disk/videos/" + filename
         try:
             output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+            output2 = subprocess.check_output(command2, stderr=subprocess.STDOUT, shell=True)
             filename = os.path.splitext(filename)[0] +".mp4"
         except subprocess.CalledProcessError as e:
             print('FAIL:\ncmd:{}\noutput:{}'.format(e.cmd, e.output))
@@ -177,7 +178,7 @@ def videoAnalysis(filename, movement_id, station_id, movement):
         except:
             germanName = ""
         birds.append({"latinName":key, "germanName": germanName, "score" : value})
-    print(birds)
+    #print(birds)
 
     newMovement= dict()
 
@@ -525,34 +526,12 @@ def add_station_old():
         
         return {"id": station_id}, 201
     if request.method=="GET":
-        stations= list(db_old.station.find({}, {"measurements" : False, "_id" : False}))
+        stations= list(db.station.find({}, {"measurements" : False, "_id" : False}))
         return jsonify(stations)
 
-
-@app.route('/api/station/old/<station_id>', methods=['GET', 'PUT'])
-def oldstation(station_id: str):
-    if request.method=="GET":
-        station= list(db_old.station.find({"station_id": station_id}, {"_id" : False, "mail":False}))
-        return station
-    if request.method=="PUT":
-        body = request.get_json()
-        environments_to_add= body["measurements"]["environment"]
-        save_Environment_old(environments_to_add, station_id)
-        movements_to_add = body["measurements"]["movements"]
-        for movement in movements_to_add:
-            movement["station_id"] = station_id
-            db["movements_"+station_id].insert_one(movement)
-        station = list(db.stations.find({"station_id": station_id}, {"_id" : False}))
-        count = station[0]["count"]
-        dates = ["2022-09-28", "2022-09-29", "2022-09-30"]
-        for date in dates:
-            try:
-                count[date] = body["count"][date]
-            except:
-                print(date)
-        result= db.stations.update_one({"station_id":station_id}, {'$set': {"count": count}})
-
-        return station_id
+@app.route('/api/drop')
+def dropDatabase():
+    client.drop_database('your_database')
 
 @app.route('/api/station/test', methods=['POST'])
 def addTestStation():
@@ -586,7 +565,12 @@ def addTestStation():
 def station(station_id: str):
     if request.method=="GET":
         numberOfMovements = request.args.get('movements')
-        station = stations.find_one({"station_id":station_id}, {'_id' : False, "mail":False} )
+        apikey= request.args.get("apikey")
+        station = None
+        if API_KEY == apikey:
+            station = stations.find_one({"station_id":station_id}, {'_id' : False} )
+        else: 
+            station = stations.find_one({"station_id":station_id}, {'_id' : False, "mail":False} )
         #print(station, flush=True)
         if station is None:
             return "not found", 404
