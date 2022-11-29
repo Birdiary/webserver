@@ -27,7 +27,8 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import DropdownShareButton from "./Share";
-import SwipeableViews from 'react-swipeable-views';
+import 'onsenui/css/onsen-css-components.css';
+import { GestureDetector } from 'react-onsenui';
 
 
 function StationView(props) {
@@ -78,7 +79,7 @@ function StationView(props) {
         getEnvironment()
       }).catch(err => {
         // Handle error
-        let text = language[props.language]["stations"]["notFound"] 
+        let text = language[props.language]["stations"]["notFound"]
         setText(text)
         setOpen(true)
         changeCounter(5)
@@ -294,9 +295,10 @@ function StationView(props) {
       <div>
         {data.measurements.movements && data.measurements.movements.length > 0 ?
           <div>
+            <TabContext value={value}>
               <Box sx={{ bgcolor: 'background.paper' }} style={{ maxWidth: "94vw", marginLeft: "3vw" }}>
 
-                <Tabs
+                <TabList
                   value={value}
                   onChange={handleChange}
                   variant="scrollable"
@@ -306,16 +308,19 @@ function StationView(props) {
                   {data.measurements.movements.map((movement) =>
                     <Tab label={movement.start_date.split(".")[0]}></Tab>
                   )}
-                </Tabs>
+                </TabList>
               </Box>
-              <SwipeableViews index={value} onChangeIndex={handleChange} overscanSlideAfter={0} overscanSlideBefore={0} animateTransitions={false}>
               {data.measurements.movements.map((movement, i) =>
-                <div >
+                <TabPanel value={i}>
+                  <GestureDetector
+                onSwipeLeft={() => setValue(value+1)}
+                onSwipeRight={() => setValue(value-1)}
+            >
                   <Grid container spacing={4}>
                     <Grid item lg={8}>
                       {movement.video == "pending" ? < div><p>{language[props.language]["stations"]["wait1"]}<br />  </p> <Button variant="contained" onClick={() => { getStation() }} style={{ margin: "15px" }}>Refresh</Button></div>
                         :
-                        <ReactPlayer  playing={i==value} url={movement.video} loop={true} controls={true} width="100%" height="min(95vw, 80vh)" style={{ aspectRatio: 1 }} playsinline  />}
+                        <ReactPlayer playing={true} playsinline url={movement.video} loop={true} controls={true} width="100%" height="min(95vw, 80vh)" style={{ aspectRatio: 1 }} />}
                     </Grid>
                     <Grid item lg={4}>
                       <DropdownShareButton language={props.language} station_id={id} mov_id={movement.mov_id}></DropdownShareButton>
@@ -336,9 +341,9 @@ function StationView(props) {
                       <Button variant="contained" onClick={sendValidationNone} style={{ marginRight: "5px", marginBottom: "5px" }}>{language[props.language]["validation"]["noBird"]}</Button>
                     </Grid>
                   </Grid>
-                  </div>)}
-        </SwipeableViews>
-
+                  </GestureDetector>
+                </TabPanel>)}
+            </TabContext>
           </div>
           : <p>{language[props.language]["stations"]["noData1"]}</p>}
         {temperature[0] ?
@@ -354,15 +359,15 @@ function StationView(props) {
                 <Grid item lg={6} md={12}>
                   <h4>{language[props.language]["stations"]["humidity"]}</h4><TimelineChart series={humidity} />
                 </Grid>
-              </Grid> </div> : <p>{language[props.language]["stations"]["noData2"]}</p>):
-              <div> <Grid container spacing={2}>
-                <Grid item lg={6}>
-                  <h4>{language[props.language]["stations"]["temperature"]}:</h4> <Skeleton variant="rectangular" width={"100%"} height="350px" />
-                </Grid>
-                <Grid item lg={6}>
-                  <h4>{language[props.language]["stations"]["humidity"]}</h4><Skeleton variant="rectangular" width={"100%"} height="350px" />
-                </Grid>
-              </Grid> </div>
+              </Grid> </div> : <p>{language[props.language]["stations"]["noData2"]}</p>) :
+          <div> <Grid container spacing={2}>
+            <Grid item lg={6}>
+              <h4>{language[props.language]["stations"]["temperature"]}:</h4> <Skeleton variant="rectangular" width={"100%"} height="350px" />
+            </Grid>
+            <Grid item lg={6}>
+              <h4>{language[props.language]["stations"]["humidity"]}</h4><Skeleton variant="rectangular" width={"100%"} height="350px" />
+            </Grid>
+          </Grid> </div>
         }
 
         <h3 style={{ "marginBlockEnd": "0px" }}>{language[props.language]["stations"]["birdsCount"]}
@@ -440,7 +445,7 @@ function StationView(props) {
       </DialogTitle>
       <DialogContent>
         <DialogContentText id="alert-dialog-description" style={{ "padding": "10px" }}>
-          <p style={{textAlign : "center"}}>{text}  <br/> <span style={{textAlign: "center", fontSize: 20, fontWeight: 700}}>{counter} </span></p>
+          <p style={{ textAlign: "center" }}>{text}  <br /> <span style={{ textAlign: "center", fontSize: 20, fontWeight: 700 }}>{counter} </span></p>
         </DialogContentText>
       </DialogContent>
       <DialogActions>

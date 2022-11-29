@@ -143,7 +143,7 @@ class OwnMap extends React.Component {
                 <Divider />
                 {movement? 
                 <span> {language[this.props.language]["map"]["lastMovement"]}{marker.lastMovement.start_date.split(".")[0]} <br></br>
-                {marker.lastMovement.video != "pending" ? <ReactPlayer url={marker.lastMovement.video} loop={true} controls={true} width="100" height="100" style={{ aspectRatio: 1 }} playing={true} />: ""}
+                {marker.lastMovement.video != "pending" ? <ReactPlayer playsinline url={marker.lastMovement.video} loop={true} controls={true} width="100" height="100" style={{ aspectRatio: 1 }} playing={true} />: ""}
                 {language[this.props.language]["stations"]["species"]}{birdName != "" ? birdName : language[this.props.language]["table"]["noBird"]}
                 </span>
                 :""}
