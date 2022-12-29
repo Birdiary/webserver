@@ -85,6 +85,11 @@ const language = {
             noBird: "No Bird in Video",
             next: "Go to next Bird",
             form: "Bird in video"
+        },
+        statistics: {
+            infoSum: "To calculate these statistics, the species that was determined with the highest probability by the image recognition model is added up. Therefore, it can also happen that species are displayed that do not occur in German gardens.",
+            infoValidation: "This statistic shows how many times a particular species has been validated. Therefore, it does not indicate how many times the bird was at the station. The number of validations also includes validations if no bird was detected on the video, but these are not shown in the view below. Feel free to try improving the stats directly by validating videos from your station. ",
+            infoSpecialBirds: "Here we show you species that have actually been detected at one of our stations before. Only detections are taken where the probability of the species, output from the Ki, are above 85%. The validations are not included."
         }
 
     },
@@ -174,6 +179,11 @@ const language = {
             noBird: "Kein Vogel im Video",
             next: "Gehen zum nächsten Vogel",
             form: "Vogel im Video"
+        },
+        statistics: {
+            infoSum: "Um diese Statistik zu berechnen wird jeweils die Art, welche von dem Bilderkennungsmodell mit der höchsten Wahrscheinlichkeit bestimmt wurde, aufsummiert. Daher kann es auch vorkommen das Arten angezeigt werden, die nicht in deutschen Gärten vorkommen.",
+            infoValidation: "In dieser Statistik wird angezeigt, wie oft eine bestimmte Art validiert wurde. Daher gibt sie keine Auskunft darüber, wie oft der Vogel an der Station war. Die Anzahl der Validerungen schließt auch Validierungen mit ein, falls kein Vogel auf dem Video erkannt worden kannte, diese werden jedoch nicht in der Ansicht unten angezeigt. Probiere es gerne direkt aus die Statistike zu verbessern, indem du Videos deiner Station validierst. ",
+            infoSpecialBirds: "Hier zeigen wir dir Arten, die schon einmal an einer unserer Station tatsächlich erkannt wurden. Es werden nur Erkennungen genommen, bei der die Wahrscheinlichkeit der Art, ausgegeben von der Ki, über 85% sind. Die Validierungen fließen nicht mit ein."
         }
     }
 };

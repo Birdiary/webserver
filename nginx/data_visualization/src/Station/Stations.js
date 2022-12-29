@@ -72,7 +72,7 @@ function StationView(props) {
         });
 
         data.measurements.movements = movementData
-
+        
 
         setData(data);
         ////console.log(res); 
@@ -198,7 +198,7 @@ function StationView(props) {
     let search = null
     //console.log(value)
     if (!value && searchValue) {
-      search = options[searchValue]["latinName"]
+      search = options.saerchOptions[searchValue]["latinName"]
     }
     else if (value) {
       search = value
@@ -238,12 +238,19 @@ function StationView(props) {
 
   const sendValidation = () => {
     let validation = { validation: {} }
-    let valBird = options[bird]
+    let valBird = options.validationOptions[bird]
     if (!valBird) {
       valBird = { "latinName": bird, "germanName": "" }
     }
     validation.validation = valBird
     requests.sendValidation(data.station_id, data["measurements"]["movements"][value]["mov_id"], validation)
+    valBird.amount=2
+    let  newData = data
+    let latinName = valBird["latinName"]
+    newData["measurements"]["movements"][value]["validation"] = {"summary" : {latinName : valBird}}
+    console.log(newData)
+    setData(newData)
+
     handleClick();
 
   }
@@ -264,7 +271,7 @@ function StationView(props) {
       <Grid item lg={3}>
         <Autocomplete
           id="combo-box-demo"
-          options={Object.keys(options)}
+          options={Object.keys(options.saerchOptions)}
           sx={{ width: 300 }}
           onInputChange={handleInputChange}
           value={searchValue}
@@ -313,8 +320,10 @@ function StationView(props) {
               {data.measurements.movements.map((movement, i) =>
                 <TabPanel value={i}>
                   <GestureDetector
-                onSwipeLeft={() => setValue(value+1)}
-                onSwipeRight={() => setValue(value-1)}
+                onSwipeLeft={() => setValue(Math.min(data.measurements.movements.length, value+1))}
+                onSwipeRight={() => setValue(Math.max(0, value-1))}
+                onDragLeft={() => setValue(Math.min(data.measurements.movements.length, value+1))}
+                onDragRight={() => setValue(Math.max(0, value-1))}
             >
                   <Grid container spacing={4}>
                     <Grid item lg={8}>
@@ -333,7 +342,7 @@ function StationView(props) {
                       </IconButton>
                       <h4>{language[props.language]["stations"]["species"]}</h4>
 
-                      <BasicTable birds={movement.detections} finished={movement.video} getStation={event => getStation(event)} language={props.language} setBird={setBird} bird={bird}></BasicTable>
+                      <BasicTable birds={movement.detections} finished={movement.video} getStation={event => getStation(event)} language={props.language} setBird={setBird} bird={bird} validation={movement.validation}></BasicTable>
                       <br />
                       <ValidationForm setBird={setBird} bird={bird} language={props.language} />
                       <br></br>

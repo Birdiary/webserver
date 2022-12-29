@@ -73,12 +73,18 @@ function Movement(props) {
 
   const sendValidation = () => {
     let validation = {validation : {}}
-    let valBird =  options[bird]
+    let valBird =  options.validationOptions[bird]
     if (!valBird){
         valBird= {"latinName" : bird, "germanName":""}
     }
     validation.validation = valBird
     requests.sendValidation(data.station_id, data.mov_id, validation)
+    valBird.amount=2
+    let  newData = data
+    let latinName = valBird["latinName"]
+    newData["validation"] = {"summary" : {latinName : valBird}}
+    setData(newData)
+
     handleClick();
     
   }
@@ -107,7 +113,7 @@ function Movement(props) {
                       <h4>{language[props.language]["stations"]["weight"]}</h4>
                       <p> {data.weight.toFixed(0) + " gramm"} </p>
                       <h4>{language[props.language]["stations"]["species"]}</h4>
-                      <BasicTable birds={data.detections} finished={data.video} getStation={event => getSingleMovement(event)} language={props.language} setBird={setBird} bird={bird}></BasicTable>
+                      <BasicTable birds={data.detections} finished={data.video} getStation={event => getSingleMovement(event)} language={props.language} setBird={setBird} bird={bird} validation={data.validation}></BasicTable>
                      <br></br> 
                       <ValidationForm setBird={setBird} bird={bird} language={props.language}/>
                       <br></br>

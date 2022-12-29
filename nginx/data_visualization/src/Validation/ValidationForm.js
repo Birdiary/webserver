@@ -15,7 +15,7 @@ function ValidationForm(props) {
     <Autocomplete
     freeSolo
     id="combo-box-demo"
-    options={Object.keys(options)}
+    options={Object.keys(options.validationOptions)}
     sx={{ width: 300 }}
     onInputChange= {handleInputChange}
     value={props.bird}

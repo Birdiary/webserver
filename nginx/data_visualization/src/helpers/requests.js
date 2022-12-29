@@ -71,6 +71,10 @@ function getCount(){
     return axios.get(_env.api +"/count")
 }
 
+function getStatisitcs(id){
+    return axios.get(_env.api +"/statistics/"+id)
+}
+
 module.exports = {
     getStation : getStation,
     sendStation : sendStation,
@@ -81,5 +85,6 @@ module.exports = {
     getEnvironment : getEnvironment,
     getSingleMovement : getSingleMovement,
     getCount :getCount,
+    getStatisitcs: getStatisitcs,
     
 };

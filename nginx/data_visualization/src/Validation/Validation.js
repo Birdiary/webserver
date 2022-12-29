@@ -43,7 +43,7 @@ function Validation(props) {
 
   const sendValidation = () => {
     let validation = {validation : {}}
-    let valBird =  options[bird]
+    let valBird =  options.validationOptions[bird]
     if (!valBird){
         valBird= {"latinName" : bird, "germanName":""}
     }

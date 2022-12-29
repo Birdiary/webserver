@@ -3,6 +3,8 @@ import OwnMap from './Map/Map'
 import Createstation from './CreateStation/CreateStation';
 import StationView from './Station/Stations'
 import Validation from './Validation/Validation';
+import Statistics from './Statistics/Statistics'
+import StationStatistics from './Statistics/StationStatistics';
 import Snowfall from 'react-snowfall'
 
 import {
@@ -108,6 +110,8 @@ class App extends React.Component {
                 <Route path="/view/station/:id/:mov_id" element={<Movement language={this.state.language} />}></Route>
                 <Route path="/view/createStation" element={<Createstation language={this.state.language} />}></Route>
                 <Route path="/view/validation" element={<Validation language={this.state.language} />}></Route>
+                <Route path="/view/statistics" element={<Statistics language={this.state.language} />}></Route>
+                <Route exact path="/view/statistics/:id" element={<StationStatistics language={this.state.language} />}></Route>
               </SentryRoutes>
             </div>
           </div>

@@ -10,6 +10,7 @@ from os.path import basename, splitext
 from datetime import datetime, timedelta, date
 import random
 
+
 import json
 
 import subprocess
@@ -57,7 +58,37 @@ sentry_sdk.init(
     traces_sampler=traces_sampler
 )
 
+def insertMax(list, n, key):
+ 
+    index = len(list)
+    # Searching for the position
+    for i in range(len(list)):
+      if list[i][key] > n[key]:
+        index = i
+        break
+ 
+    # Inserting n in the list
+    if index == len(list):
+      list = list[:index] + [n]
+    else:
+      list = list[:index] + [n] + list[index:]
+    return list[1:6]
 
+def insertMin(list, n, key):
+ 
+    index = len(list)
+    # Searching for the position
+    for i in range(len(list)):
+      if list[i][key] < n[key]:
+        index = i
+        break
+ 
+    # Inserting n in the list
+    if index == len(list):
+      list = list[:index] + [n]
+    else:
+      list = list[:index] + [n] + list[index:]
+    return list[1:6]
 
 birdJSON = {}
     
@@ -135,6 +166,340 @@ def enqueueable(func):
         func.__module__, _ = splitext(basename(modules["__main__"].__file__))
     return func
 
+@enqueueable
+def calculateStatistics():
+    birdsOfInterest= list(["Passer domesticus", "Parus major","Cyanistes caeruleus","Erithacus rubecula","Turdus merula","Fringilla coelebs","Dendrocopos major","Garrulus glandarius", "Pica pica", "Pyrrhula pyrrhula", "Emberiza citrinella", "Chloris chloris", "Picus viridis", "Coccothraustes coccothraustes", "Sitta europaea", "Vanellus vanellus","Corvus cornix", "Aegithalos caudatus","Sturnus vulgaris","Carduelis carduelis","Troglodytes troglodytes","Phylloscopus collybita", "Psittacula krameri", "Phoenicurus ochruros", "Prunella modularis", "Phoenicurus phoenicurus", "Serinus serinus", "Emberiza citrinella"])
+    stationsList = list(stations.find({ "test": {  "$ne": True } }, {'_id' : False, "mail":False} ))
+    stationsComplete = []
+    for station in stationsList:
+        movements = list(db["movements_" + station["station_id"]].find({}, {'_id' : False}).sort("start_date",-1))
+        station["measurements"] = dict()
+        station["measurements"]["movements"] = movements
+        environment= db["environments_"+station["station_id"]].find({}, {'_id' : False}).sort("month",-1)
+        environment = list(environment)
+        #print(environment, flush=True)
+        environments = []
+        for months in environment:
+            environments= environments + months["measurements"]
+        station["measurements"]["environment"] = environments
+        stationsComplete.append(station)
+
+    statisticsALL= dict()
+    statisticsALL["station_id"] = "all"
+    statisticsALL["name"] = "all"
+    statisticsALL["numberOfMovements"] = 0
+    statisticsALL["perDay"] = dict()
+    statisticsALL["maxDay"] = [{"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0}]
+    statisticsALL["maxTemp"] = [{"temperature": -20}, {"temperature": -20},{"temperature": -20},{"temperature": -20},{"temperature": -20}]
+    statisticsALL["minTemp"] = [{"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}]
+    statisticsALL["maxHum"] = [{"humidity": 0},{"humidity": 0},{"humidity": 0},{"humidity": 0},{"humidity": 0}]
+    statisticsALL["minHum"] = [{"humidity": 100},{"humidity": 100},{"humidity": 100},{"humidity": 100},{"humidity": 100}]
+    statisticsALL["specialBirds"]  = dict()
+    statisticsALL["sumEnvironment"] = 0
+    statisticsALL["sumTemperature"] = 0
+    statisticsALL["sumHumidity"] = 0
+    statisticsALL["maxSpecies"] = [{"amount": 0}, {"amount": 0}, {"amount": 0}, {"amount": 0} , {"amount": 0}]
+    statisticsALL["maxValidatedBirds"] = [{"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0} , {"sum": 0}]
+    statisticsALL["all"] = dict()
+    statisticsALL["numberOfDetections"] = 0
+    statisticsALL["numberOfValidatedBirds"] = 0
+    statisticsALL["validatedBirds"] = dict()
+
+    statisticsComplete=[]
+
+
+    for station in stationsComplete:
+        statistics= dict()
+        station_id= station["station_id"]
+        statistics["station_id"] = station_id
+        statistics["name"] = station["name"]
+        statistics["createdAt"] = str(datetime.now())
+        statistics["numberOfMovements"] = len(station["measurements"]["movements"])
+        statisticsALL["numberOfMovements"] = statisticsALL["numberOfMovements"]+ len(station["measurements"]["movements"])
+        statistics["perDay"] = dict()
+        statistics["maxDay"] = [{"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0}]
+        statistics["maxTemp"] = [{"temperature": -20}, {"temperature": -20},{"temperature": -20},{"temperature": -20},{"temperature": -20}]
+        statistics["minTemp"] = [{"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}]
+        statistics["maxHum"] = [{"humidity": 0},{"humidity": 0},{"humidity": 0},{"humidity": 0},{"humidity": 0}]
+        statistics["minHum"] = [{"humidity": 100},{"humidity": 100},{"humidity": 100},{"humidity": 100},{"humidity": 100}]
+        statistics["specialBirds"]  = dict()
+        statistics["sumEnvironment"] = 0
+        statistics["sumTemperature"] = 0
+        statistics["sumHumidity"] = 0
+        statistics["maxSpecies"] = [{"amount": 0}, {"amount": 0}, {"amount": 0}, {"amount": 0} , {"amount": 0}]
+        statistics["maxValidatedBirds"] = [{"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0} , {"sum": 0}]
+        statistics["all"] = dict()
+        statistics["numberOfDetections"] = 0
+        statistics["numberOfValidatedBirds"] = 0
+        statistics["validatedBirds"] = dict()
+
+        for movement in station["measurements"]["movements"]:
+            detection = True
+            if "detections" in movement and len(movement["detections"])  >0:
+                if movement["detections"][0]["latinName"] == "None":
+                    if len(movement["detections"]) < 2:
+                        detection = False
+                    else:
+                        movement["detections"][0] = movement["detections"][1]
+            else:
+                detection = False
+
+            if "validation" in movement:
+                statistics["numberOfValidatedBirds"] = statistics["numberOfValidatedBirds"] + 1
+                statisticsALL["numberOfValidatedBirds"] = statisticsALL["numberOfValidatedBirds"] + 1
+                max= {"amount" : 0} 
+                for key in movement["validation"]["summary"]:
+                    if movement["validation"]["summary"][key]["amount"] > max["amount"]:
+                        max = movement["validation"]["summary"][key]
+                if max["latinName"] != 'None':
+                    if max["latinName"] in statistics["validatedBirds"]:
+                        statistics["validatedBirds"][max["latinName"]]["sum"] = statistics["validatedBirds"][max["latinName"]]["sum"] +1
+                        if len(statistics["validatedBirds"][max["latinName"]]["movements"]) < 20:
+                            statistics["validatedBirds"][max["latinName"]]["movements"].append({"mov_id": movement["mov_id"], "station_id" : station_id,"video": movement["video"], "start_date":movement["start_date"]})
+                    else:
+                        statistics["validatedBirds"][max["latinName"]] = {"sum" :1}
+                        statistics["validatedBirds"][max["latinName"]]["movements"] = [{"mov_id": movement["mov_id"], "station_id" : station_id, "video": movement["video"], "start_date":movement["start_date"]}]
+                    if max["latinName"] in statisticsALL["validatedBirds"]:
+                        statisticsALL["validatedBirds"][max["latinName"]]["sum"] = statisticsALL["validatedBirds"][max["latinName"]]["sum"] +1
+                        if len(statisticsALL["validatedBirds"][max["latinName"]]["movements"]) < 20:
+                            statisticsALL["validatedBirds"][max["latinName"]]["movements"].append({"mov_id": movement["mov_id"], "station_id" : station_id, "station_name" : station["name"], "video": movement["video"], "start_date":movement["start_date"]})
+                    else:
+                        statisticsALL["validatedBirds"][max["latinName"]]= {"sum" :1} 
+                        statisticsALL["validatedBirds"][max["latinName"]]["movements"] = [{"mov_id": movement["mov_id"], "station_id" : station_id, "station_name" : station["name"],"video": movement["video"], "start_date":movement["start_date"]}]
+
+            if detection == True:   
+                statistics["numberOfDetections"] = statistics["numberOfDetections"] + 1         
+                statisticsALL["numberOfDetections"] = statisticsALL["numberOfDetections"] + 1                 
+                latinName = movement["detections"][0]["latinName"]
+                germanName = movement["detections"][0]["germanName"]
+                existName =False
+                day = movement["start_date"].split()[0]
+
+                if day in statistics["perDay"]:
+                    statistics["perDay"][day]["sum"] = statistics["perDay"][day]["sum"] +1
+                    if latinName in statistics["perDay"][day]:
+                        statistics["perDay"][day][latinName]["amount"] = statistics["perDay"][day][latinName]["amount"] + 1
+                    else:
+                        statistics["perDay"][day][latinName] = {"latinName": latinName, "germanName" : germanName, "amount": 1, "movements":[]}    
+                else:
+                    statistics["perDay"][day] = {latinName : {"latinName": latinName, "germanName" : germanName, "amount": 1, "movements":[]}}
+                    statistics["perDay"][day]["sum"] = 1
+
+                if day in statisticsALL["perDay"]:
+                    statisticsALL["perDay"][day]["sum"] = statisticsALL["perDay"][day]["sum"] +1
+                    if latinName in statisticsALL["perDay"][day]:
+                        statisticsALL["perDay"][day][latinName]["amount"] = statisticsALL["perDay"][day][latinName]["amount"] + 1
+                    else:
+                        statisticsALL["perDay"][day][latinName] = {"latinName": latinName, "germanName" : germanName, "amount": 1, "movements":[]}    
+                else:
+                    statisticsALL["perDay"][day] = {latinName : {"latinName": latinName, "germanName" : germanName, "amount": 1, "movements":[]}}
+                    statisticsALL["perDay"][day]["sum"] = 1
+
+                if latinName in statistics["all"]:
+                    statistics["all"][latinName]["amount"] = statistics["all"][latinName]["amount"] +1
+                else:
+                    statistics["all"][latinName] = {"latinName": latinName, "germanName" : germanName, "amount": 1, "movements":[]}
+
+                if latinName in statisticsALL["all"]:
+                    statisticsALL["all"][latinName]["amount"] = statisticsALL["all"][latinName]["amount"] +1
+                else:
+                    statisticsALL["all"][latinName] = {"latinName": latinName, "germanName" : germanName, "amount": 1, "movements":[]}
+
+                if latinName in birdsOfInterest and movement["detections"][0]["score"] > 0.8:
+                    if latinName in statistics["specialBirds"]:
+                        if len(statistics["specialBirds"][latinName]["movements"]) < 20:
+                            statistics["specialBirds"][latinName]["movements"].append({"mov_id": movement["mov_id"], "station_id" : station_id,"score": movement["detections"][0]["score"], "video": movement["video"], "start_date":movement["start_date"]})
+                        elif len(statistics["specialBirds"][latinName]["movements"]) < 40 and movement["detections"][0]["score"] > 0.85:
+                            statistics["specialBirds"][latinName]["movements"].append({"mov_id": movement["mov_id"], "station_id" : station_id,"score": movement["detections"][0]["score"], "video": movement["video"], "start_date":movement["start_date"]})
+                    else:
+                        statistics["specialBirds"][latinName] = {"latinName": latinName, "germanName" : germanName, "movements":[{"mov_id": movement["mov_id"], "station_id" : station_id,"score": movement["detections"][0]["score"], "video": movement["video"], "start_date":movement["start_date"]}]} 
+
+                if latinName in birdsOfInterest and movement["detections"][0]["score"] > 0.8:
+                    if latinName in statisticsALL["specialBirds"]:
+                        if len(statisticsALL["specialBirds"][latinName]["movements"]) < 20:
+                            statisticsALL["specialBirds"][latinName]["movements"].append({"mov_id": movement["mov_id"], "station_id":station_id, "station_name" : station["name"],"score": movement["detections"][0]["score"], "video": movement["video"], "start_date":movement["start_date"]})
+                        elif len(statisticsALL["specialBirds"][latinName]["movements"]) < 40 and movement["detections"][0]["score"] > 0.85:
+                            statisticsALL["specialBirds"][latinName]["movements"].append({"mov_id": movement["mov_id"], "station_id":station_id, "station_name" : station["name"],"score": movement["detections"][0]["score"], "video": movement["video"], "start_date":movement["start_date"]})
+                    else:
+                        statisticsALL["specialBirds"][latinName] = {"latinName": latinName, "germanName" : germanName, "movements":[{"mov_id": movement["mov_id"],"station_id":station_id, "station_name" : station["name"],"score": movement["detections"][0]["score"], "video": movement["video"], "start_date":movement["start_date"]}]} 
+
+                if len(statistics["perDay"][day][latinName]["movements"]) < 20:
+                    statistics["perDay"][day][latinName]["movements"].append({"mov_id": movement["mov_id"], "station_id" : station_id, "score": movement["detections"][0]["score"],"video": movement["video"], "start_date":movement["start_date"]})
+                elif len(statistics["perDay"][day][latinName]["movements"]) < 40 and movement["detections"][0]["score"] > 0.85:
+                    statistics["perDay"][day][latinName]["movements"].append({"mov_id": movement["mov_id"], "station_id" : station_id, "score": movement["detections"][0]["score"],"video": movement["video"], "start_date":movement["start_date"]})
+                if len(statistics["all"][latinName]["movements"]) < 20:
+                    statistics["all"][latinName]["movements"].append({"mov_id": movement["mov_id"], "station_id" : station_id, "score": movement["detections"][0]["score"],"video": movement["video"], "start_date":movement["start_date"]})
+                elif len(statistics["all"][latinName]["movements"]) < 40 and movement["detections"][0]["score"] > 0.85:
+                    statistics["all"][latinName]["movements"].append({"mov_id": movement["mov_id"], "station_id" : station_id, "score": movement["detections"][0]["score"],"video": movement["video"], "start_date":movement["start_date"]})
+
+                if len(statisticsALL["perDay"][day][latinName]["movements"]) < 20:
+                    statisticsALL["perDay"][day][latinName]["movements"].append({"mov_id": movement["mov_id"],"station_id":station_id, "station_name" : station["name"], "score": movement["detections"][0]["score"],"video": movement["video"], "start_date":movement["start_date"]})
+                elif len(statisticsALL["perDay"][day][latinName]["movements"]) < 40 and movement["detections"][0]["score"] > 0.85:
+                    statisticsALL["perDay"][day][latinName]["movements"].append({"mov_id": movement["mov_id"], "station_id":station_id, "station_name" : station["name"],"score": movement["detections"][0]["score"],"video": movement["video"], "start_date":movement["start_date"]})
+                if len(statisticsALL["all"][latinName]["movements"]) < 20:
+                    statisticsALL["all"][latinName]["movements"].append({"mov_id": movement["mov_id"],"station_id":station_id, "station_name" : station["name"], "score": movement["detections"][0]["score"],"video": movement["video"], "start_date":movement["start_date"]})
+                elif len(statisticsALL["all"][latinName]["movements"]) < 40 and movement["detections"][0]["score"] > 0.85:
+                    statisticsALL["all"][latinName]["movements"].append({"mov_id": movement["mov_id"],"station_id":station_id, "station_name" : station["name"], "score": movement["detections"][0]["score"], "video": movement["video"], "start_date":movement["start_date"]})
+        
+        for env in station["measurements"]["environment"]:
+                
+                if env["temperature"] > -20 and env["temperature"] < 60 :
+                    statistics["sumTemperature"] = statistics["sumTemperature"] + env["temperature"]
+                    statisticsALL["sumTemperature"] = statisticsALL["sumTemperature"] + env["temperature"]
+                if env["humidity"] > -1 and env["humidity"] < 101 :
+                    
+                    statistics["sumEnvironment"] = statistics["sumEnvironment"] + 1 
+                    statistics["sumHumidity"] = statistics["sumHumidity"] + env["humidity"]
+                    statisticsALL["sumEnvironment"] = statisticsALL["sumEnvironment"] + 1 
+                    statisticsALL["sumHumidity"] = statisticsALL["sumHumidity"] + env["humidity"]
+                if env["temperature"] > statistics["maxTemp"][0]["temperature"] and env["temperature"] < 60:
+                    objectToInsert = dict()
+                    objectToInsert["temperature"] = env["temperature"]
+                    objectToInsert["date"] = env["date"]
+                    statistics["maxTemp"]= insertMax(statistics["maxTemp"], objectToInsert, "temperature")
+                    if env["temperature"] > statisticsALL["maxTemp"][0]["temperature"]:
+                        objectToInsert["station_id"] =station_id
+                        objectToInsert["station_name"] = station["name"]
+                        statisticsALL["maxTemp"]= insertMax(statisticsALL["maxTemp"], objectToInsert, "temperature")
+                if env["temperature"] < statistics["minTemp"][0]["temperature"] and env["temperature"] > -30:
+                    objectToInsert = dict()
+                    objectToInsert["temperature"] = env["temperature"]
+                    objectToInsert["date"] = env["date"]
+                    statistics["minTemp"] = insertMin(statistics["minTemp"], objectToInsert, "temperature")
+                    if env["temperature"] < statisticsALL["minTemp"][0]["temperature"]:
+                        objectToInsert["station_id"] =station_id
+                        objectToInsert["station_name"] = station["name"]
+                        statisticsALL["minTemp"] = insertMin(statisticsALL["minTemp"], objectToInsert, "temperature")
+                if env["humidity"] > statistics["maxHum"][0]["humidity"] and env["humidity"] < 100.1:
+                    objectToInsert = dict()
+                    objectToInsert["humidity"] = env["humidity"]
+                    objectToInsert["date"] = env["date"]
+                    statistics["maxHum"] = insertMax(statistics["maxHum"], objectToInsert, "humidity")
+                    if env["humidity"] > statisticsALL["maxHum"][0]["humidity"]:
+                        objectToInsert["station_id"] =station_id
+                        objectToInsert["station_name"] = station["name"]
+                        statisticsALL["maxHum"] = insertMax(statisticsALL["maxHum"], objectToInsert, "humidity")
+                if env["humidity"] < statistics["minHum"][0]["humidity"] and env["humidity"] > -0.1:
+                    objectToInsert = dict()
+                    objectToInsert["humidity"] = env["humidity"]
+                    objectToInsert["date"] = env["date"]
+                    statistics["minHum"] =  insertMin(statistics["minHum"], objectToInsert, "humidity")
+                    if env["humidity"] < statisticsALL["minHum"][0]["humidity"]:
+                        objectToInsert["station_id"] =station_id
+                        objectToInsert["station_name"] = station["name"]
+                        statisticsALL["minHum"] =  insertMin(statisticsALL["minHum"], objectToInsert, "humidity")
+
+        for day in statistics["perDay"]:
+                if statistics["maxDay"][0]["sum"] < statistics["perDay"][day]["sum"]:
+                    objectToInsert = dict()
+                    objectToInsert = statistics["perDay"][day]
+                    objectToInsert["day"] = day
+                    statistics["maxDay"] = insertMax(statistics["maxDay"], objectToInsert, "sum")
+
+        for item in statistics["maxDay"]:
+            maxSpeciesOnDay = [{"amount" :0},{"amount" :0},{"amount" :0},{"amount" :0},{"amount" :0}]
+            for species in item:
+                if species != "sum" and species != "day" and maxSpeciesOnDay[0]["amount"]< item[species]["amount"]:
+                    objectToInsert = dict()
+                    objectToInsert = item[species]
+                    maxSpeciesOnDay = insertMax(maxSpeciesOnDay, objectToInsert, "amount")
+            maxSpeciesOnDayfiltered = list(filter(lambda i: i['amount'] != 0, maxSpeciesOnDay))
+                    
+            if len(maxSpeciesOnDayfiltered) > 0:
+                item["mostBirds"] = maxSpeciesOnDayfiltered
+
+        for species in statistics["all"]:
+                if species != "sum" and statistics["maxSpecies"][0]["amount"] < statistics["all"][species]["amount"]:
+                    objectToInsert = dict()
+                    objectToInsert = statistics["all"][species]
+                    statistics["maxSpecies"] = insertMax(statistics["maxSpecies"], objectToInsert, "amount")
+        statistics["maxSpecies"] = list(filter(lambda i: i['amount'] != 0, statistics["maxSpecies"]))
+
+        for species in statistics["validatedBirds"]:
+                if statistics["maxValidatedBirds"][0]["sum"] < statistics["validatedBirds"][species]["sum"]:
+                    objectToInsert = dict()
+                    objectToInsert = statistics["validatedBirds"][species]
+                    objectToInsert["latinName"] = species
+                    germanName = ""
+                    try:
+                        germanName = birdJSON[species]
+                    except:
+                        germanName = ""
+                    objectToInsert["germanName"] = germanName
+                    statistics["maxValidatedBirds"] = insertMax(statistics["maxValidatedBirds"], objectToInsert, "sum")
+        statistics["maxValidatedBirds"] = list(filter(lambda i: i['sum'] != 0, statistics["maxValidatedBirds"]))
+
+        specialBirds=[]
+        for key in statistics['specialBirds']:
+            specialBirds.append(statistics['specialBirds'][key])
+
+        statistics['specialBirds'] = specialBirds
+
+
+        if statistics["sumEnvironment"] > 0:
+            statistics["averageTemp"] = statistics["sumTemperature"] / statistics["sumEnvironment"]
+            statistics["averageHum"] = statistics["sumHumidity"] / statistics["sumEnvironment"]
+
+        result = db["statistics"].replace_one({"station_id": station_id},statistics, True)
+
+    for day in statisticsALL["perDay"]:
+            if statisticsALL["maxDay"][0]["sum"] < statisticsALL["perDay"][day]["sum"]:
+                objectToInsert = dict()
+                objectToInsert = statisticsALL["perDay"][day]
+                objectToInsert["day"] = day
+                statisticsALL["maxDay"] = insertMax(statisticsALL["maxDay"], objectToInsert, "sum")
+
+    for item in statisticsALL["maxDay"]:
+        maxSpeciesOnDay = [{"amount" :0},{"amount" :0},{"amount" :0},{"amount" :0},{"amount" :0}]
+        for species in item:
+            if species != "sum" and species != "day" and maxSpeciesOnDay[0]["amount"]< item[species]["amount"]:
+                objectToInsert = dict()
+                objectToInsert = item[species]
+                maxSpeciesOnDay = insertMax(maxSpeciesOnDay, objectToInsert, "amount")
+        maxSpeciesOnDayfiltered = list(filter(lambda i: i['amount'] != 0, maxSpeciesOnDay))
+                
+        if len(maxSpeciesOnDayfiltered) > 0:
+            item["mostBirds"] = maxSpeciesOnDayfiltered
+
+    for species in statisticsALL["all"]:
+            if species != "sum" and statisticsALL["maxSpecies"][0]["amount"] < statisticsALL["all"][species]["amount"]:
+                objectToInsert = dict()
+                objectToInsert = statisticsALL["all"][species]
+                statisticsALL["maxSpecies"] = insertMax(statisticsALL["maxSpecies"], objectToInsert, "amount")
+    statisticsALL["maxSpecies"] = list(filter(lambda i: i['amount'] != 0, statisticsALL["maxSpecies"]))
+
+    for species in statisticsALL["validatedBirds"]:
+            if statisticsALL["maxValidatedBirds"][0]["sum"] < statisticsALL["validatedBirds"][species]["sum"]:
+                objectToInsert = dict()
+                objectToInsert = statisticsALL["validatedBirds"][species]
+                objectToInsert["latinName"] = species
+                germanName = ""
+                try:
+                    germanName = birdJSON[species]
+                    
+                except:
+                    germanName = ""
+                objectToInsert["germanName"] = germanName
+                statisticsALL["maxValidatedBirds"] = insertMax(statisticsALL["maxValidatedBirds"], objectToInsert, "sum")
+    
+    statisticsALL["maxValidatedBirds"] = list(filter(lambda i: i['sum'] != 0, statisticsALL["maxValidatedBirds"]))
+
+    specialBirds = []
+    for key in statisticsALL['specialBirds']:
+            specialBirds.append(statisticsALL['specialBirds'][key])
+            
+    
+    statisticsALL['specialBirds'] = specialBirds
+
+
+    if statisticsALL["sumEnvironment"] > 0:
+        statisticsALL["averageTemp"] = statisticsALL["sumTemperature"] / statisticsALL["sumEnvironment"]
+        statisticsALL["averageHum"] = statisticsALL["sumHumidity"] / statisticsALL["sumEnvironment"]
+    
+    statisticsALL["createdAt"] = str(datetime.now())
+    db["statistics"].replace_one({"station_id": "all"}, statisticsALL, True)
+
+        
 @enqueueable
 # Create a working task queue  
 def videoAnalysis(filename, movement_id, station_id, movement):
@@ -358,7 +723,36 @@ def saveValidation(validation, movement_id, station_id):
         latinName = validation["latinName"]
         newValidation["validations"] = [validation]
         newValidation["summary"] = {latinName: {"latinName": latinName, "amount": 1}}
+        statistics = db["statistics"].find({"station_id": station_id})
+        statistics = list(statistics)[0]
+        newStats= dict()
+        newStats["numberOfValidatedBirds"] = statistics["numberOfValidatedBirds"] + 1
+        if latinName in statistics["validatedBirds"]:
+                statistics["validatedBirds"][latinName]["sum"] = statistics["validatedBirds"][latinName]["sum"] +1
+                if len(statistics["validatedBirds"][latinName]["movements"]) < 20:
+                    statistics["validatedBirds"][latinName]["movements"].append({"mov_id": movement["mov_id"], "station_id" : station_id, "video": movement["video"], "start_date":movement["start_date"]})
+        else:
+            statistics["validatedBirds"][latinName]=  {"sum": 1}
+            statistics["validatedBirds"][latinName]["movements"] = [{"mov_id": movement["mov_id"], "station_id" : station_id, "video": movement["video"], "start_date":movement["start_date"]}]
+        newStats["validatedBirds"] = statistics["validatedBirds"]
+        newStats["maxValidatedBirds"] = [{"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0} , {"sum": 0}]
+        for species in newStats["validatedBirds"]:
+            if newStats["maxValidatedBirds"][0]["sum"] < newStats["validatedBirds"][species]["sum"]:
+                objectToInsert = dict()
+                objectToInsert = newStats["validatedBirds"][species]
+                objectToInsert["latinName"] = species
+                germanName = ""
+                try:
+                    germanName = birdJSON[species]
+                except:
+                    germanName = ""
+                objectToInsert["germanName"] = germanName
+                newStats["maxValidatedBirds"] = insertMax(newStats["maxValidatedBirds"], objectToInsert, "sum")
+        newStats["maxValidatedBirds"] = list(filter(lambda i: i['sum'] != 0, newStats["maxValidatedBirds"]))
+
         db["movements_"+station_id].update_one({"mov_id": movement_id}, {'$set': {"validation" : newValidation} })
+        db["statistics"].update_one({"station_id": station_id}, {'$set': newStats })
+
     return newValidation
 
 @app.route('/')
@@ -776,7 +1170,7 @@ def getMovement():
     movementCollections= []
     for col in collections:
         if col.find('movements') != -1:
-            if db[col].count_documents({}) > 0:
+            if db[col].count_documents({}) > 30:
                 movementCollections.append(col)
     randomCollection = random.choice(movementCollections)
     print(randomCollection, flush=True)
@@ -801,6 +1195,18 @@ def addValidation(station_id: str, movement_id: str):
 #@app.route('/api')
 #def api():
 #    return render_template('./redoc/redoc.html')
+
+@app.route('/api/statistics/<station_id>', methods=['GET'])
+def getStatistics(station_id: str):
+    statistics = db["statistics"].find({"station_id": station_id}, {'_id' : False})
+    statistics = list(statistics)[0]
+    return jsonify(statistics)
+
+
+@app.route('/api/statistics', methods=['GET'])
+def runStatistics():
+    job =q.enqueue(calculateStatistics)
+    return "ok", 200
 
 @app.route('/api/debug-sentry')
 def trigger_error():
