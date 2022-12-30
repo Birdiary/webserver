@@ -89,7 +89,50 @@ const language = {
         statistics: {
             infoSum: "To calculate these statistics, the species that was determined with the highest probability by the image recognition model is added up. Therefore, it can also happen that species are displayed that do not occur in German gardens.",
             infoValidation: "This statistic shows how many times a particular species has been validated. Therefore, it does not indicate how many times the bird was at the station. The number of validations also includes validations if no bird was detected on the video, but these are not shown in the view below. Feel free to try improving the stats directly by validating videos from your station. ",
-            infoSpecialBirds: "Here we show you species that have actually been detected at one of our stations before. Only detections are taken where the probability of the species, output from the Ki, are above 85%. The validations are not included."
+            infoSpecialBirds: "Here we show you species that have actually been detected at one of our stations before. Only detections are taken where the probability of the species, output from the Ki, are above 85%. The validations are not included.",            showMore: "Zeige mehr Statistiken",
+            show: "Show statistics",
+            maxSpecies2: " videos were captured. Of these, on",
+            maxSpecies3: " a bird detected.",
+            the: "The ",
+            place: "Place ",
+            on: "On ",
+            day: "day ", 
+            with: "with ",
+            birds: "Birds ",
+            maxSpecies5: " most birds were:",
+            maxValidated2: " most validated Birds:",
+            noValidated: "No birds have been validated at the station yet. Validate birds to see statistics about them here!  ",
+            maxDay2: " days with the most Birds:",
+            maxDay3: "Most bird on this day ",
+            env2: "measurements were taken",
+            maxTemp: "The highest temperature measured was: ",
+            minTemp: "The lowest temperature measured was: ",
+            maxHum: "The highest humidity measured was: ",
+            minHum: "The lowest humidity measured was: ",
+            averageTemp: "The average temperature measured was: ",
+            averageHum: "The average humidity measured was: ",
+            measured: "Measured on ",
+            time: "",
+            measuredStation: "Measured at the station :",
+            single: {
+                maxSpecies1: "At the station already ",
+                maxValidated: "Some birds have also been validated at the station, namely ",   
+                maxDay: " days, the station has recorded at least one bird. ",
+                specialBirds: "These particular birds visited the station:"  ,   
+                env1: "Besides birds, the station has already collected a lot of environmental data. In total"
+            },
+            all: {
+                maxSpecies1: "In total, already ",
+                maxValidated: "In total, a few birds have already been validated, namely ",    
+                maxDay: " days, the stations have recorded at least one bird. ",
+                specialBirds: "These particular birds visited the stations:"  ,    
+                env1: "Besides birds, the stations have already collected a lot of environmental data. In total"        
+            }
+        },
+        movementCard:{
+            capturedOn: "Bird captured on:  ",
+            propability: "Propability: ",
+            goMov: "Go to Movement"
         }
 
     },
@@ -183,7 +226,51 @@ const language = {
         statistics: {
             infoSum: "Um diese Statistik zu berechnen wird jeweils die Art, welche von dem Bilderkennungsmodell mit der höchsten Wahrscheinlichkeit bestimmt wurde, aufsummiert. Daher kann es auch vorkommen das Arten angezeigt werden, die nicht in deutschen Gärten vorkommen.",
             infoValidation: "In dieser Statistik wird angezeigt, wie oft eine bestimmte Art validiert wurde. Daher gibt sie keine Auskunft darüber, wie oft der Vogel an der Station war. Die Anzahl der Validerungen schließt auch Validierungen mit ein, falls kein Vogel auf dem Video erkannt worden kannte, diese werden jedoch nicht in der Ansicht unten angezeigt. Probiere es gerne direkt aus die Statistike zu verbessern, indem du Videos deiner Station validierst. ",
-            infoSpecialBirds: "Hier zeigen wir dir Arten, die schon einmal an einer unserer Station tatsächlich erkannt wurden. Es werden nur Erkennungen genommen, bei der die Wahrscheinlichkeit der Art, ausgegeben von der Ki, über 85% sind. Die Validierungen fließen nicht mit ein."
+            infoSpecialBirds: "Hier zeigen wir dir Arten, die schon einmal an einer unserer Station tatsächlich erkannt wurden. Es werden nur Erkennungen genommen, bei der die Wahrscheinlichkeit der Art, ausgegeben von der Ki, über 85% sind. Die Validierungen fließen nicht mit ein.",
+            showMore: "Zeige mehr Statistiken",
+            show: "Zeige Statistiken",
+            maxSpecies2: " Videos aufgenommen. Davon wurde auf ",
+            maxSpecies3: " ein Vogel erkannt.",
+            the: "Die ",
+            place: "Platz ",
+            on: "An ",
+            day: "Tag ", 
+            with: "mit ",
+            birds: "Vögeln ",
+            maxSpecies5: " meisten Vögel waren:",
+            maxValidated2: " meisten validierten Vögel:",
+            noValidated: "An der Station wurden noch keine Vögel validiert. Validere Vögel um hier Statistiken darüber zu sehen! ",
+            maxDay2: "Tage mit den meisten Vögel:",
+            maxDay3: "Meister Vogel an dem Tag  ",
+            env2: "Messungen durchgeführt",
+            maxTemp: "Die höchste gemessene Temperatur war: ",
+            minTemp: "Die niedrigste gemessene Temperatur war: ",
+            maxHum: "Die höchste gemessene Luftfeuchtigkeit war: ",
+            minHum: "Die niedirgste gemessene Luftfeuchtigkeit war: ",
+            averageTemp: "Die durchschnittliche gemessene Temperatur ist: ",
+            averageHum: "Die durchschnittliche gemessene Luftfeuchtigkeit ist: ",
+            measured: "Gemessen am ",
+            time: " Uhr",
+            measuredStation: "Gemessen an der Station :",
+            single: {
+                maxSpecies1: "An der Station wurden schon" ,
+                maxValidated: "An der Station wurden auch schon einige Vögel validiert und zwar ",   
+                maxDay: " Tagen hat die Station mindestens einen Vogel aufgenommen. ",
+                specialBirds: "Diese besonderen Vögel besuchten die Station:"  ,   
+                env1: "Neben Vögeln hat die Station auch schon viele Umweltdaten gesammelt. Insgesamt wurden"
+            },
+            all: {
+                maxSpecies1: "Insgesamt wurden schon ",
+                maxValidated: "Insgesamt  wurden auch schon einige Vögel validiert und zwar ",    
+                maxDay: "Tagen haben die Stationen mindestens einen Vogel aufgenommen. ",
+                specialBirds: "Diese besonderen Vögel besuchten die Stationen:"  ,    
+                env1: "Neben Vögeln haben die Stationen auch schon viele Umweltdaten gesammelt. Insgesamt wurden"        
+            }
+        },
+        movementCard:{
+            capturedOn: "Vogel aufgenommen am:  ",
+            propability: "Wahrscheinlichkeit: ",
+            goMov: "Gehe zum Movement"
         }
     }
 };

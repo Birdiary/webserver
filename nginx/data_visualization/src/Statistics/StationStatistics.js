@@ -76,7 +76,7 @@ function StationStatistics(props) {
 
      <h1 style={{ textAlign: "center", marginBottom: "3px" }}>Statistiken zur Station: {data ? data.name : id}</h1>   
       
-     {data ? <div><span style={{ textAlign: "center", width: "100%", display: "block"}}> Stand: {data.createdAt.split(".")[0]}</span> <StatisticsView language={props.language} data={data}></StatisticsView>  </div>: ""}
+     {data ? <div><span style={{ textAlign: "center", width: "100%", display: "block"}}> Stand: {data.createdAt.split(".")[0]} Uhr</span> <StatisticsView language={props.language} view={"single"}data={data}></StatisticsView>  </div>: ""}
     <Dialog
       open={open}
       onClose={handleClose}

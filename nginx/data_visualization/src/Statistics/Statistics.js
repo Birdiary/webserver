@@ -34,7 +34,7 @@ function Statistics(props) {
   return <div>
 
      <h1 style={{ textAlign: "center",  marginBottom: "3px" }}>Statistiken zu allen Stationen</h1>    
-     {data ? <div><span style={{ textAlign: "center", width: "100%", display: "block"}}> Stand: {data.createdAt.split(".")[0]}</span> <StatisticsView language={props.language} data={data}></StatisticsView>  </div>: ""}
+     {data ? <div><span style={{ textAlign: "center", width: "100%", display: "block"}}> Stand: {data.createdAt.split(".")[0]} Uhr</span> <StatisticsView language={props.language} view={"all"} data={data}></StatisticsView>  </div>: ""}
    
 
   </div>

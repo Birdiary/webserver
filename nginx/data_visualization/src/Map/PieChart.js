@@ -1,10 +1,11 @@
 import Chart from "react-apexcharts";
 import React from "react";
-import { Skeleton, TextField } from "@mui/material";
+import { Button, Skeleton, TextField } from "@mui/material";
 import requests from "../helpers/requests";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { useNavigate, Link } from 'react-router-dom';
 import language from "../languages/languages";
 import dayjs from "dayjs";
 import "./PieChart.css";
@@ -211,6 +212,7 @@ class ApexChart extends React.Component {
           <Skeleton width={"100%"} height={"20vh"}>
             
           </Skeleton>}
+          <Button component={Link} to={"/view/statistics"}>{language[this.props.language]["statistics"]["showMore"]}</Button>
 
           <br/>
           <br/>

@@ -21,7 +21,6 @@ import zIndex from "@mui/material/styles/zIndex";
 import language from "../languages/languages";
 import TimelineChart from "./visualization/Charts2";
 import options from "../helpers/labels";
-import { useNavigate } from "react-router-dom";
 import ValidationForm from "../Validation/ValidationForm";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -29,6 +28,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import DropdownShareButton from "./Share";
 import 'onsenui/css/onsen-css-components.css';
 import { GestureDetector } from 'react-onsenui';
+import { useNavigate, Link } from 'react-router-dom';
 
 
 function StationView(props) {
@@ -295,6 +295,12 @@ function StationView(props) {
       <Grid item lg={1}>
         <Button disabled={!data} onClick={() => searchForSpecies("")}> {language[props.language]["stations"]["search2"]}</Button>
       </Grid>
+      <Grid item lg={3}>
+      </Grid>
+      <Grid item lg={2}>
+      <Button variant="contained" component={Link} to={"/view/statistics/" + id}>{language[props.language]["statistics"]["show"]}</Button>
+      </Grid>
+
     </Grid>
 
 
