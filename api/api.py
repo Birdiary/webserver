@@ -209,29 +209,29 @@ def calculateStatistics():
 
 
     for station in stationsComplete:
-        statistics= dict()
+        statistics= {}
         station_id= station["station_id"]
         statistics["station_id"] = station_id
         statistics["name"] = station["name"]
         statistics["createdAt"] = str(datetime.now())
         statistics["numberOfMovements"] = len(station["measurements"]["movements"])
         statisticsALL["numberOfMovements"] = statisticsALL["numberOfMovements"]+ len(station["measurements"]["movements"])
-        statistics["perDay"] = dict()
+        statistics["perDay"] = {}
         statistics["maxDay"] = [{"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0}]
         statistics["maxTemp"] = [{"temperature": -20}, {"temperature": -20},{"temperature": -20},{"temperature": -20},{"temperature": -20}]
         statistics["minTemp"] = [{"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}]
         statistics["maxHum"] = [{"humidity": 0},{"humidity": 0},{"humidity": 0},{"humidity": 0},{"humidity": 0}]
         statistics["minHum"] = [{"humidity": 100},{"humidity": 100},{"humidity": 100},{"humidity": 100},{"humidity": 100}]
-        statistics["specialBirds"]  = dict()
+        statistics["specialBirds"]  = {}
         statistics["sumEnvironment"] = 0
         statistics["sumTemperature"] = 0
         statistics["sumHumidity"] = 0
         statistics["maxSpecies"] = [{"amount": 0}, {"amount": 0}, {"amount": 0}, {"amount": 0} , {"amount": 0}]
         statistics["maxValidatedBirds"] = [{"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0} , {"sum": 0}]
-        statistics["all"] = dict()
+        statistics["all"] = {}
         statistics["numberOfDetections"] = 0
         statistics["numberOfValidatedBirds"] = 0
-        statistics["validatedBirds"] = dict()
+        statistics["validatedBirds"] = {}
 
         for movement in station["measurements"]["movements"]:
             detection = True
@@ -353,41 +353,45 @@ def calculateStatistics():
                     statisticsALL["sumEnvironment"] = statisticsALL["sumEnvironment"] + 1 
                     statisticsALL["sumHumidity"] = statisticsALL["sumHumidity"] + env["humidity"]
                 if env["temperature"] > statistics["maxTemp"][0]["temperature"] and env["temperature"] < 60:
-                    objectToInsert = dict()
+                    objectToInsert = {}
                     objectToInsert["temperature"] = env["temperature"]
                     objectToInsert["date"] = env["date"]
                     statistics["maxTemp"]= insertMax(statistics["maxTemp"], objectToInsert, "temperature")
                     if env["temperature"] > statisticsALL["maxTemp"][0]["temperature"]:
-                        objectToInsert["station_id"] =station_id
-                        objectToInsert["station_name"] = station["name"]
-                        statisticsALL["maxTemp"]= insertMax(statisticsALL["maxTemp"], objectToInsert, "temperature")
+                        objectToInsertALL = objectToInsert.copy()
+                        objectToInsertALL["station_id"] =station_id
+                        objectToInsertALL["station_name"] = station["name"]
+                        statisticsALL["maxTemp"]= insertMax(statisticsALL["maxTemp"], objectToInsertALL, "temperature")
                 if env["temperature"] < statistics["minTemp"][0]["temperature"] and env["temperature"] > -30:
-                    objectToInsert = dict()
+                    objectToInsert = {}
                     objectToInsert["temperature"] = env["temperature"]
                     objectToInsert["date"] = env["date"]
                     statistics["minTemp"] = insertMin(statistics["minTemp"], objectToInsert, "temperature")
                     if env["temperature"] < statisticsALL["minTemp"][0]["temperature"]:
-                        objectToInsert["station_id"] =station_id
-                        objectToInsert["station_name"] = station["name"]
-                        statisticsALL["minTemp"] = insertMin(statisticsALL["minTemp"], objectToInsert, "temperature")
+                        objectToInsertALL = objectToInsert.copy()
+                        objectToInsertALL["station_id"] =station_id
+                        objectToInsertALL["station_name"] = station["name"]
+                        statisticsALL["minTemp"] = insertMin(statisticsALL["minTemp"], objectToInsertALL, "temperature")
                 if env["humidity"] > statistics["maxHum"][0]["humidity"] and env["humidity"] < 100.1:
-                    objectToInsert = dict()
+                    objectToInsert = {}
                     objectToInsert["humidity"] = env["humidity"]
                     objectToInsert["date"] = env["date"]
                     statistics["maxHum"] = insertMax(statistics["maxHum"], objectToInsert, "humidity")
                     if env["humidity"] > statisticsALL["maxHum"][0]["humidity"]:
-                        objectToInsert["station_id"] =station_id
-                        objectToInsert["station_name"] = station["name"]
-                        statisticsALL["maxHum"] = insertMax(statisticsALL["maxHum"], objectToInsert, "humidity")
+                        objectToInsertALL = objectToInsert.copy()
+                        objectToInsertALL["station_id"] =station_id
+                        objectToInsertALL["station_name"] = station["name"]
+                        statisticsALL["maxHum"] = insertMax(statisticsALL["maxHum"], objectToInsertALL, "humidity")
                 if env["humidity"] < statistics["minHum"][0]["humidity"] and env["humidity"] > -0.1:
-                    objectToInsert = dict()
+                    objectToInsert = {}
                     objectToInsert["humidity"] = env["humidity"]
                     objectToInsert["date"] = env["date"]
                     statistics["minHum"] =  insertMin(statistics["minHum"], objectToInsert, "humidity")
                     if env["humidity"] < statisticsALL["minHum"][0]["humidity"]:
-                        objectToInsert["station_id"] =station_id
-                        objectToInsert["station_name"] = station["name"]
-                        statisticsALL["minHum"] =  insertMin(statisticsALL["minHum"], objectToInsert, "humidity")
+                        objectToInsertALL = objectToInsert.copy()
+                        objectToInsertALL["station_id"] =station_id
+                        objectToInsertALL["station_name"] = station["name"]
+                        statisticsALL["minHum"] =  insertMin(statisticsALL["minHum"], objectToInsertALL, "humidity")
 
         for day in statistics["perDay"]:
                 if statistics["maxDay"][0]["sum"] < statistics["perDay"][day]["sum"]:
@@ -440,6 +444,9 @@ def calculateStatistics():
             statistics["averageTemp"] = statistics["sumTemperature"] / statistics["sumEnvironment"]
             statistics["averageHum"] = statistics["sumHumidity"] / statistics["sumEnvironment"]
 
+        #Remove perDay and validated Birds statistic to keep object small and they are not necessary for the current view
+        statistics["perDay"] = len(statistics["perDay"])
+
         result = db["statistics"].replace_one({"station_id": station_id},statistics, True)
 
     for day in statisticsALL["perDay"]:
@@ -490,6 +497,9 @@ def calculateStatistics():
             
     
     statisticsALL['specialBirds'] = specialBirds
+    #Remove perDay and validated Birds statisitc to keep object small and they are not necessary for the current view
+    statisticsALL['perDay'] = len(statisticsALL["perDay"])
+    statisticsALL['validatedBirds'] = len(statisticsALL["validatedBirds"])
 
 
     if statisticsALL["sumEnvironment"] > 0:
