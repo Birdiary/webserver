@@ -4,16 +4,7 @@ import { useState } from "react"
 import MovementCard from "./MovementCard"
 import language from "../languages/languages"
 import "./statisticsView.css"
-function getRandom(list) {
-  let index = 0
-  if (list.length > 20) {
-    index = Math.floor((Math.random() * (list.length - 20))) + 20
-  }
-  else {
-    index = Math.floor((Math.random() * list.length))
-  }
-  return list[index];
-}
+
 
 function StatisticsView(props) {
 
@@ -55,7 +46,7 @@ function StatisticsView(props) {
         <Grid item lg={2}>
           <h5> {language[props.language]["statistics"]["place"]} {i +1}: <br /> {bird.germanName ? bird.germanName : bird.latinName} ({bird.amount})</h5>
 
-          {bird.movements.length > 0 ? <MovementCard language={props.language} movement={getRandom(bird.movements)}></MovementCard> : ""}
+          {bird.movements.length > 0 ? <MovementCard language={props.language} movement={bird.movements}></MovementCard> : ""}
         </Grid>
       )}
     </Grid>
@@ -71,7 +62,7 @@ function StatisticsView(props) {
         <Grid item lg={2}>
           <h5> {language[props.language]["statistics"]["place"]} {i+1}: <br /> {bird.germanName ? bird.germanName : bird.latinName} ({bird.sum})</h5>
 
-          {bird.movements.length > 0 ? <MovementCard language={props.language} movement={getRandom(bird.movements)}></MovementCard> : ""}
+          {bird.movements.length > 0 ? <MovementCard language={props.language} movement={bird.movements}></MovementCard> : ""}
         </Grid>
       )}
     </Grid> </div>: 
@@ -82,9 +73,9 @@ function StatisticsView(props) {
       {props.data.maxDay.slice(0).reverse().map((bird, i) =>
         <Grid item lg={2}>
           <h5> {language[props.language]["statistics"]["place"]}  {i+1}: {language[props.language]["statistics"]["day"]}  {bird.day} {language[props.language]["statistics"]["with"]}  {bird.sum} {language[props.language]["statistics"]["birds"]}  <br /> 
-          {bird.mostBirds.length > 0 ? <span>{language[props.language]["statistics"]["maxDay3"]}  {bird.mostBirds[bird.mostBirds.length - 1].germanName ? bird.mostBirds[bird.mostBirds.length - 1].germanName : bird.mostBirds[bird.mostBirds.length - 1].latinName} ({bird.mostBirds[bird.mostBirds.length - 1].amount}) </span> : ""}</h5>
+          {bird.mostBirds && bird.mostBirds.length > 0 ? <span>{language[props.language]["statistics"]["maxDay3"]}  {bird.mostBirds[bird.mostBirds.length - 1].germanName ? bird.mostBirds[bird.mostBirds.length - 1].germanName : bird.mostBirds[bird.mostBirds.length - 1].latinName} ({bird.mostBirds[bird.mostBirds.length - 1].amount}) </span> : ""}</h5>
 
-          {bird.mostBirds[bird.mostBirds.length - 1].movements.length > 0 ? <MovementCard language={props.language} movement={getRandom(bird.mostBirds[bird.mostBirds.length - 1].movements)}></MovementCard> : ""}
+          {bird.mostBirds && bird.mostBirds[bird.mostBirds.length - 1].movements.length > 0 ? <MovementCard language={props.language} movement={bird.mostBirds[bird.mostBirds.length - 1].movements}></MovementCard> : ""}
         </Grid>
       )}
     </Grid>
@@ -100,7 +91,7 @@ function StatisticsView(props) {
         <Grid item lg={2}>
           <h5> {bird.germanName} ({props.data.all[bird.latinName].amount})</h5>
 
-          {bird.movements.length > 0 ? <MovementCard language={props.language} movement={getRandom(bird.movements)}></MovementCard> : ""}
+          {bird.movements.length > 0 ? <MovementCard language={props.language} movement={bird.movements}></MovementCard> : ""}
         </Grid>
       )}
     </Grid>

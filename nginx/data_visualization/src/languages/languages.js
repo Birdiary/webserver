@@ -224,9 +224,9 @@ const language = {
             form: "Vogel im Video"
         },
         statistics: {
-            infoSum: "Um diese Statistik zu berechnen wird jeweils die Art, welche von dem Bilderkennungsmodell mit der höchsten Wahrscheinlichkeit bestimmt wurde, aufsummiert. Daher kann es auch vorkommen das Arten angezeigt werden, die nicht in deutschen Gärten vorkommen.",
-            infoValidation: "In dieser Statistik wird angezeigt, wie oft eine bestimmte Art validiert wurde. Daher gibt sie keine Auskunft darüber, wie oft der Vogel an der Station war. Die Anzahl der Validerungen schließt auch Validierungen mit ein, falls kein Vogel auf dem Video erkannt worden kannte, diese werden jedoch nicht in der Ansicht unten angezeigt. Probiere es gerne direkt aus die Statistike zu verbessern, indem du Videos deiner Station validierst. ",
-            infoSpecialBirds: "Hier zeigen wir dir Arten, die schon einmal an einer unserer Station tatsächlich erkannt wurden. Es werden nur Erkennungen genommen, bei der die Wahrscheinlichkeit der Art, ausgegeben von der Ki, über 85% sind. Die Validierungen fließen nicht mit ein.",
+            infoSum: "Um diese Statistik zu berechnen wird jeweils die Art, welche von dem Bilderkennungsmodell mit der höchsten Wahrscheinlichkeit bestimmt wurde, aufsummiert. Daher kann es auch vorkommen, dass Arten angezeigt werden, die nicht in deutschen Gärten vorkommen.",
+            infoValidation: "In dieser Statistik wird angezeigt, wie oft eine bestimmte Art validiert wurde. Daher gibt sie keine Auskunft darüber, wie oft der Vogel an der Station war. Die Anzahl der Validerungen schließt auch Validierungen mit ein, falls kein Vogel auf dem Video erkannt worden kannte, diese werden jedoch nicht in der Ansicht unten angezeigt. Probiere es gerne direkt aus, die Statistik zu verbessern, indem du Videos deiner Station validierst. ",
+            infoSpecialBirds: "Hier zeigen wir dir Arten, die schon einmal an einer unserer Station tatsächlich erkannt wurden. Es werden nur Erkennungen berücksichtigt, bei denen das Bilderkennungsmodell die Vorhersage mit einer Wahrscheinlichkeit von 85% oder höher ausgibt. Die Validierungen fließen nicht mit ein.",
             showMore: "Zeige mehr Statistiken",
             show: "Zeige Statistiken",
             maxSpecies2: " Videos aufgenommen. Davon wurde auf ",

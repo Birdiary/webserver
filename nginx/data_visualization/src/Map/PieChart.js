@@ -212,7 +212,7 @@ class ApexChart extends React.Component {
           <Skeleton width={"100%"} height={"20vh"}>
             
           </Skeleton>}
-          <Button component={Link} to={"/view/statistics"}>{language[this.props.language]["statistics"]["showMore"]}</Button>
+          <Button style={{float: "left"}}component={Link} to={"/view/statistics"}>{language[this.props.language]["statistics"]["showMore"]}</Button>
 
           <br/>
           <br/>
