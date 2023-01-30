@@ -253,7 +253,7 @@ const language = {
             time: " Uhr",
             measuredStation: "Gemessen an der Station :",
             single: {
-                maxSpecies1: "An der Station wurden schon" ,
+                maxSpecies1: "An der Station wurden schon " ,
                 maxValidated: "An der Station wurden auch schon einige Vögel validiert und zwar ",   
                 maxDay: " Tagen hat die Station mindestens einen Vogel aufgenommen. ",
                 specialBirds: "Diese besonderen Vögel besuchten die Station:"  ,   

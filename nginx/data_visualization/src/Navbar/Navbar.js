@@ -122,16 +122,6 @@ function Header(props){
           <Typography variant="h4" color="inherit" style={{ flex: 1 }}>
             <Button style={{ fontWeight : "bold"}} color="inherit" component={Link} to="/view" >{language[props.language]["navbar"]["overview"]}</Button>
           </Typography>
-          <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={() => props.changeSnow(props.snow)}
-              color="inherit"
-            >
-              {props.snow? <SnowDisable height={30} width= {30}/> : <SnowEnable height={30} width= {30}/>  }
-            </IconButton>
           <Button color="inherit" onClick={() => props.changeLang("en")} className={props.language == "en" ? 'bold' : null}>English</Button>
           <Button color="inherit" onClick={() => props.changeLang("de")} className={props.language == "de" ? 'bold' : null}>Deutsch</Button>
           <Button rel="noopener" color="inherit" component={Link} to="/view/createstation">

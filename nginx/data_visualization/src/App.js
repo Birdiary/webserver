@@ -5,7 +5,6 @@ import StationView from './Station/Stations'
 import Validation from './Validation/Validation';
 import Statistics from './Statistics/Statistics'
 import StationStatistics from './Statistics/StationStatistics';
-import Snowfall from 'react-snowfall'
 
 import {
   Routes,
@@ -47,7 +46,6 @@ class App extends React.Component {
       snow: true
     };
     this.changeLang = this.changeLang.bind(this)
-    this.changeSnow = this.changeSnow.bind(this)
   };
 
   componentDidMount() {
@@ -57,10 +55,7 @@ class App extends React.Component {
     else if (navigator.language === "de-DE") {
       this.setState({ language: "de" });
     }
-    if (window.localStorage.getItem("snow")) {
-      if(window.localStorage.getItem("snow") == "no")
-      this.setState({ snow: false});
-    }
+
 
   }
 
@@ -69,17 +64,7 @@ class App extends React.Component {
     window.localStorage.setItem("language", lang);
   }
 
-  changeSnow(snow) {
-    
-    if(snow){
-      window.localStorage.setItem("snow", "no");
-      this.setState({ snow: false })
-    }
-    else{
-      window.localStorage.setItem("snow", "yes");
-      this.setState({ snow: true })
-    }
-  }
+
 
 
   render() {
@@ -87,23 +72,13 @@ class App extends React.Component {
       <div id="pageContainer">
         <BrowserRouter>
           <Header language={this.state.language}
-            changeLang={this.changeLang} snow={this.state.snow} changeSnow={this.changeSnow}>
+            changeLang={this.changeLang}>
               
           </Header>
 
 
           <div>
             <div className="content" id="mainView" style={{position : "relative"}}>
-              {this.state.snow?
-              <Snowfall
-                style={{
-                  position: 'fixed',
-                  width: '100vw',
-                  height: '100vh',
-                  zIndex: 100000
-
-                }}
-              /> : ""}
               <SentryRoutes>
                 <Route exact path="/view" element={<OwnMap language={this.state.language} changeLang={this.changeLang} />} />
                 <Route exact path="/view/station/:id" element={<StationView language={this.state.language} />}></Route>
