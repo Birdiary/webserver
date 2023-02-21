@@ -1091,10 +1091,13 @@ def handle_movement(station_id: str, movement_id: str):
             movements = list(movements)
             for movement in movements:
                 videofile = movement["video"]
-                filename = os.path.basename(videofile)
-                print(filename, flush=True)
-                command2 = "rm ./uploads/disk/videos/" + filename
+                videofilename = os.path.basename(videofile)
+                audiofile = movement["audio"]
+                audiofilename = os.path.basename(audiofile)
+                command = "rm ./uploads/disk/videos/" + audiofilename
+                command2 = "rm ./uploads/disk/videos/" + videofilename
                 try:
+                    output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
                     output2 = subprocess.check_output(command2, stderr=subprocess.STDOUT, shell=True)
                 except subprocess.CalledProcessError as e:
                     print('FAIL:\ncmd:{}\noutput:{}'.format(e.cmd, e.output))
