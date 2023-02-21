@@ -1094,7 +1094,7 @@ def handle_movement(station_id: str, movement_id: str):
                 videofilename = os.path.basename(videofile)
                 audiofile = movement["audio"]
                 audiofilename = os.path.basename(audiofile)
-                command = "rm ./uploads/disk/videos/" + audiofilename
+                command = "rm ./uploads/disk/audios/" + audiofilename
                 command2 = "rm ./uploads/disk/videos/" + videofilename
                 try:
                     output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
