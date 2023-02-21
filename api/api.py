@@ -1086,7 +1086,19 @@ def handle_movement(station_id: str, movement_id: str):
         deleteData = request.args.get("deleteData")
         if API_KEY != apikey:
             return "Not authorized", 401
-        db["movements_" + station_id].delete_one({"mov_id": movement_id})
+        if deleteData:
+            movements = db["movements_" + station_id].find({"mov_id": movement_id})
+            movements = list(movements)
+            for movement in movements:
+                videofile = movement["video"]
+                filename = os.path.basename(videofile)
+                print(filename, flush=True)
+                command2 = "rm ./uploads/disk/videos/" + filename
+                try:
+                    output2 = subprocess.check_output(command2, stderr=subprocess.STDOUT, shell=True)
+                except subprocess.CalledProcessError as e:
+                    print('FAIL:\ncmd:{}\noutput:{}'.format(e.cmd, e.output))
+        db["movements_" + station_id].delete_many({"mov_id": movement_id})
         return jsonify(str(station_id)), 200   
         
     movement = db["movements_" + station_id].find({"mov_id": movement_id}, {'_id' : False})
@@ -1094,7 +1106,7 @@ def handle_movement(station_id: str, movement_id: str):
     return jsonify(movement)
 
 @app.route('/api/movement/<station_id>', methods=['GET'])
-def insert_station_id(station_id: str):
+def search_Movements(station_id: str):
     species = request.args.get('species')
     date = request.args.get('date')
     
