@@ -54,7 +54,7 @@ function Movement(props) {
         // Handle error
         let text = language[props.language]["stations"]["notFound"] + counter
         setText(text)
-        setOpen(true)
+        setDialogOpen(true)
         changeCounter(counter - 1)
         const myTimeout = setTimeout(routeToHome, 5000)
       })

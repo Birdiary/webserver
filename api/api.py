@@ -162,6 +162,8 @@ def insert(list, n):
  
 
 def enqueueable(func):
+    #This function is a decorator that takes in a function and checks whether it is defined in the main module or imported from another module. If the function is defined in the main module, it updates its module name to the name of the script file. 
+    # This is done to ensure that the function can be properly pickled and added to a task queue for asynchronous execution.
     if func.__module__ == "__main__":
         func.__module__, _ = splitext(basename(modules["__main__"].__file__))
     return func
@@ -511,7 +513,10 @@ def calculateStatistics():
 
         
 @enqueueable
-# Create a working task queue  
+#The function first checks if the file extension is ".h264" and converts the file to ".mp4" format using MP4Box if so. 
+# It then reads the video using OpenCV, extracts frames from the video, and calls a classify function to classify the image and detect any birds present in it. 
+# It then processes the detected birds to create a list of dictionaries, where each dictionary contains the details of each bird. It then updates the database with the movement and counts the number of each bird seen for a given day. 
+# It also sends an email to the provided email addresses with the details of the detected birds.  
 def videoAnalysis(filename, movement_id, station_id, movement):
     if  os.path.splitext(filename)[1] == ".h264":
         command = "MP4Box -add {} {}.mp4".format("./uploads/disk/videos/" + filename, "./uploads/disk/videos/" + os.path.splitext(filename)[0])
@@ -605,7 +610,8 @@ def videoAnalysis(filename, movement_id, station_id, movement):
 
 @enqueueable
 def saveEnvironment(body, env_id, station_id):
-
+    #The purpose of the function is to save environment data for a particular station. The function takes in three arguments: body, env_id, and station_id.
+    #The body argument is a dictionary containing environment data that needs to be saved. The env_id argument is a unique identifier for the environment data. The station_id argument is the unique identifier for the station where the environment data is being saved.
     
     environmentClass = dict()
     for name,value in body.items():
