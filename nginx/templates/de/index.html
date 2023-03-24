@@ -121,7 +121,7 @@ https://templatemo.com/tm-526-vanilla
     <div class="parallax-content video-content" id="video">
         <div class="container" style="min-width: fit-content;">
             <div class="first-content" style="min-width: fit-content;">
-                <video width="1024" height="576" controls>
+                <video id="test" width="1024" height="576" controls>
                     <source src="/static/img/movie.mp4" type="video/mp4">
                   Your browser does not support the video tag.
                   </video>
@@ -611,8 +611,8 @@ https://templatemo.com/tm-526-vanilla
                 }
 
                 //this is where the magic happens. Simply set width/height/whatever to a multiple of vw/vh and add 'px'. Dimensions must be in pixels since the vw/vh measurement is based on pixels.
-                document.getElementById('test').width = width + 'px';
-                document.getElementById('test').height = height + 'px';
+                document.getElementById('test').videoWidth  = width + 'px';
+                document.getElementById('test').videoHeight = height + 'px';
                 //assign width and height to your v unit elements here
             }
 
