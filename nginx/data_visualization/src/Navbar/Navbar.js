@@ -53,16 +53,6 @@ function Header(props){
             >
               <MenuIcon />
             </IconButton>
-            <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={() => props.changeSnow(props.snow)}
-              color="inherit"
-            >
-              {props.snow? <SnowDisable height={30} width= {30}/> : <SnowEnable height={30} width= {30}/>  }
-            </IconButton>
             <Menu
               id="menu-appbar"
               anchorEl={anchorElNav}
