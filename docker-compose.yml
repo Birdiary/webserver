@@ -20,6 +20,7 @@ services:
       - redis
     volumes:
       - ./data/uploads:/usr/src/app/uploads
+    privileged: true
 
 
 
@@ -49,7 +50,7 @@ services:
 
   worker:
     image: api
-    command: rq worker --url redis://redis:6379
+    command: rq worker default image --url redis://redis:6379 --with-scheduler
     env_file:
       - server.env
     volumes:
@@ -57,10 +58,11 @@ services:
     depends_on:
       - redis
       - api
+    privileged: true
 
   worker2:
     image: api
-    command: rq worker --url redis://redis:6379
+    command: rq worker default --url redis://redis:6379
     env_file:
       - server.env
     volumes:
@@ -68,9 +70,11 @@ services:
     depends_on:
       - redis
       - api
+    privileged: true
+
   worker3:
     image: api
-    command: rq worker --url redis://redis:6379
+    command: rq worker default --url redis://redis:6379
     env_file:
       - server.env
     volumes:
@@ -78,9 +82,12 @@ services:
     depends_on:
       - redis
       - api
+    privileged: true
 
   rq-dashboard:
-    image: eoranged/rq-dashboard
+    build: 
+      context: ./rq-dashboard
+      dockerfile: Dockerfile
     ports:
       - "9181:9181"
     environment: 

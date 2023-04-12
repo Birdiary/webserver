@@ -203,8 +203,7 @@ const language = {
         createStation: {
             title: "Erstelle eine Station:",
             name: "Name der Station",
-            mail: "Zu Benachrichtigende Mail Adressen. Eingabe mit Enter bestätigen",
-            mailHelper: "Mail Adresse mit Enter bestätigen",
+            mail: "E-Mail Adresse",
             position: "Standort der Station (Gib die Koordinaten ein oder bewege den Marker in der Karte)",
             dataPrivacy: "Ihr müsst der Datenschutzerklärung zustimmen",
             finshed: "Die Station wurde erfolgreich erstellt und hat die ID:",
@@ -215,7 +214,17 @@ const language = {
             overview: "Gehe zum Überblick",
             viewStation: "Beobachte Station",
             dataPrivacyText: "Ich akzeptiere, dass die hier bei diesem Formular und durch die Station gesammelten Daten auf unserer Website veröffentlicht werden. Die Mail-Adressen werden nicht veröffentlicht, sondern nur genutzt um euch zu benachrichtigen. Alle Daten können auf Anfrage gelöscht oder geändert werden.",
-            opensensemapText: "Ich stimme zu, dass die Umweltdaten (Lufttemperatur und -feuchte) und der Standort meiner Station auch auf opensensemap.org veröffentlicht werden. Die dort erstellte senseBox soll von den Betreibern der Website wiediversistmeingarten.org verwaltet werden."
+            opensensemapText: "Ich stimme zu, dass die Umweltdaten (Lufttemperatur und -feuchte) und der Standort meiner Station auch auf opensensemap.org veröffentlicht werden. Die dort erstellte senseBox soll von den Betreibern der Website wiediversistmeingarten.org verwaltet werden.",
+            download: "Starte Download des Images",
+            ssid: "W-Lan SSID eingeben, um WLAN automatisch zu konfigurieren",
+            pwd: "W-Lan Password eingeben, um WLAN automatisch zu konfigurieren",
+            createImage: "Erstelle ein Image, welches direkt auf der SSD-Karte installiert werden kann",
+            creatingImage: "Das Image wird gerade erstellt",
+            stationConfig: "Konfiguration der Station",
+            stationConfigText: "Hier können parameter über die Station gesetzt werden, wie z.B. die W-Lan Einstellungen oder die Rotation der Kamera. Alle Parameter können auch später auf der Station gesetzt werden, hier wird aber eine nutzerfreudliche Eingabe ermöglicht. Die W-Lan Daten werden zweifach verschlüsselt an den Server gesendet und erst dort ausgelesen.",
+            rotation: "Hier kann die Rotation für die Kamera gesetzt werden. Wenn das Kabel nach oben schaut 180 eintragen, wenn nach rechts 90",
+            time: "Zeitinterval in Minuten, indem Umweltdaten gemessen werden sollen",
+            notifications: "Möchtest du bei jedem Vogel per Mail benachrrichtigt werdern"
         },
         validation: {
             send: "Sende Validierung",

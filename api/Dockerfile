@@ -15,12 +15,13 @@ COPY ./requirements.txt /usr/src/app/requirements.txt
 WORKDIR /usr/src/app
 
 # add and install requirements
+RUN pip install -r requirements.txt
 RUN pip install opencv-python
 RUN pip install tensorflow
 
 
 
-RUN pip install -r requirements.txt
+
 
 # add app
 COPY . /usr/src/app

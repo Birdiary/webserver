@@ -19,6 +19,7 @@ services:
     depends_on:
       - mongodb
       - redis
+    privileged: true
 
 
   mongodb:
@@ -56,7 +57,7 @@ services:
 
   worker:
     image: api
-    command: rq worker --url redis://redis:6379
+    command: rq worker default image --url redis://redis:6379 --with-scheduler  
     env_file:
       - server.env
     volumes:
@@ -64,13 +65,16 @@ services:
     depends_on:
       - redis
       - api
+    privileged: true
 
   rq-dashboard:
-    image: eoranged/rq-dashboard
+    build: 
+      context: ./rq-dashboard
+      dockerfile: Dockerfile
     ports:
       - "9181:9181"
     environment: 
-     - RQ_DASHBOARD_REDIS_URL=redis://redis:6379
+     - RQ_DASHBOARD_REDIS_URL=redis://redis:6379 
     depends_on: 
       - redis
 

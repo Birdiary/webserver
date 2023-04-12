@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory, send_file
 
 from pymongo import MongoClient
 import json
@@ -9,13 +9,12 @@ from sys import modules
 from os.path import basename, splitext
 from datetime import datetime, timedelta, date
 import random
-
-
+import yaml
 import json
-
+import time
 import subprocess
 import uuid
-import os
+import os, shutil
 import cv2
 from redis import Redis
 from rq import Queue
@@ -24,6 +23,10 @@ import requests
 import csv 
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
+import unicodedata
+def remove_control_characters(s):
+    return "".join(ch for ch in s if unicodedata.category(ch)[0]!="C")
+
 
 def traces_sampler(sampling_context):
     # Examine provided context data (including parent decision, if any)
@@ -46,17 +49,17 @@ def traces_sampler(sampling_context):
         # Default sample rate
         return 0.5
 
-sentry_sdk.init(
-    dsn="https://f7dc32893aa54ef5b2b3df3a3067c5cb@o4504179650723840.ingest.sentry.io/4504179659898880",
-    integrations=[
-        FlaskIntegration(),
-    ],
+#sentry_sdk.init(
+#    dsn="https://f7dc32893aa54ef5b2b3df3a3067c5cb@o4504179650723840.ingest.sentry.io/4504179659898880",
+#    integrations=[
+#        FlaskIntegration(),
+#    ],
 
     # Set traces_sample_rate to 1.0 to capture 100%
     # of transactions for performance monitoring.
     # We recommend adjusting this value in production.
-    traces_sampler=traces_sampler
-)
+#    traces_sampler=traces_sampler
+#)
 
 def insertMax(list, n, key):
  
@@ -117,6 +120,7 @@ API_KEY = os.getenv('API_KEY', "ABC")
 app = Flask(__name__)
 redis = Redis(host='redis', port=6379)
 q = Queue(connection=redis)
+q2 = Queue("image", connection=redis)
 app.config['SECRET_KEY'] = 'thisisasecret'
 app.config['JSON_SORT_KEYS'] = False
 app.config['UPLOADED_IMAGES_DEST'] = 'uploads/disk/images'
@@ -128,6 +132,17 @@ app.config['MONGODB_SETTINGS'] = {
     'port': 27017
 }
 
+SECURE_KEY = os.getenv('AES_KEY', "ABC")
+SECURE_IV = os.getenv('AES_IV', 'ABC')
+from Crypto.Cipher import AES
+import base64
+
+def decrypt(enc,key,iv):
+    key = bytes.fromhex(key)
+    iv = bytes.fromhex(iv)
+    enc = base64.b64decode(enc)
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    return cipher.decrypt(enc)
 
 client = MongoClient('mongodb',27017)
 db = client.birdiary_database
@@ -167,6 +182,98 @@ def enqueueable(func):
     if func.__module__ == "__main__":
         func.__module__, _ = splitext(basename(modules["__main__"].__file__))
     return func
+
+@enqueueable
+def deleteImage(id):
+    os.remove('./uploads/raspberry-pi-os' +id  +'.img')
+    os.remove('./uploads/raspberry-pi-os' +id  +'draft.img')
+
+
+@enqueueable
+def modify_image(id, credentials, rotation, time, i):
+    try:
+        SSID = decrypt(credentials["SSID"], SECURE_KEY, SECURE_IV)
+        password= decrypt(credentials["password"], SECURE_KEY, SECURE_IV)
+        print(password, flush=True)
+        config_lines = [
+        '\n',
+        'network={',
+        '\tssid="{}"'.format(remove_control_characters(SSID.decode().strip())),
+        '\tpsk="{}"'.format(remove_control_characters(password.decode().strip())),
+        '\tkey_mgmt=WPA-PSK',
+        '}'
+        ]
+
+        config = '\n'.join(config_lines)
+        print(config, flush=True)
+        # Define the path to the original Raspberry Pi OS image
+        original_image_path = './uploads/pi.img'
+
+        # Define the path to the copy of the original Raspberry Pi OS image
+        copy_image_path = './uploads/raspberry-pi-os' +id  +'draft.img'
+        finished_image_path = './uploads/raspberry-pi-os' +id  +'.img'
+
+        # Define the temporary directory where the image will be mounted
+        mount_dir = '/mnt/rpi'
+
+        if not os.path.exists(mount_dir):
+            subprocess.run( 'mkdir /mnt/rpi', check=True, stderr=subprocess.STDOUT, shell=True)
+        elif os.listdir(mount_dir):
+            shutil.rmtree(mount_dir)
+        
+        # Create a copy of the original image file
+        #subprocess.run( 'losetup -d /dev/loop3', check=True, stderr=subprocess.STDOUT, shell=True)
+  
+        subprocess.run( 'losetup -a', check=True, stderr=subprocess.STDOUT, shell=True)
+
+        command =  'cp '+  original_image_path + " "+ copy_image_path
+        subprocess.run(command, stderr=subprocess.STDOUT, check=True, shell=True)
+
+    
+        # Mount the copy of the image as a loop device
+
+        output=subprocess.run('losetup -P /dev/loop3 ' + copy_image_path, check=True, shell=True)
+        print(output, flush=True)
+        subprocess.run( 'ls -l /dev/loop*', check=True, stderr=subprocess.STDOUT, shell=True)
+
+        output= subprocess.run( 'mount /dev/loop3p2 '+ mount_dir ,stderr=subprocess.STDOUT, check=True, shell=True)
+
+
+        with open(mount_dir + '/home/pi/station/config.yaml') as file:
+            doc = yaml.safe_load(file)
+
+            doc['station']['boxId'] = id
+            doc['station']['cameraRotation'] = int(rotation)
+            doc['station']['environmentTimeDeltaInMinutes'] = int(time)
+            print(doc, flush=True)
+
+        with open(mount_dir+ '/home/pi/station/config.yaml', 'w') as file:
+            yaml.dump(doc, file)
+
+
+
+        with open(mount_dir+ "/etc/wpa_supplicant/wpa_supplicant.conf", "a+") as wifi:
+            wifi.write(config)
+        # Unmount the filesystem and detach the loop device
+        subprocess.run([ 'umount '+mount_dir], check=True, stderr=subprocess.STDOUT, shell=True)
+        subprocess.run([ 'losetup -d /dev/loop3'], check=True, stderr=subprocess.STDOUT, shell=True)
+        command =  'cp '+  copy_image_path + " "+ finished_image_path
+        subprocess.run(command, stderr=subprocess.STDOUT, check=True, shell=True)
+        job = q.enqueue_in(timedelta(minutes=30), deleteImage, id)
+        return
+    except subprocess.CalledProcessError as e:
+        job = q2.enqueue(modify_image, id, credentials, rotation,time, i+1)
+        print('FAIL:\ncmd:{}\noutput:{}'.format(e.cmd, e.output), flush=True)
+        try:
+            subprocess.run('umount '+mount_dir, check=True, stderr=subprocess.STDOUT, shell=True)
+        except: 
+            print("not mounted")
+        if i> 1:
+            try:
+                subprocess.run('losetup -d /dev/loop3', check=True, stderr=subprocess.STDOUT, shell=True)
+            except:
+                print("not looped")
+        return
 
 @enqueueable
 def calculateStatistics():
@@ -595,12 +702,12 @@ def videoAnalysis(filename, movement_id, station_id, movement):
         else:
             count[today] = [{"latinName": latinName, "germanName" : germanName, "amount": 1}]
 
-        for mail in station["mail"]["adresses"]:
+        if station["mail"]["notifcation"]:
             try:
-                send_email(mail, filename, str(host)+ "/api/uploads/videos/" + filename, birds, pwd, str(host) +"/view/station/" +station_id )
+                send_email(station["mail"]["adresses"][0], filename, str(host)+ "/api/uploads/videos/" + filename, birds, pwd, str(host) +"/view/station/" +station_id )
             except (e):
                 print(e)
-                print("mail to " + mail + " failed") 
+                print("mail to " + station["mail"]["adresses"] + " failed") 
 
     db["movements_"+station_id].update_one({"mov_id": movement_id}, {'$set': newMovement})
     completeMovement = db["movements_"+station_id].find_one({"mov_id": movement_id}, {'_id' : False})
@@ -845,16 +952,17 @@ def audio():
 def add_station():
     if request.method=="POST":
         body = request.get_json()
+        id = str(uuid.uuid4())
+        wlanCredentials = body['wlanCredentials']
+        rotation = body['rotation']
+        time = body["time"]
+        job = q2.enqueue(modify_image, id, wlanCredentials, rotation, time, 0)
         location = dict()
         location['lat'] = body['location']['lat']
         location['lng']= body['location']['lng']
-        arr= []
-        for mailToInsert in body['mail']['adresses']:
-            print(mailToInsert)
-            arr.append(mailToInsert)
-        mail = dict()
-        mail["adresses"] = arr
-        id = str(uuid.uuid4())
+        mail= dict()
+        mail["adresses"] = body['mail']['adresses']
+        mail["notifications"] = body["mail"]["notifications"]
         createSensebox = body['createSensebox']
         sensebox_id = ''
         name = body["name"]
@@ -1242,6 +1350,23 @@ def runStatistics():
 @app.route('/api/debug-sentry')
 def trigger_error():
     division_by_zero = 1 / 0
+
+@app.route('/api/image/<id>', methods=['GET'])
+def get_image(id):
+    path = './uploads/raspberry-pi-os' +id  +'.img'
+    if not os.path.exists(path):
+        print("Path of the file is Invalid")
+        return "Image not found", 404
+    return send_file(path, as_attachment=True, download_name='birdiary-pi.img')
+
+@app.route('/api/imageStatus/<id>', methods=['GET'])
+def get_imageStatus(id):
+    path = './uploads/raspberry-pi-os' +id  +'.img'
+    if not os.path.exists(path) or os.path.getsize(path) < 5905580032:
+        print("Path of the file is Invalid")
+        return "Image not found", 404
+    return "Image ready", 200
+
 
 if __name__==('__main__'):
     app.run(host="0.0.0.0", debug=False)

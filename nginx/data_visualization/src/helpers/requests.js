@@ -1,5 +1,5 @@
+const { RedoOutlined } = require('@mui/icons-material');
 const axios = require('axios');
-//const config = require('./config.json');
 const _env = {
     api: config.apiUrl // eslint-disable-line
 }
@@ -64,6 +64,11 @@ function searchForSpecies(station_id, species, numberOfMovements, date){
 function getEnvironment(station_id){
     var _url = _env.api + "/environment/" + station_id
     return axios.get(_url)
+}
+
+function getImage(station_id){
+    var _url = _env.api + "/imageStatus/" + station_id
+    return axios.get(_url)
 
 }
 
@@ -73,6 +78,11 @@ function getCount(){
 
 function getStatisitcs(id){
     return axios.get(_env.api +"/statistics/"+id)
+}
+
+function returnImageUrl(id){
+    var _url = _env.api + "/image/" + id
+    return _url
 }
 
 module.exports = {
@@ -86,5 +96,6 @@ module.exports = {
     getSingleMovement : getSingleMovement,
     getCount :getCount,
     getStatisitcs: getStatisitcs,
-    
+    getImage: getImage,
+    returnImageUrl: returnImageUrl,
 };

@@ -20,6 +20,7 @@
     "chart.js": "^3.9.1",
     "chartjs-adapter-date-fns": "^2.0.0",
     "chartjs-plugin-zoom": "^1.2.1",
+    "crypto-js": "^4.1.1",
     "date-fns": "^2.29.3",
     "dayjs": "^1.11.6",
     "formik": "^2.2.9",

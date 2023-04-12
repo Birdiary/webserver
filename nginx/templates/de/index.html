@@ -611,8 +611,8 @@ https://templatemo.com/tm-526-vanilla
                 }
 
                 //this is where the magic happens. Simply set width/height/whatever to a multiple of vw/vh and add 'px'. Dimensions must be in pixels since the vw/vh measurement is based on pixels.
-                document.getElementById('test').videoWidth  = width + 'px';
-                document.getElementById('test').videoHeight = height + 'px';
+                document.getElementById('test').setAttribute("width", width + 'px')
+                document.getElementById('test').setAttribute("height", height + 'px')
                 //assign width and height to your v unit elements here
             }
 

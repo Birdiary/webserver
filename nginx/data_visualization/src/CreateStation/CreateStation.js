@@ -22,6 +22,7 @@ import './CreateStation.css';
 import { Link } from 'react-router-dom';
 import language from '../languages/languages';
 import L from "leaflet";
+import CryptoJS from 'crypto-js';
 
 const center = {
   lat: 51.9606649,
@@ -70,15 +71,24 @@ class CreateStation extends React.Component {
     super(props);
     this.state = {
       position: center,
-      mail: [],
+      mail: "",
+      mailChecked: false,
       open: false,
       finished: false,
       checked: false,
       senseboxChecked: false,
       senseboxCreated: false,
-      name: ""
+      SSID: "",
+      pwd: "",
+      name: "",
+      downloadReady: false,
+      DialogText: language[props.language]["createStation"]["creating"],
+      rotation: "",
+      time: ""
     };
     this.handler = this.handler.bind(this)
+    this.secretKey = process.env.REACT_APP_SECRET_KEY;
+    this.secretIV = process.env.REACT_APP_SECRET_IV;
   }
 
 
@@ -100,7 +110,28 @@ class CreateStation extends React.Component {
   };
 
   handleMailChange = (event, value) => {
+    var value = event.target.value
     this.setState({ mail: value });
+  };
+
+  handleSSIDChange = (event, value) => {
+    var value = event.target.value
+    this.setState({ SSID: value });
+  };
+
+  handleRotationChange = (event, value) => {
+    var value = event.target.value
+    this.setState({ rotation: value });
+  };
+
+  handleTimeChange = (event, value) => {
+    var value = event.target.value
+    this.setState({ time: value });
+  };
+
+  handlePwdChange = (event, value) => {
+    var value = event.target.value
+    this.setState({ pwd: value });
   };
 
   handleChecked = (event) => {
@@ -113,16 +144,58 @@ class CreateStation extends React.Component {
     this.setState({ senseboxChecked: event.target.checked });
   };
 
+  handleNotficationsChecked = (event) => {
+    //console.log(event.target.checked)
+    this.setState({ mailChecked: event.target.checked });
+  };
+
+  checkDownload = () => {
+    const id = this.state.id;
+    const self =this;
+    self.setState({ finished: false, downloadReady: false, DialogText: language[this.props.language]["createStation"]["creatingImage"] })
+    requests.getImage(id)
+    .then(function (res) {
+      self.setState({ finished: true, downloadReady: true })
+    })
+    .catch(function (error) {
+      if (error.response) {
+        if (error.response.status=404)
+        setTimeout(() => {
+          self.checkDownload()
+        }, 15000);
+      }
+    });
+  }
+
+  startDownload = () => {
+    const id = this.state.id;
+    window.open(requests.returnImageUrl(id), "_blank")
+  }
+
   sendData = () => {
     const self = this;
     self.setState({ open: true })
 
+    var key = CryptoJS.enc.Hex.parse(this.secretKey)
+    var iv = CryptoJS.enc.Hex.parse(this.secretIV);
+    const SSID = CryptoJS.AES.encrypt(this.state.SSID, key, {iv:iv});
+    const password = CryptoJS.AES.encrypt(this.state.pwd, key, {iv:iv});
     var payload = {
       "name": this.state.name,
       "location": this.state.position,
-      "mail": { "adresses": this.state.mail },
-      "createSensebox": this.state.senseboxChecked
+      "mail": {
+        "adresses": [this.state.mail],
+        "notifications": this.state.mailChecked
+      },
+      "createSensebox": this.state.senseboxChecked,
+      "wlanCredentials": {
+        "SSID": SSID.toString(),
+        "password": password.toString()
+      },
+      "rotation": this.state.rotation,
+      "time": this.state.time
     }
+
     requests.sendStation(payload)
       .then(function (res) {
         var id = res.data.id
@@ -133,8 +206,6 @@ class CreateStation extends React.Component {
       })
 
   }
-
-
 
   render() {
     const self = this
@@ -150,16 +221,21 @@ class CreateStation extends React.Component {
         />
         <br />
         <br />
-        <Autocomplete style={{ width: "50vw", display: "inline-block" }}
+        <TextField style={{ width: "50vw" }}
+          id="mail"
+          name="mail"
+          label={language[this.props.language]["createStation"]["mail"]}
+          value={this.state.mail}
           onChange={this.handleMailChange}
-          multiple
-          id="multiple-limit-tags"
-          freeSolo={true}
-          options={[]}
-          renderInput={(params) => (
-            <TextField {...params} variant="outlined" label={language[this.props.language]["createStation"]["mail"]} placeholder={language[this.props.language]["createStation"]["mailHelper"]} />
-          )}
         />
+        <br />
+        <br />
+        <FormControlLabel
+          style={{ "max-width": "45vw", textAlign: "left" }}
+          control={<Checkbox
+            notificationsChecked={this.state.checked}
+            onChange={this.handleNotficationsChecked} />}
+          label={language[this.props.language]["createStation"]["notifications"]} />
         <br />
         <br />
         <TextField style={{ width: "50vw" }}
@@ -203,6 +279,46 @@ class CreateStation extends React.Component {
             onChange={this.handleSenseboxChecked} />}
           label={language[this.props.language]["createStation"]["opensensemapText"]} />
         <br></br>
+        <br/>
+        <h4>{language[this.props.language]["createStation"]["stationConfig"]}</h4>
+        <p style={{ width: "50vw", display: "inline-block" }}>{language[this.props.language]["createStation"]["stationConfigText"]}</p>
+        <TextField style={{ width: "50vw" }}
+          id="SSID"
+          name="SSID"
+          label={language[this.props.language]["createStation"]["ssid"]}
+          value={this.state.SSID}
+          onChange={this.handleSSIDChange}
+        />
+        <br />
+        <br />
+        <TextField style={{ width: "50vw" }}
+          id="pwd"
+          name="pwd"
+          label={language[this.props.language]["createStation"]["pwd"]}
+          type="password"
+          autoComplete="current-password"
+          value={this.state.pwd}
+          onChange={this.handlePwdChange}
+        />
+        <br />
+        <br/>
+        <TextField style={{ width: "50vw" }}
+          id="rotation"
+          name="rotation"
+          label={language[this.props.language]["createStation"]["rotation"]}
+          value={this.state.roation}
+          onChange={this.handleRotationChange}
+        />
+        <br />
+        <br />
+        <TextField style={{ width: "50vw" }}
+          id="time"
+          name="time"
+          label={language[this.props.language]["createStation"]["time"]}
+          value={this.state.time}
+          onChange={this.handleTimeChange}
+        />
+        <br />
         <br />
         <Button color="primary" variant="contained" type="submit" onClick={this.sendData} disabled={!this.state.checked}>
           Submit
@@ -252,22 +368,19 @@ class CreateStation extends React.Component {
                   {language[this.props.language]["createStation"]["senseboxNotCreated"]}
                 </DialogContentText>) :
               <DialogContentText id="alert-dialog-description" style={{ "padding": "10px" }}>
-                {language[this.props.language]["createStation"]["creating"]}
+                {this.state.DialogText}
               </DialogContentText>}
           </DialogContent>
           <DialogActions>
             <Button component={Link} to="/view" >{language[this.props.language]["createStation"]["overview"]}</Button>
+            <Button disabled={!this.state.id} onClick={this.checkDownload}>{language[this.props.language]["createStation"]["createImage"]}</Button>
+            <Button disabled={!this.state.downloadReady} onClick={this.startDownload}>{language[this.props.language]["createStation"]["download"]}</Button>
             <Button component={Link} to={"/view/station/" + this.state.id}>
               {language[this.props.language]["createStation"]["viewStation"]}
             </Button>
           </DialogActions>
         </Dialog>
       </div>
-
-
-
-
-
     )
   }
 }
