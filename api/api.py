@@ -49,17 +49,17 @@ def traces_sampler(sampling_context):
         # Default sample rate
         return 0.5
 
-#sentry_sdk.init(
-#    dsn="https://f7dc32893aa54ef5b2b3df3a3067c5cb@o4504179650723840.ingest.sentry.io/4504179659898880",
-#    integrations=[
-#        FlaskIntegration(),
-#    ],
+sentry_sdk.init(
+    dsn="https://f7dc32893aa54ef5b2b3df3a3067c5cb@o4504179650723840.ingest.sentry.io/4504179659898880",
+    integrations=[
+        FlaskIntegration(),
+    ],
 
     # Set traces_sample_rate to 1.0 to capture 100%
     # of transactions for performance monitoring.
     # We recommend adjusting this value in production.
-#    traces_sampler=traces_sampler
-#)
+    traces_sampler=traces_sampler
+)
 
 def insertMax(list, n, key):
  

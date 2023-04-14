@@ -78,7 +78,17 @@ const language = {
             overview: "Go to the overview",
             viewStation: "Inspect Station",
             dataPrivacyText: "I accept that the data collected here in this form and by the station will be published on our website. The mail addresses will not be published, but only used to notify you. All data can be deleted or modified upon request.",
-            opensensemapText: "I agree that the environmental data (air temperature and humidity) and the location of my station will also be published on opensensemap.org. The senseBox created, shall be managed by the operators of the website wiediversistmeingarten.org."
+            opensensemapText: "I agree that the environmental data (air temperature and humidity) and the location of my station will also be published on opensensemap.org. The senseBox created, shall be managed by the operators of the website wiediversistmeingarten.org.",
+            download: "Start download of the image ",
+            ssid: "Enter W-Lan SSID to configure WLAN automatically",
+            pwd: "Enter W-Lan Password to configure WLAN automatically",
+            createImage: "Create an image that can be installed directly on the SSD card",
+            creatingImage: "The image is being created",
+            stationConfig: "Configuration of the stations",
+            stationConfigText: "Here parameters can be set via the station, such as the W-Lan settings or the rotation of the camera. All parameters can also be set later on the station, but here a user-friendly input is enabled. The W-Lan data is sent to the server in double encrypted form and is only read out there.",
+            rotation: "Here you can set the rotation for the camera. If the cable looks upwards enter 180, if to the right 90",
+            time: "Time interval in minutes by which environmental data are to be measured",
+            notifications: "Do you want to be notified by mail for each bird"
         },
         validation: {
             send: "Send Validation",
