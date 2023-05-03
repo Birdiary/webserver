@@ -188,6 +188,20 @@ def deleteImage(id):
     os.remove('./uploads/raspberry-pi-os' +id  +'.img')
     os.remove('./uploads/raspberry-pi-os' +id  +'draft.img')
 
+@enqueueable
+def removeMovementFiles(movement):
+    videofile = movement["video"]
+    videofilename = os.path.basename(videofile)
+    audiofile = movement["audio"]
+    audiofilename = os.path.basename(audiofile)
+    command = "rm ./uploads/disk/audios/" + audiofilename
+    command2 = "rm ./uploads/disk/videos/" + videofilename
+    try:
+        output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+        output2 = subprocess.check_output(command2, stderr=subprocess.STDOUT, shell=True)
+    except subprocess.CalledProcessError as e:
+        print('FAIL:\ncmd:{}\noutput:{}'.format(e.cmd, e.output))
+
 
 @enqueueable
 def modify_image(id, credentials, rotation, time, i):
@@ -701,12 +715,10 @@ def videoAnalysis(filename, movement_id, station_id, movement):
                 count[today].append({"latinName": latinName, "germanName" : germanName, "amount": 1})
         else:
             count[today] = [{"latinName": latinName, "germanName" : germanName, "amount": 1}]
-
-        if station["mail"]["notifcation"]:
-            try:
-                send_email(station["mail"]["adresses"][0], filename, str(host)+ "/api/uploads/videos/" + filename, birds, pwd, str(host) +"/view/station/" +station_id )
-            except (e):
-                print(e)
+        try:
+                if station["mail"]["notifcation"]:
+                    send_email(station["mail"]["adresses"][0], filename, str(host)+ "/api/uploads/videos/" + filename, birds, pwd, str(host) +"/view/station/" +station_id )
+        except:
                 print("mail to " + station["mail"]["adresses"] + " failed") 
 
     db["movements_"+station_id].update_one({"mov_id": movement_id}, {'$set': newMovement})
@@ -1123,6 +1135,10 @@ def station(station_id: str):
             return "Not authorized", 401
         stations.delete_one({"station_id": station_id})
         if(deleteData):
+            movements = db["movements_" + station_id].find({})
+            movements = list(movements)
+            for movement in movements:
+                q.enqueue(removeMovementFiles, movement)
             movementsCollection = db["movements_"+station_id]
             movementsCollection.drop
             environmentCollection = db["environments_"+station_id]
@@ -1204,17 +1220,7 @@ def handle_movement(station_id: str, movement_id: str):
             movements = db["movements_" + station_id].find({"mov_id": movement_id})
             movements = list(movements)
             for movement in movements:
-                videofile = movement["video"]
-                videofilename = os.path.basename(videofile)
-                audiofile = movement["audio"]
-                audiofilename = os.path.basename(audiofile)
-                command = "rm ./uploads/disk/audios/" + audiofilename
-                command2 = "rm ./uploads/disk/videos/" + videofilename
-                try:
-                    output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
-                    output2 = subprocess.check_output(command2, stderr=subprocess.STDOUT, shell=True)
-                except subprocess.CalledProcessError as e:
-                    print('FAIL:\ncmd:{}\noutput:{}'.format(e.cmd, e.output))
+                q.enqueue(removeMovementFiles, movement)
         db["movements_" + station_id].delete_many({"mov_id": movement_id})
         return jsonify(str(station_id)), 200   
         
