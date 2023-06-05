@@ -70,9 +70,9 @@ const language = {
             mailHelper: "Confirm mail address with Enter",
             position: "Location of the station (enter the coordinates or move the marker on the map)",
             dataPrivacy: "You must agree to the privacy policy",
-            finshed: "The station was successfully created and has the ID:",
+            finished: "The station was successfully created and has the ID:",
             senseboxCreated: "A senseBox on the openSenseMap was created.",
-            senseboxNotCreated: "NO senseBox has been created.",
+            senseboxNotCreated: "No senseBox has been created.",
             creating: "The station is being created",
             running: "Creating a station",
             overview: "Go to the overview",
@@ -88,7 +88,8 @@ const language = {
             stationConfigText: "Here parameters can be set via the station, such as the W-Lan settings or the rotation of the camera. All parameters can also be set later on the station, but here a user-friendly input is enabled. The W-Lan data is sent to the server in double encrypted form and is only read out there.",
             rotation: "Here you can set the rotation for the camera. If the cable looks upwards enter 180, if to the right 90",
             time: "Time interval in minutes by which environmental data are to be measured",
-            notifications: "Do you want to be notified by mail for each bird"
+            notifications: "Do you want to be notified by mail for each bird",
+            submit: "Create Station"
         },
         validation: {
             send: "Send Validation",
@@ -216,7 +217,7 @@ const language = {
             mail: "E-Mail Adresse",
             position: "Standort der Station (Gib die Koordinaten ein oder bewege den Marker in der Karte)",
             dataPrivacy: "Ihr müsst der Datenschutzerklärung zustimmen",
-            finshed: "Die Station wurde erfolgreich erstellt und hat die ID:",
+            finished: "Die Station wurde erfolgreich erstellt und hat die ID:",
             senseboxCreated: "Eine Sensebox auf der OpenSenseMap wurde erstellt.",
             senseboxNotCreated: "Es wurde KEINE Sensebox erstellt.",
             creating: "Die Station wird gerade erstellt",
@@ -231,10 +232,11 @@ const language = {
             createImage: "Erstelle ein Image, welches direkt auf der SSD-Karte installiert werden kann",
             creatingImage: "Das Image wird gerade erstellt",
             stationConfig: "Konfiguration der Station",
-            stationConfigText: "Hier können parameter über die Station gesetzt werden, wie z.B. die W-Lan Einstellungen oder die Rotation der Kamera. Alle Parameter können auch später auf der Station gesetzt werden, hier wird aber eine nutzerfreudliche Eingabe ermöglicht. Die W-Lan Daten werden zweifach verschlüsselt an den Server gesendet und erst dort ausgelesen.",
+            stationConfigText: "Hier können Prameter über die Station gesetzt werden, wie z.B. die W-Lan Einstellungen oder die Rotation der Kamera. Alle Parameter können auch später auf der Station gesetzt werden, hier wird aber eine nutzerfreudliche Eingabe ermöglicht. Die W-Lan Daten werden zweifach verschlüsselt an den Server gesendet und erst dort ausgelesen.",
             rotation: "Hier kann die Rotation für die Kamera gesetzt werden. Wenn das Kabel nach oben schaut 180 eintragen, wenn nach rechts 90",
             time: "Zeitinterval in Minuten, indem Umweltdaten gemessen werden sollen",
-            notifications: "Möchtest du bei jedem Vogel per Mail benachrrichtigt werdern"
+            notifications: "Möchtest du bei jedem Vogel per Mail benachrichtigt werdern",
+            submit: "Erstelle Station"
         },
         validation: {
             send: "Sende Validierung",

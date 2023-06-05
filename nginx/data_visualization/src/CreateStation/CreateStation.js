@@ -84,7 +84,8 @@ class CreateStation extends React.Component {
       downloadReady: false,
       DialogText: language[props.language]["createStation"]["creating"],
       rotation: "",
-      time: ""
+      time: "",
+      id: ""
     };
     this.handler = this.handler.bind(this)
     this.secretKey = process.env.REACT_APP_SECRET_KEY;
@@ -187,7 +188,7 @@ class CreateStation extends React.Component {
         "adresses": [this.state.mail],
         "notifications": this.state.mailChecked
       },
-      "createSensebox": this.state.senseboxChecked,
+      // "createSensebox": this.state.senseboxChecked,
       "wlanCredentials": {
         "SSID": SSID.toString(),
         "password": password.toString()
@@ -202,7 +203,7 @@ class CreateStation extends React.Component {
         if (res.data.sensebox_id != '') {
           var createdSensebox = true;
         }
-        self.setState({ id: id, finished: true, senseboxCreated: createdSensebox })
+        self.setState({ id: id, finished: true, senseboxCreated: false }) //TODO Change if sensevox Creation works
       })
 
   }
@@ -272,6 +273,8 @@ class CreateStation extends React.Component {
         <FormControlLabel style={{ "max-width": "45vw", textAlign: "left" }} control={<Checkbox checked={this.state.checked} onChange={this.handleChecked} />} label={language[this.props.language]["createStation"]["dataPrivacyText"]} />
         <br></br>
         <br />
+                {
+        /** 
         <FormControlLabel
           style={{ "max-width": "45vw", textAlign: "left" }}
           control={<Checkbox
@@ -280,8 +283,10 @@ class CreateStation extends React.Component {
           label={language[this.props.language]["createStation"]["opensensemapText"]} />
         <br></br>
         <br/>
+          */}
         <h4>{language[this.props.language]["createStation"]["stationConfig"]}</h4>
         <p style={{ width: "50vw", display: "inline-block" }}>{language[this.props.language]["createStation"]["stationConfigText"]}</p>
+        <br></br>
         <TextField style={{ width: "50vw" }}
           id="SSID"
           name="SSID"
@@ -321,7 +326,7 @@ class CreateStation extends React.Component {
         <br />
         <br />
         <Button color="primary" variant="contained" type="submit" onClick={this.sendData} disabled={!this.state.checked}>
-          Submit
+        {language[this.props.language]["createStation"]["submit"]}
         </Button>
         <br></br>
         {this.state.checked ? "" : <p>{language[this.props.language]["createStation"]["dataPrivacy"]}</p>}

@@ -255,10 +255,20 @@ def modify_image(id, credentials, rotation, time, i):
 
         with open(mount_dir + '/home/pi/station/config.yaml') as file:
             doc = yaml.safe_load(file)
-
+            rotation = 180
+            time = 2
+            try: 
+                rotation = int(rotation)
+            except: 
+                rotation = 180
+            try: 
+                time = int(time)
+            except: 
+                time = 2
+                
             doc['station']['boxId'] = id
-            doc['station']['cameraRotation'] = int(rotation)
-            doc['station']['environmentTimeDeltaInMinutes'] = int(time)
+            doc['station']['cameraRotation'] = rotation
+            doc['station']['environmentTimeDeltaInMinutes'] = time
             print(doc, flush=True)
 
         with open(mount_dir+ '/home/pi/station/config.yaml', 'w') as file:
@@ -1185,8 +1195,9 @@ def add_movement(station_id: str):
     movementsClass["end_date"] = body['end_date']
     movementsClass["weight"] = body['weight']
     movementsClass["detections"] = []
+    name = "audio:" +str(datetime.now()) + "."
     audio = request.files[body['audio']]
-    filename = audios.save(audio)
+    filename = audios.save(audio, name = name)
     movementsClass["audio"] = str(host)+ "/api/uploads/audios/" + filename
     video = request.files[body['video']]
     filename = videos.save(video)
