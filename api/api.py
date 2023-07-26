@@ -985,7 +985,7 @@ def add_station():
         mail= dict()
         mail["adresses"] = body['mail']['adresses']
         mail["notifications"] = body["mail"]["notifications"]
-        createSensebox = body['createSensebox']
+        createSensebox = False # body['createSensebox']
         sensebox_id = ''
         name = body["name"]
         if createSensebox:
@@ -1371,6 +1371,14 @@ def trigger_error():
 @app.route('/api/image/<id>', methods=['GET'])
 def get_image(id):
     path = './uploads/raspberry-pi-os' +id  +'.img'
+    if not os.path.exists(path):
+        print("Path of the file is Invalid")
+        return "Image not found", 404
+    return send_file(path, as_attachment=True, download_name='birdiary-pi.img')##
+
+@app.route('/api/image', methods=['GET'])
+def get_image(id):
+    path = './uploads/pi.img'
     if not os.path.exists(path):
         print("Path of the file is Invalid")
         return "Image not found", 404

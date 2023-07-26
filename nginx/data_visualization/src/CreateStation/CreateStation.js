@@ -373,7 +373,7 @@ class CreateStation extends React.Component {
                   {language[this.props.language]["createStation"]["senseboxNotCreated"]}
                 </DialogContentText>) :
               <DialogContentText id="alert-dialog-description" style={{ "padding": "10px" }}>
-                {this.state.DialogText}
+                {this.state.DialogText} <a href="https://wiediversistmeingarten.org/api/image" target="_blank">https://wiediversistmeingarten.org/api/image</a>
               </DialogContentText>}
           </DialogContent>
           <DialogActions>
