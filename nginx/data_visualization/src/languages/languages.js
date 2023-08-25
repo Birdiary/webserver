@@ -5,7 +5,8 @@ const language = {
             more:
                 "Learn more about our project",
             overview: "Map",
-            validation: "Validation"
+            validation: "Validation",
+            statistics: "Statistics"
         },
 
         map: {
@@ -13,7 +14,8 @@ const language = {
             inspect: "Inspect station",
             lastEnvironment: "Last measurement: ",
             lastMovement: "Last Bird: ",
-            statistics: "Show statistics"
+            statistics: "Show statistics",
+            level: "Silo level: "
         },
         legend: {
             head: "Legend",
@@ -44,6 +46,8 @@ const language = {
             noData2: "No environmental data has been collected yet",
             environment: "Environmental sensors",
             temperature: "Temperature in °C: ",
+            pressure: "Air pressure in hPa: ",
+            illuminance: "Illuminance in Lux: ",
             humidity: "Humidity in %: ",
             birdsCount: "Counted Birds:",
             yesterday: "Yesterday",
@@ -82,8 +86,8 @@ const language = {
             download: "Start download of the image ",
             ssid: "Enter W-Lan SSID to configure WLAN automatically",
             pwd: "Enter W-Lan Password to configure WLAN automatically",
-            createImage: "Create an image that can be installed directly on the SSD card. If this takes longer than 15 minutes, please download the image here and configure WLAN and Station_ID yourself:",
-            creatingImage: "The image is being created",
+            createImage: "Create an image that can be installed directly on the SSD card.",
+            creatingImage: "The image is being created. If this takes longer than 5 minutes, please try to restart the image creation several times. If after 15 minutes no image could be created, please download the image from the following link. But be aware that you then have to configure the WLAN and the station settings (station_id) yourself, please see the instructions: ",
             stationConfig: "Configuration of the stations",
             stationConfigText: "Here parameters can be set via the station, such as the W-Lan settings or the rotation of the camera. All parameters can also be set later on the station, but here a user-friendly input is enabled. The W-Lan data is sent to the server in double encrypted form and is only read out there.",
             rotation: "Here you can set the rotation for the camera. If the cable looks upwards enter 180, if to the right 90",
@@ -153,7 +157,8 @@ const language = {
             more:
                 "Erfahre mehr über unser Projekt",
             overview: "Übersichtskarte",
-            validation: "Validierung"
+            validation: "Validierung",
+            statistics: "Statistiken"
         },
 
         map: {
@@ -161,7 +166,10 @@ const language = {
             inspect: "Beobachte Station",
             lastEnvironment: "Letzte Umweltmessung: ",
             lastMovement: "Letzter Vogel: ",
-            statistics: "Zeige Statistiken"
+            statistics: "Zeige Statistiken",
+            lastFeedStatus: "Letzer Futterstand: ",
+            level: "Füllstand: "
+
         },
         legend: {
             head: "Legende",
@@ -193,6 +201,8 @@ const language = {
             environment: "Umweltsensoren",
             temperature: "Temperatur in °C: ",
             humidity: "Luftfeuchte in %: ",
+            pressure: "Luftdruck in hPa: ",
+            illuminance: "Helligkeit in Lux: ",
             birdsCount: "Gezählte Vögel:",
             yesterday: "Gestern",
             today: "Heute",
@@ -230,7 +240,7 @@ const language = {
             ssid: "W-Lan SSID eingeben, um WLAN automatisch zu konfigurieren",
             pwd: "W-Lan Password eingeben, um WLAN automatisch zu konfigurieren",
             createImage: "Erstelle ein Image, welches direkt auf der SSD-Karte installiert werden kann",
-            creatingImage: "Das Image wird gerade erstellt. Falls dies länger als 15 min dauert laden sie Sich bitte das Image hier herunter und konfigurieren Sie WLAN und Station_ID selbst: ",
+            creatingImage: "Das Image wird gerade erstellt. Wenn dies länger als 5 Minuten dauert, versuchen Sie bitte mehrmals, die Erstellung des Images neu zu starten. Wenn nach 15 Minuten kein Image erstellt werden konnte, laden Sie bitte das Image unter folgendem Link herunter. Aber achten Sie darauf, dass Sie dann das WLAN und die Stationeinstellungen (station_id) selbst konfigurieren müssen, bitte schauen Sie dazu in die Anleitung: ",
             stationConfig: "Konfiguration der Station",
             stationConfigText: "Hier können Prameter über die Station gesetzt werden, wie z.B. die W-Lan Einstellungen oder die Rotation der Kamera. Alle Parameter können auch später auf der Station gesetzt werden, hier wird aber eine nutzerfreudliche Eingabe ermöglicht. Die W-Lan Daten werden zweifach verschlüsselt an den Server gesendet und erst dort ausgelesen.",
             rotation: "Hier kann die Rotation für die Kamera gesetzt werden. Wenn das Kabel nach oben schaut 180 eintragen, wenn nach rechts 90",

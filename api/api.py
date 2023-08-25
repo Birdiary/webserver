@@ -208,18 +208,22 @@ def modify_image(id, credentials, rotation, time, i):
     try:
         SSID = decrypt(credentials["SSID"], SECURE_KEY, SECURE_IV)
         password= decrypt(credentials["password"], SECURE_KEY, SECURE_IV)
-        print(password, flush=True)
+        SSID = remove_control_characters(SSID.decode().strip())
+        password = remove_control_characters(password.decode().strip())
+        if SSID == "":
+            SSID= "YourSSID"
+        if password == "":
+            pwd = "YourPassword"
         config_lines = [
         '\n',
         'network={',
-        '\tssid="{}"'.format(remove_control_characters(SSID.decode().strip())),
-        '\tpsk="{}"'.format(remove_control_characters(password.decode().strip())),
+        '\tssid="{}"'.format(SSID),
+        '\tpsk="{}"'.format(pwd),
         '\tkey_mgmt=WPA-PSK',
         '}'
         ]
 
         config = '\n'.join(config_lines)
-        print(config, flush=True)
         # Define the path to the original Raspberry Pi OS image
         original_image_path = './uploads/pi.img'
 
@@ -283,7 +287,7 @@ def modify_image(id, credentials, rotation, time, i):
         subprocess.run([ 'losetup -d /dev/loop3'], check=True, stderr=subprocess.STDOUT, shell=True)
         command =  'cp '+  copy_image_path + " "+ finished_image_path
         subprocess.run(command, stderr=subprocess.STDOUT, check=True, shell=True)
-        job = q.enqueue_in(timedelta(minutes=30), deleteImage, id)
+        job = q.enqueue_in(timedelta(minutes=60), deleteImage, id)
         return
     except subprocess.CalledProcessError as e:
         job = q2.enqueue(modify_image, id, credentials, rotation,time, i+1)
@@ -801,7 +805,52 @@ def saveEnvironment(body, env_id, station_id):
         print('Station has no sensebox_id')
 
     return(env_id)
- 
+
+@enqueueable
+def saveFeed(body, feed_id, station_id):
+    #The purpose of the function is to save environment data for a particular station. The function takes in three arguments: body, env_id, and station_id.
+    #The body argument is a dictionary containing environment data that needs to be saved. The env_id argument is a unique identifier for the environment data. The station_id argument is the unique identifier for the station where the environment data is being saved.
+    
+    feedClass = dict()
+    for name,value in body.items():
+        feedClass[name]= value
+    
+    feedClass["feed_id"] = feed_id
+
+    feedList = db["feed_" + station_id].find()
+    try:
+        month = feedClass["date"]
+        month = month[0:7]
+    except:
+        month = date.today()
+        month = month.strftime("%Y-%m")
+
+    listID =""
+    for listElement in feedList:
+        if listElement["month"] == month:
+            listID = listElement["list_id"]
+            selectedList = listElement
+            break
+
+    if listID == "":
+        feedMonth = dict()
+        feedMonth["station_id"] = station_id
+        feedMonth["month"] = month
+        feedMonth["list_id"] = str(uuid.uuid4())
+        feedMonth["measurements"] = []
+        feedMonth["measurements"].insert(0,feedClass)
+        #print(environmentMonth, flush=True)
+        db["feed_" + station_id].insert_one(feedMonth)
+    else: 
+        measurements = selectedList["measurements"]
+        measurements = insert(measurements ,feedClass)
+        #print(measurements, flush=True)
+        db["feed_"+ station_id].update_one({"list_id":listID}, {'$set': {"measurements":measurements}})
+    db["stations"].update_one({"station_id":station_id}, {'$set': {"lastFeedStatus":feedClass}})
+    # Send Temperature and Humidity to openSenseMap if sensebox id is defined for the station
+    # print(station.sensebox_id, flush=True)
+    return(feed_id)
+
 @enqueueable
 def save_Environment_old(environments, station_id):
     environmentMonths = []
@@ -1377,7 +1426,7 @@ def get_image(id):
     return send_file(path, as_attachment=True, download_name='birdiary-pi.img')##
 
 @app.route('/api/image', methods=['GET'])
-def get_image(id):
+def get_dafault_image():
     path = './uploads/pi.img'
     if not os.path.exists(path):
         print("Path of the file is Invalid")
@@ -1392,6 +1441,27 @@ def get_imageStatus(id):
         return "Image not found", 404
     return "Image ready", 200
 
+
+@app.route('/api/feed/<station_id>', methods=['POST'])
+def add_feed(station_id: str):
+    content_type = request.headers.get('Content-Type')
+
+    body = request.get_json()
+
+    feed_id = str(uuid.uuid4())
+    job = q.enqueue(saveFeed, body,feed_id,station_id)
+
+    return jsonify(id = feed_id), 200
+
+@app.route('/api/feed/<station_id>', methods=['GET'])
+def get_feed(station_id: str):
+    feed= db["feed_"+station_id].find({}, {'_id' : False}).sort("month",-1)
+    feed = list(feed)
+    print(feed, flush=True)
+    feeds = []
+    for months in feed:
+            feeds= feeds + months["measurements"]
+    return jsonify(feeds), 200
 
 if __name__==('__main__'):
     app.run(host="0.0.0.0", debug=False)

@@ -4,8 +4,8 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { useNavigate, Link } from 'react-router-dom'; 
 import language from '../languages/languages';
 import "./Navbar.css";
-import { ReactComponent as SnowEnable} from '../helpers/icons/snow-enable.svg'
-import { ReactComponent as SnowDisable } from '../helpers/icons/snow-disable.svg'
+//import { ReactComponent as SnowEnable} from '../helpers/icons/snow-enable.svg'
+//import { ReactComponent as SnowDisable } from '../helpers/icons/snow-disable.svg'
 
 function Header(props){
   const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -116,7 +116,9 @@ function Header(props){
           <Button color="inherit" onClick={() => props.changeLang("de")} className={props.language == "de" ? 'bold' : null}>Deutsch</Button>
           <Button rel="noopener" color="inherit" component={Link} to="/view/createstation">
             {language[props.language]["navbar"]["create"]}
-          </Button>
+          <Button rel="noopener" color="inherit" component={Link} to="/view/statistics">
+            {language[props.language]["navbar"]["statistics"]}
+          </Button></Button>
           <Button rel="noopener" color="inherit" component={Link} to="/view/validation">
             {language[props.language]["navbar"]["validation"]}
           </Button>

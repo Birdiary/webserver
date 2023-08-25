@@ -94,6 +94,7 @@ class OwnMap extends React.Component {
           {this.state.stations.map((marker, i) => {
             let environment = false
             let movement = false
+            let feed = false
             if(marker.lastEnvironment){
               environment = true
             }
@@ -109,6 +110,9 @@ class OwnMap extends React.Component {
                   birdName= detections[0].latinName
                 }
               }
+            }
+            if(marker.lastFeedStatus){
+              feed=true;
             }
             let now = new Date(Date.now())
             let icon = null
@@ -137,7 +141,9 @@ class OwnMap extends React.Component {
 
                 {environment? <span> {language[this.props.language]["map"]["lastEnvironment"]}{marker.lastEnvironment.date.split(".")[0]} <br></br>
                 {language[this.props.language]["stations"]["temperature"]}{marker.lastEnvironment.temperature} <br/>
-                {language[this.props.language]["stations"]["humidity"]}{marker.lastEnvironment.humidity}
+                {language[this.props.language]["stations"]["humidity"]}{marker.lastEnvironment.humidity} 
+                {marker.lastEnvironment.airpressure? <span><br/>{language[this.props.language]["stations"]["pressure"]}{ marker.lastEnvironment.airpressure} </span>: ""}
+                {marker.lastEnvironment.illuminance? <span> <br/>{language[this.props.language]["stations"]["illuminance"]}{ marker.lastEnvironment.illuminance} </span>: ""}
                 </span>
                 :""} 
                 <Divider />
@@ -147,6 +153,13 @@ class OwnMap extends React.Component {
                 {language[this.props.language]["stations"]["species"]}{birdName != "" ? birdName : language[this.props.language]["table"]["noBird"]}
                 </span>
                 :""}
+                {feed?
+                <div>
+                <Divider/>
+                <span> {language[this.props.language]["map"]["lastFeedStatus"]}{marker.lastFeedStatus.date.split(".")[0]} <br></br>
+                {language[this.props.language]["map"]["level"]}{marker.lastFeedStatus.silolevel+ " %"} <br/> </span>
+                </div> : ""
+                }
                 <br />
                 <div style={{textAlign: "center"}}>
                 <Button component={Link} to={"/view/station/" + marker.station_id}>{language[this.props.language]["map"]["inspect"]}</Button>

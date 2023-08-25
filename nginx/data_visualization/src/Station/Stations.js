@@ -37,6 +37,8 @@ function StationView(props) {
   const [data, setData] = useState("");
   const [temperature, setTemperature] = useState(0);
   const [humidity, setHumidity] = useState(0);
+  const [pressure, setPressure] = useState(false);
+  const [illuminance, setIlluminance] = useState(false);
   const [value, setValue] = useState(0);
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false)
@@ -123,11 +125,27 @@ function StationView(props) {
       ]
     }]
 
+    var pressSeries = [{
+      label: "airpressure",
+      data: [
+      ]
+    }]
+
+    var illumanceSeries = [{
+      label: "illuminance",
+      data: [
+      ]
+    }]
+
     if (environment.length === 0) {
       tempSeries.data = false
       humSeries.data = false
+      pressSeries.data = false
+      illumanceSeries.data = false
       setTemperature(tempSeries)
       setHumidity(humSeries)
+      setPressure(pressSeries)
+      setIlluminance(illumanceSeries)
 
     }
 
@@ -141,6 +159,12 @@ function StationView(props) {
         date = new Date(dateArray[0].replace(/\s/, 'T'))
         var hum = env.humidity
         var temp = env.temperature
+        if(env.airpressure){
+          pressSeries[0].data.push({ x: date, y: env.airpressure })
+        }
+        if(env.illuminance){
+          illumanceSeries[0].data.push({ x: date, y: env.illuminance })
+        }
         try {
           var lastDate = tempSeries[0].data[tempSeries[0].data.length - 1].x
           var diffTime = Math.abs(date - lastDate);
@@ -163,6 +187,16 @@ function StationView(props) {
 
       setTemperature(tempSeries)
       setHumidity(humSeries)
+      if(pressSeries[0].data.length == 0){
+        pressSeries[0].data = false
+      }
+      if(illumanceSeries[0].data.length == 0){
+        illumanceSeries[0].data = false
+      }
+      setPressure(pressSeries)
+      setIlluminance(illumanceSeries)
+
+
     }
 
 
@@ -361,6 +395,10 @@ function StationView(props) {
             </TabContext>
           </div>
           : <p>{language[props.language]["stations"]["noData1"]}</p>}
+          {
+            data.lastFeedStatus? <span> {language[props.language]["map"]["lastFeedStatus"]}
+            {data.lastFeedStatus.silolevel+ " %" + " am " + data.lastFeedStatus.date.split(".")[0] }<br/> </span>: ""
+          }
         {temperature[0] ?
           (temperature[0].data.length > 0 ?
             <div>     <h3 style={{ "marginBlockEnd": "0px" }}>{language[props.language]["stations"]["environment"]}
@@ -374,6 +412,14 @@ function StationView(props) {
                 <Grid item lg={6} md={12}>
                   <h4>{language[props.language]["stations"]["humidity"]}</h4><TimelineChart series={humidity} />
                 </Grid>
+                {pressure && pressure[0].data ?
+                <Grid item lg={6} md={12}>
+                  <h4>{language[props.language]["stations"]["pressure"]}</h4><TimelineChart series={pressure} />
+                </Grid>: ""}
+                {illuminance && illuminance[0].data ? 
+                <Grid item lg={6} md={12}>
+                  <h4>{language[props.language]["stations"]["illuminance"]}</h4><TimelineChart series={illuminance} />
+                </Grid> : ""}
               </Grid> </div> : <p>{language[props.language]["stations"]["noData2"]}</p>) :
           <div> <Grid container spacing={2}>
             <Grid item lg={6}>
