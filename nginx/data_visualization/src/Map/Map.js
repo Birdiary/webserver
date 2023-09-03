@@ -139,12 +139,15 @@ class OwnMap extends React.Component {
                 </div>
                 <br />
 
-                {environment? <span> {language[this.props.language]["map"]["lastEnvironment"]}{marker.lastEnvironment.date.split(".")[0]} <br></br>
+                {environment? 
+                <div> {marker.lastFeedStatus.date ? <span> {language[this.props.language]["map"]["lastEnvironment"]}{marker.lastEnvironment.date.split(".")[0]} <br></br> </span> : ""}
+                <span>
                 {language[this.props.language]["stations"]["temperature"]}{marker.lastEnvironment.temperature} <br/>
                 {language[this.props.language]["stations"]["humidity"]}{marker.lastEnvironment.humidity} 
                 {marker.lastEnvironment.airpressure? <span><br/>{language[this.props.language]["stations"]["pressure"]}{ marker.lastEnvironment.airpressure} </span>: ""}
                 {marker.lastEnvironment.illuminance? <span> <br/>{language[this.props.language]["stations"]["illuminance"]}{ marker.lastEnvironment.illuminance} </span>: ""}
                 </span>
+                </div>
                 :""} 
                 <Divider />
                 {movement? 
@@ -156,8 +159,8 @@ class OwnMap extends React.Component {
                 {feed?
                 <div>
                 <Divider/>
-                <span> {language[this.props.language]["map"]["lastFeedStatus"]}{marker.lastFeedStatus.date.split(".")[0]} <br></br>
-                {language[this.props.language]["map"]["level"]}{marker.lastFeedStatus.silolevel+ " %"} <br/> </span>
+                {marker.lastFeedStatus.date ? <span> {language[this.props.language]["map"]["lastFeedStatus"]}{marker.lastFeedStatus.date.split(".")[0]} <br></br> </span>: ""}
+                {<span> {language[this.props.language]["map"]["level"]}{marker.lastFeedStatus.silolevel+ " %"} <br/> </span>}
                 </div> : ""
                 }
                 <br />

@@ -160,10 +160,14 @@ configure_uploads(app, (images, audios, videos))
 
 
 def insert(list, n):
+
+    
  
     index = len(list)
     # Searching for the position
     for i in range(len(list)):
+      if date not in list[i]:
+        index= i -1
       if list[i]['date'] < n['date']:
         index = i
         break
@@ -751,6 +755,8 @@ def saveEnvironment(body, env_id, station_id):
         environmentClass[name]= value
     
     environmentClass["env_id"] = env_id
+    if "date" not in environmentClass:
+        environmentClass["date"] = str(datetime.now())
 
     environmentList = db["environments_" + station_id].find()
     try:
@@ -818,6 +824,10 @@ def saveFeed(body, feed_id, station_id):
     feedClass["feed_id"] = feed_id
 
     feedList = db["feed_" + station_id].find()
+
+    if "date" not in feedClass:
+        feedClass["date"] = str(datetime.now())
+
     try:
         month = feedClass["date"]
         month = month[0:7]
