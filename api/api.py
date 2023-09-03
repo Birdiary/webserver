@@ -167,7 +167,8 @@ def insert(list, n):
     # Searching for the position
     for i in range(len(list)):
       if date not in list[i]:
-        index= i -1
+        list = [n]
+        return list
       if list[i]['date'] < n['date']:
         index = i
         break

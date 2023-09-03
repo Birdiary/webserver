@@ -140,7 +140,7 @@ class OwnMap extends React.Component {
                 <br />
 
                 {environment? 
-                <div> {marker.lastFeedStatus.date ? <span> {language[this.props.language]["map"]["lastEnvironment"]}{marker.lastEnvironment.date.split(".")[0]} <br></br> </span> : ""}
+                <div> {marker.lastEnvironment.date ? <span> {language[this.props.language]["map"]["lastEnvironment"]}{marker.lastEnvironment.date.split(".")[0]} <br></br> </span> : ""}
                 <span>
                 {language[this.props.language]["stations"]["temperature"]}{marker.lastEnvironment.temperature} <br/>
                 {language[this.props.language]["stations"]["humidity"]}{marker.lastEnvironment.humidity} 
