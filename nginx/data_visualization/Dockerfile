@@ -4,6 +4,8 @@ WORKDIR /usr/src/app
 
 # add `/usr/src/app/node_modules/.bin` to $PATH
 ENV PATH /usr/src/app/node_modules/.bin:$PATH
+ENV REACT_APP_SECRET_KEY=secret-key #same as in server.env
+ENV REACT_APP_SECRET_IV=secret-iv #same as in server.env
 
 RUN npm install react-scripts@3.4.3 -g --silent
 
