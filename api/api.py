@@ -49,17 +49,17 @@ def traces_sampler(sampling_context):
         # Default sample rate
         return 0.5
 
-sentry_sdk.init(
-    dsn="https://f7dc32893aa54ef5b2b3df3a3067c5cb@o4504179650723840.ingest.sentry.io/4504179659898880",
-    integrations=[
-        FlaskIntegration(),
-    ],
+#sentry_sdk.init(
+#    dsn="https://f7dc32893aa54ef5b2b3df3a3067c5cb@o4504179650723840.ingest.sentry.io/4504179659898880",
+#    integrations=[
+#        FlaskIntegration(),
+#    ],
 
     # Set traces_sample_rate to 1.0 to capture 100%
     # of transactions for performance monitoring.
     # We recommend adjusting this value in production.
-    traces_sampler=traces_sampler
-)
+#    traces_sampler=traces_sampler
+#)
 
 def insertMax(list, n, key):
  
@@ -132,8 +132,8 @@ app.config['MONGODB_SETTINGS'] = {
     'port': 27017
 }
 
-SECURE_KEY = os.getenv('AES_KEY', "ABC")
-SECURE_IV = os.getenv('AES_IV', 'ABC')
+#SECURE_KEY = os.getenv('AES_KEY', "ABC")
+#SECURE_IV = os.getenv('AES_IV', 'ABC')
 from Crypto.Cipher import AES
 import base64
 
@@ -211,10 +211,12 @@ def removeMovementFiles(movement):
 @enqueueable
 def modify_image(id, credentials, rotation, time, i):
     try:
-        SSID = decrypt(credentials["SSID"], SECURE_KEY, SECURE_IV)
-        password= decrypt(credentials["password"], SECURE_KEY, SECURE_IV)
-        SSID = remove_control_characters(SSID.decode().strip())
-        password = remove_control_characters(password.decode().strip())
+        #SSID = decrypt(credentials["SSID"], SECURE_KEY, SECURE_IV)
+        #password= decrypt(credentials["password"], SECURE_KEY, SECURE_IV)
+        #SSID = remove_control_characters(SSID.decode().strip())
+        #password = remove_control_characters(password.decode().strip())
+        SSID = credentials["SSID"]
+        SSID = credentials["password"]
         if SSID == "":
             SSID= "YourSSID"
         if password == "":
@@ -735,8 +737,9 @@ def videoAnalysis(filename, movement_id, station_id, movement):
         else:
             count[today] = [{"latinName": latinName, "germanName" : germanName, "amount": 1}]
         try:
-                if station["mail"]["notifcation"]:
-                    send_email(station["mail"]["adresses"][0], filename, str(host)+ "/api/uploads/videos/" + filename, birds, pwd, str(host) +"/view/station/" +station_id )
+            if station["mail"]["notifcation"]:
+                    print(send_email)
+                    #send_email(station["mail"]["adresses"][0], filename, str(host)+ "/api/uploads/videos/" + filename, birds, pwd, str(host) +"/view/station/" +station_id )
         except:
                 print("mail to " + station["mail"]["adresses"] + " failed") 
 
@@ -792,24 +795,24 @@ def saveEnvironment(body, env_id, station_id):
     # Send Temperature and Humidity to openSenseMap if sensebox id is defined for the station
     # print(station.sensebox_id, flush=True)
     station = stations.find_one({"station_id":station_id})
-    try:
-        if station.sensebox_id not in ['', None]:
-            headersSendSensorValue = {'content-type': 'application/json'}
-            sensemapURL = 'https://api.opensensemap.org/boxes/' + station.sensebox_id
-            sensors = requests.get(sensemapURL).json()['sensors'] # get sensors of the sensebox
-            urlSensorValueSensebox = sensemapURL + '/data'
-            dataValue = []
-            if 'temperature' in body:
-                if body['temperature'] != -50.0:
-                    id = [m for m in sensors if m['title'] in ['Temperature']][0]['_id']
-                    dataValue.append({'sensor': id, 'value': body['temperature']})
-            if 'humidity' in body:
-                if body['humidity'] != 1.0:
-                    id = [m for m in sensors if m['title'] in ['Humidity']][0]['_id']
-                    dataValue.append({'sensor': id, 'value': body['humidity']})
-            requestSensorValueSensebox = requests.post(urlSensorValueSensebox, json=dataValue, headers=headersSendSensorValue)
-    except:
-        print('Station has no sensebox_id')
+    #try:
+        #if station.sensebox_id not in ['', None]:
+        #    headersSendSensorValue = {'content-type': 'application/json'}
+        #    sensemapURL = 'https://api.opensensemap.org/boxes/' + station.sensebox_id
+        #    sensors = requests.get(sensemapURL).json()['sensors'] # get sensors of the sensebox
+        #    urlSensorValueSensebox = sensemapURL + '/data'
+        #    dataValue = []
+        #    if 'temperature' in body:
+        #        if body['temperature'] != -50.0:
+        #            id = [m for m in sensors if m['title'] in ['Temperature']][0]['_id']
+        #            dataValue.append({'sensor': id, 'value': body['temperature']})
+        #    if 'humidity' in body:
+        #        if body['humidity'] != 1.0:
+        #            id = [m for m in sensors if m['title'] in ['Humidity']][0]['_id']
+        #            dataValue.append({'sensor': id, 'value': body['humidity']})
+        #    requestSensorValueSensebox = requests.post(urlSensorValueSensebox, json=dataValue, headers=headersSendSensorValue)
+    #except:
+    #    print('Station has no sensebox_id')
 
     return(env_id)
 

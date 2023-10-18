@@ -177,10 +177,10 @@ class CreateStation extends React.Component {
     const self = this;
     self.setState({ open: true })
 
-    var key = CryptoJS.enc.Hex.parse(this.secretKey)
-    var iv = CryptoJS.enc.Hex.parse(this.secretIV);
-    const SSID = CryptoJS.AES.encrypt(this.state.SSID, key, {iv:iv});
-    const password = CryptoJS.AES.encrypt(this.state.pwd, key, {iv:iv});
+    //var key = CryptoJS.enc.Hex.parse(this.secretKey)
+    //var iv = CryptoJS.enc.Hex.parse(this.secretIV);
+    //const SSID = CryptoJS.AES.encrypt(this.state.SSID, key, {iv:iv});
+    //const password = CryptoJS.AES.encrypt(this.state.pwd, key, {iv:iv});
     var payload = {
       "name": this.state.name,
       "location": this.state.position,
@@ -190,8 +190,8 @@ class CreateStation extends React.Component {
       },
       // "createSensebox": this.state.senseboxChecked,
       "wlanCredentials": {
-        "SSID": SSID.toString(),
-        "password": password.toString()
+        "SSID": this.state.ssid,
+        "password": this.state.password
       },
       "rotation": this.state.rotation,
       "time": this.state.time
