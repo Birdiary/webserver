@@ -67,3 +67,4 @@ rq
 sentry-sdk[flask]
 protobuf==3.19.4
 pycrypto
+Werkzeug=2.2.2
