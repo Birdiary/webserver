@@ -277,7 +277,7 @@ function StationView(props) {
       valBird = { "latinName": bird, "germanName": "" }
     }
     validation.validation = valBird
-    requests.sendValidation(data.station_id, data["measurements"]["movements"][value]["mov_id"], validation)
+    requests.sendValidation(data["measurements"]["movements"][value]["station_id"], data["measurements"]["movements"][value]["mov_id"], validation)
     valBird.amount=2
     let  newData = data
     let latinName = valBird["latinName"]
@@ -291,7 +291,7 @@ function StationView(props) {
 
   const sendValidationNone = () => {
     let validation = { validation: { "latinName": "None", "germanName": "" } }
-    requests.sendValidation(data.station_id, data["measurements"]["movements"][value]["mov_id"], validation)
+    requests.sendValidation(data["measurements"]["movements"][value]["station_id"], data["measurements"]["movements"][value]["mov_id"], validation)
     handleClick();
 
   }
@@ -332,7 +332,7 @@ function StationView(props) {
       <Grid item lg={3}>
       </Grid>
       <Grid item lg={2}>
-      <Button variant="contained" component={Link} to={"/view/statistics/" + id}>{language[props.language]["statistics"]["show"]}</Button>
+      <Button variant="contained" component={Link} to={data.type == "exhibit" ? "/view/statistics" : "/view/statistics/" + id}>{language[props.language]["statistics"]["show"]}</Button>
       </Grid>
 
     </Grid>
@@ -388,6 +388,8 @@ function StationView(props) {
                       <br></br>
                       <Button variant="contained" onClick={sendValidation} style={{ marginRight: "5px", marginBottom: "5px" }}>{language[props.language]["validation"]["send"]}</Button>
                       <Button variant="contained" onClick={sendValidationNone} style={{ marginRight: "5px", marginBottom: "5px" }}>{language[props.language]["validation"]["noBird"]}</Button>
+                      {data.type == "exhibit" && movement.station_id != id ? <div> <h4>{language[props.language]["stations"]["exhibitInfo"]} </h4> <span> {language[props.language]["stations"]["exhibitInfo2"]} <a href={'/view/station/' +movement.station_id} >{movement.station_name}</a>  {language[props.language]["stations"]["exhibitInfo3"] } </span> </div> :""
+                       }
                     </Grid>
                   </Grid>
                   </GestureDetector>

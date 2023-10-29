@@ -55,8 +55,10 @@ const language = {
             search: "Species to search for",
             search2: "Search for birds",
             day: "Day to search for",
-            notFound: "The station was not found, you will be redirected to the home screen in 5 seconds:"
-        },
+            notFound: "The station was not found, you will be redirected to the home screen in 5 seconds:",
+            exhibitInfo: "Noticd: ",
+            exhibitInfo2: "This movement was originally recorded by the station ",
+            exhibitInfo3: " and serves here as an example recording."       },
         table: {
             noBird: "No bird was detected on the video",
             species: "Species:",
@@ -93,7 +95,13 @@ const language = {
             rotation: "Here you can set the rotation for the camera. If the cable looks upwards enter 180, if to the right 90",
             time: "Time interval in minutes by which environmental data are to be measured",
             notifications: "Do you want to be notified by mail for each bird",
-            submit: "Create Station"
+            submit: "Create Station",
+            numberVisualExamples: "Number of examples to be displayed on the ward and recorded by other stations.",
+            type: "Type of the Station",
+            typeHelper: 'There is a choice of 3 possible types. The normal station is the "Observer" type, which permanently records data. The "Test" type means that the station is not shown on the map and detections are automatically deleted. This is suitable for development purposes. The type "Exhibit" also automatically deletes the recorded videos. However, this is displayed on the map. In addition, examples of other stations can be displayed here.',
+            deleteMinutes: "Time interval in minutes after which the recorded videos are deleted.",
+            detectionThreshold: "Necessary probability from which the detections are stored by the AI.",
+            detectionThresholdHelper: "Example: At 0.3, a detection is saved when the model claims with the probability of 30% that the detected bird on the video is a blue tit."        
         },
         validation: {
             send: "Send Validation",
@@ -209,7 +217,10 @@ const language = {
             search: "Zu suchende Art",
             search2: "Durchsuche Vögel",
             day: "Zu suchender Tag",
-            notFound: "Die Station wurde nicht gefunden, du wirst in 5 Sekunden auf die Home Seite geleitet"
+            notFound: "Die Station wurde nicht gefunden, du wirst in 5 Sekunden auf die Home Seite geleitet",
+            exhibitInfo: "Hinweis: ",
+            exhibitInfo2: "Dieses Movement würde ursprünglich von der Station ",
+            exhibitInfo3: " aufgenommen und dient hier als Beispiel-Aufnahme."
         },
         table: {
             noBird: "Es wurde kein Vogel auf dem Video erkannt",
@@ -246,7 +257,13 @@ const language = {
             rotation: "Hier kann die Rotation für die Kamera gesetzt werden. Wenn das Kabel nach oben schaut 180 eintragen, wenn nach rechts 90",
             time: "Zeitinterval in Minuten, indem Umweltdaten gemessen werden sollen",
             notifications: "Möchtest du bei jedem Vogel per Mail benachrichtigt werdern",
-            submit: "Erstelle Station"
+            submit: "Erstelle Station",
+            numberVisualExamples: "Anzahl an Beispielen, die auf der Station angezeigt werden sollen und von anderen Stationen aufgenommen wurden.",
+            type: "Art der Station",
+            typeHelper: 'Es gibt die Auswahl von 3 möglichen Arten. Die normale Station ist die Art "Observer" die dauerhaft Daten aufnimmt. Die Art "Test" bedeuted, dass die Station nicht auf der Karte angezeigt wird und Erkennungen automatisch gelöscht werden. Diese  ist für Entwicklungszwecke geeignet. Auch bei dem Typen "Exhibit" werdend die aufgenmonnen Videos automatisch gelöscht. Diese wird jedoch auf der Karte angezeigt. Zusätzlich können hier Beispiele von anderen Stationen angezeigt werden.',
+            deleteMinutes: "Zeitintervall in Minuten, nach dem die aufgenommen Videos wieder gelsöcht werden",
+            detectionThreshold: "Notwendige Wahrscheinlichkeit, ab dem die Erkennungen von der KI gespeichert werden.",
+            detectionThresholdHelper: "Bsp: Bei 0,3 wird ein Erkennung gespeichert, wenn das Modell behauptet mit der Wahrscheinlichkeit von 30% ist der erkannte Vogel auf dem Video eine Blaumeise."
         },
         validation: {
             send: "Sende Validierung",
