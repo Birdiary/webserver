@@ -56,7 +56,7 @@ const language = {
             search2: "Search for birds",
             day: "Day to search for",
             notFound: "The station was not found, you will be redirected to the home screen in 5 seconds:",
-            exhibitInfo: "Noticd: ",
+            exhibitInfo: "Notice: ",
             exhibitInfo2: "This movement was originally recorded by the station ",
             exhibitInfo3: " and serves here as an example recording."       },
         table: {

@@ -12,7 +12,7 @@ import {
   matchRoutes,
 } from "react-router-dom";
 
-Sentry.init({
+/**Sentry.init({
   dsn: "https://15b5f4a11ed143b89a1dba7af4ee76e7@o4504179650723840.ingest.sentry.io/4504179659898881",
   integrations: [
     new BrowserTracing({
@@ -28,7 +28,9 @@ Sentry.init({
   // of transactions for performance monitoring.
   // We recommend adjusting this value in production
   tracesSampleRate: 0.7,
-});
+});*/
+
+
 
 function FallbackComponent() {
   return <div>An error has occurred! Please reload the page</div>;
