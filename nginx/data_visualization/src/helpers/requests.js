@@ -69,7 +69,10 @@ function getEnvironment(station_id){
 function getImage(station_id){
     var _url = _env.api + "/imageStatus/" + station_id
     return axios.get(_url)
-
+}
+function createImage(station_id, payload){
+    var _url = _env.api + "/image/" + station_id
+    return axios.post(_url, payload)
 }
 
 function getCount(){
@@ -98,4 +101,5 @@ module.exports = {
     getStatisitcs: getStatisitcs,
     getImage: getImage,
     returnImageUrl: returnImageUrl,
+    createImage: createImage,
 };

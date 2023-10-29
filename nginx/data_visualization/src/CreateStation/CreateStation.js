@@ -16,8 +16,12 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormControl from '@mui/material/FormControl';
+import FormLabel from '@mui/material/FormLabel';
 import './CreateStation.css';
 import { Link } from 'react-router-dom';
 import language from '../languages/languages';
@@ -80,12 +84,17 @@ class CreateStation extends React.Component {
       senseboxCreated: false,
       SSID: "",
       pwd: "",
+      type: "observer",
       name: "",
       downloadReady: false,
       DialogText: language[props.language]["createStation"]["creating"],
-      rotation: "",
-      time: "",
-      id: ""
+      rotation: 90,
+      time: 5,
+      id: "",
+      numberVisualExamples: 6,
+      detectionThreshold: 0.3,
+      deleteMinutes: 20,
+      creatingImage : false
     };
     this.handler = this.handler.bind(this)
     this.secretKey = process.env.REACT_APP_SECRET_KEY;
@@ -130,9 +139,29 @@ class CreateStation extends React.Component {
     this.setState({ time: value });
   };
 
+  handleTypeChange = (event, value) => {
+    var value = event.target.value
+    this.setState({ type: value });
+  };
+
   handlePwdChange = (event, value) => {
     var value = event.target.value
     this.setState({ pwd: value });
+  };
+
+  handledeleteMinutesChange = (event, value) => {
+    var value = event.target.value
+    this.setState({ deleteMinutes: value });
+  };
+
+  handledetectionThresholdChange = (event, value) => {
+    var value = event.target.value
+    this.setState({ detectionThreshold: value });
+  };
+
+  handlenumberVisualExamplesChange = (event, value) => {
+    var value = event.target.value
+    this.setState({ numberVisualExamples: value });
   };
 
   handleChecked = (event) => {
@@ -168,6 +197,31 @@ class CreateStation extends React.Component {
     });
   }
 
+  startImageAndCheckImage= () =>{
+    if(!this.state.creatingImage){
+      this.startImageCreation()
+      this.setState({creatingImage: true})
+    }
+    this.checkDownload()
+  }
+
+  startImageCreation = () =>{
+    //var key = CryptoJS.enc.Hex.parse(this.secretKey)
+    //var iv = CryptoJS.enc.Hex.parse(this.secretIV);
+    //const SSID = CryptoJS.AES.encrypt(this.state.SSID, key, {iv:iv});
+    //const password = CryptoJS.AES.encrypt(this.state.pwd, key, {iv:iv});
+    const payload = {
+    "wlanCredentials": {
+      "SSID": this.state.SSID,
+      "password": this.state.pwd
+    },
+    "rotation": this.state.rotation,
+    "time": this.state.time
+  }
+  console.log(payload)
+  requests.createImage(this.state.id, payload)
+}
+
   startDownload = () => {
     const id = this.state.id;
     window.open(requests.returnImageUrl(id), "_blank")
@@ -177,24 +231,22 @@ class CreateStation extends React.Component {
     const self = this;
     self.setState({ open: true })
 
-    //var key = CryptoJS.enc.Hex.parse(this.secretKey)
-    //var iv = CryptoJS.enc.Hex.parse(this.secretIV);
-    //const SSID = CryptoJS.AES.encrypt(this.state.SSID, key, {iv:iv});
-    //const password = CryptoJS.AES.encrypt(this.state.pwd, key, {iv:iv});
     var payload = {
       "name": this.state.name,
       "location": this.state.position,
+      "type": this.state.type,
       "mail": {
         "adresses": [this.state.mail],
         "notifications": this.state.mailChecked
       },
       // "createSensebox": this.state.senseboxChecked,
-      "wlanCredentials": {
-        "SSID": this.state.ssid,
-        "password": this.state.password
-      },
-      "rotation": this.state.rotation,
-      "time": this.state.time
+    }
+
+    if(this.state.type != "observer"){
+      payload.advancedSettings ={deleteMinutes: parseInt(this.state.deleteMinutes), detectionThreshold: parseFloat(this.state.detectionThreshold)}
+      if(this.state.type == "exhibit"){
+        payload.advancedSettings.numberVisualExamples = parseInt(this.state.numberVisualExamples)
+      }
     }
 
     requests.sendStation(payload)
@@ -268,8 +320,27 @@ class CreateStation extends React.Component {
 
 
         </div>
+
         <br />
         <br />
+        <FormControl style={{ width: "50vw" }}>
+      <FormLabel id="demo-row-radio-buttons-group-label">{language[this.props.language]["createStation"]["type"]}</FormLabel>
+      <span style={{textAlign: 'justify'}}>{language[this.props.language]["createStation"]["typeHelper"]}</span> <br/>
+      <RadioGroup
+      style={{alignSelf: "center"}} 
+        row
+        aria-labelledby="demo-row-radio-buttons-group-label"
+        name="row-radio-buttons-group"
+        value={this.state.type}
+      onChange={this.handleTypeChange}
+      >
+        <FormControlLabel value="observer" control={<Radio />} label="Observer" />
+        <FormControlLabel value="test" control={<Radio />} label="Test" />
+        <FormControlLabel value="exhibit" control={<Radio />} label="Exhibit" />
+      </RadioGroup>
+    </FormControl>
+    <br/>
+    <br/>
         <FormControlLabel style={{ "max-width": "45vw", textAlign: "left" }} control={<Checkbox checked={this.state.checked} onChange={this.handleChecked} />} label={language[this.props.language]["createStation"]["dataPrivacyText"]} />
         <br></br>
         <br />
@@ -310,8 +381,9 @@ class CreateStation extends React.Component {
         <TextField style={{ width: "50vw" }}
           id="rotation"
           name="rotation"
+          type= "number"
           label={language[this.props.language]["createStation"]["rotation"]}
-          value={this.state.roation}
+          value={this.state.rotation}
           onChange={this.handleRotationChange}
         />
         <br />
@@ -319,12 +391,53 @@ class CreateStation extends React.Component {
         <TextField style={{ width: "50vw" }}
           id="time"
           name="time"
+          type= "number"
           label={language[this.props.language]["createStation"]["time"]}
           value={this.state.time}
           onChange={this.handleTimeChange}
         />
         <br />
         <br />
+        {
+          this.state.type != "observer" ?
+          <div>
+          <TextField style={{ width: "50vw" }}
+          type= "number"
+          id="deleteMinutes"
+          name="deleteMinutes"
+          label={language[this.props.language]["createStation"]["deleteMinutes"]}
+          value={this.state.deleteMinutes}
+          onChange={this.handledeleteMinutesChange}
+        />
+        <br />
+        <br />
+        <TextField style={{ width: "50vw" }}
+          id="detectionThreshold"
+          name="detectionThreshold"
+          label={language[this.props.language]["createStation"]["detectionThreshold"]}
+          value={this.state.detectionThreshold}
+          onChange={this.handledetectionThresholdChange}
+          helperText={language[this.props.language]["createStation"]["detectionThresholdHelper"]}
+          ></TextField>
+                  <br />
+        <br />
+          </div>
+          : ""
+        }{
+          this.state.type == "exhibit" ? 
+          <div>
+          <TextField style={{ width: "50vw" }}
+          type= "number"
+          id="numberVisualExamples"
+          name="numberVisualExamples"
+          label={language[this.props.language]["createStation"]["numberVisualExamples"]}
+          value={this.state.numberVisualExamples}
+          onChange={this.handlenumberVisualExamplesChange}
+          ></TextField>         
+          <br />
+          <br />
+          </div>: ""
+        }
         <Button color="primary" variant="contained" type="submit" onClick={this.sendData} disabled={!this.state.checked}>
         {language[this.props.language]["createStation"]["submit"]}
         </Button>
@@ -378,7 +491,7 @@ class CreateStation extends React.Component {
           </DialogContent>
           <DialogActions>
             <Button component={Link} to="/view" >{language[this.props.language]["createStation"]["overview"]}</Button>
-            <Button disabled={!this.state.id} onClick={this.checkDownload}>{language[this.props.language]["createStation"]["createImage"]}</Button>
+            <Button disabled={!this.state.id} onClick={this.startImageAndCheckImage}>{language[this.props.language]["createStation"]["createImage"]}</Button>
             <Button disabled={!this.state.downloadReady} onClick={this.startDownload}>{language[this.props.language]["createStation"]["download"]}</Button>
             <Button component={Link} to={"/view/station/" + this.state.id}>
               {language[this.props.language]["createStation"]["viewStation"]}

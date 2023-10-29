@@ -115,10 +115,10 @@ function Header(props){
           <Button color="inherit" onClick={() => props.changeLang("en")} className={props.language == "en" ? 'bold' : null}>English</Button>
           <Button color="inherit" onClick={() => props.changeLang("de")} className={props.language == "de" ? 'bold' : null}>Deutsch</Button>
           <Button rel="noopener" color="inherit" component={Link} to="/view/createstation">
-            {language[props.language]["navbar"]["create"]}
+            {language[props.language]["navbar"]["create"]}</Button>
           <Button rel="noopener" color="inherit" component={Link} to="/view/statistics">
             {language[props.language]["navbar"]["statistics"]}
-          </Button></Button>
+          </Button>
           <Button rel="noopener" color="inherit" component={Link} to="/view/validation">
             {language[props.language]["navbar"]["validation"]}
           </Button>
