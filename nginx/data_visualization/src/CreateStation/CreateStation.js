@@ -206,14 +206,14 @@ class CreateStation extends React.Component {
   }
 
   startImageCreation = () =>{
-    //var key = CryptoJS.enc.Hex.parse(this.secretKey)
-    //var iv = CryptoJS.enc.Hex.parse(this.secretIV);
-    //const SSID = CryptoJS.AES.encrypt(this.state.SSID, key, {iv:iv});
-    //const password = CryptoJS.AES.encrypt(this.state.pwd, key, {iv:iv});
+    var key = CryptoJS.enc.Hex.parse(this.secretKey)
+    var iv = CryptoJS.enc.Hex.parse(this.secretIV);
+    const SSID = CryptoJS.AES.encrypt(this.state.SSID, key, {iv:iv});
+    const password = CryptoJS.AES.encrypt(this.state.pwd, key, {iv:iv});
     const payload = {
     "wlanCredentials": {
-      "SSID": this.state.SSID,
-      "password": this.state.pwd
+      "SSID": SSID,
+      "password": password
     },
     "rotation": this.state.rotation,
     "time": this.state.time
