@@ -1083,7 +1083,7 @@ def station(station_id: str):
         if station["type"] == "exhibit":
             statistics = db["statistics"].find_one({"station_id": "all"}, {'_id' : False})
             start = 0
-            if len(movements) == 0:
+            if len(movements) == 0 and "lastMovement" in station:
                movements.append(station["lastMovement"])   
                start = 1     
             for i in range(start, station["advancedSettings"]["numberVisualExamples"]):
