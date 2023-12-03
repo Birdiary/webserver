@@ -19,12 +19,13 @@ const language = {
         },
         legend: {
             head: "Legend",
-            description: "The symbols represent the last 24 hours",
+            description: "The symbols represent the for environmental data the last 24 and for birds the last 72 hours",
             symbol: "Symbol",
             meaning: "Meaning",
             black: "No environmental data",
             green: "Environmental data",
-            bird: "Environmental data and bird"
+            bird: "Environmental data and birds",
+            blackBird: "Birds but no environmental data"
         },
         dashboard: {
             header:  "Top 10 bird species, that were detected:"
@@ -181,12 +182,13 @@ const language = {
         },
         legend: {
             head: "Legende",
-            description: "Die Symbole repräsentieren die letzten 24 Stunden",
+            description: "Die Symbole repräsentieren die für Umweltdaten die letzten 24  und für Vögel die letzten 72 Stunden",
             symbol: "Symbol",
             meaning: "Bedeutung",
             black: "Keine Umweltdaten",
             green: "Umweltdaten",
-            bird: "Umweltdaten und Vogel"
+            bird: "Umweltdaten und Vögel",
+            blackBird: "Vögel aber keine Umweltdaten"
         },
         dashboard: {
             header:  "Top 10 Vogelarten, die an den Stationen erkannt wurden:"
@@ -260,7 +262,7 @@ const language = {
             submit: "Erstelle Station",
             numberVisualExamples: "Anzahl an Beispielen, die auf der Station angezeigt werden sollen und von anderen Stationen aufgenommen wurden.",
             type: "Art der Station",
-            typeHelper: 'Es gibt die Auswahl von 3 möglichen Arten. Die normale Station ist die Art "Observer" die dauerhaft Daten aufnimmt. Die Art "Test" bedeuted, dass die Station nicht auf der Karte angezeigt wird und Erkennungen automatisch gelöscht werden. Diese  ist für Entwicklungszwecke geeignet. Auch bei dem Typen "Exhibit" werdend die aufgenmonnen Videos automatisch gelöscht. Diese wird jedoch auf der Karte angezeigt. Zusätzlich können hier Beispiele von anderen Stationen angezeigt werden.',
+            typeHelper: 'Es gibt die Auswahl von 3 möglichen Arten. Die normale Station ist die Art "Observer" die dauerhaft Daten aufnimmt. Die Art "Test" bedeuted, dass die Station nicht auf der Karte angezeigt wird und Erkennungen automatisch gelöscht werden. Diese  ist für Entwicklungszwecke geeignet. Auch bei dem Typen "Exhibit" werdend die aufgenomennen Videos automatisch gelöscht. Diese wird jedoch auf der Karte angezeigt. Zusätzlich können hier Beispiele von anderen Stationen angezeigt werden.',
             deleteMinutes: "Zeitintervall in Minuten, nach dem die aufgenommen Videos wieder gelsöcht werden",
             detectionThreshold: "Notwendige Wahrscheinlichkeit, ab dem die Erkennungen von der KI gespeichert werden.",
             detectionThresholdHelper: "Bsp: Bei 0,3 wird ein Erkennung gespeichert, wenn das Modell behauptet mit der Wahrscheinlichkeit von 30% ist der erkannte Vogel auf dem Video eine Blaumeise."

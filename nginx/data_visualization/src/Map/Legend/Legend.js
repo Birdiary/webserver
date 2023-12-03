@@ -5,6 +5,7 @@ import language from "../../languages/languages";
 import birdHouseGreen from '../../helpers/icons/bird-house-green.svg'
 import birdHouseBlack from '../../helpers/icons/bird-house-black.svg'
 import birdHouseBird from '../../helpers/icons/bird-house-green-with-bird.svg'
+import birdHouseBlackBird from '../../helpers/icons/bird-house-black-with-bird.svg'
 let legend = null
 
 const toggleLegend = function(){
@@ -32,6 +33,7 @@ function Legend(props) {
       let black = language[props.language]["legend"]["black"]
       let green = language[props.language]["legend"]["green"]
       let bird = language[props.language]["legend"]["bird"]
+      let blackBird = language[props.language]["legend"]["blackBird"]
 
       legend.onAdd = () => {
         const div = L.DomUtil.create("div", "info legend");
@@ -55,6 +57,10 @@ function Legend(props) {
           "<td><img src='"+ birdHouseBird + "' width=50 height=50/></td>"+
           "<td>"+ bird + "</td>"+
         "</tr>"+
+        "<tr>"+
+        "<td><img src='"+ birdHouseBlackBird + "' width=50 height=50/></td>"+
+        "<td>"+ blackBird + "</td>"+
+      "</tr>"+
         "</table>"
         return div;
       };
