@@ -4,7 +4,7 @@ import requests from "../helpers/requests";
 import ReactPlayer from 'react-player'
 import ReactAudioPlayer from 'react-audio-player';
 import ApexChart from "./visualization/Chart"
-import { Grid, Tab, Box, Button, Skeleton, TextField, Autocomplete, Snackbar, Alert, Tabs } from "@mui/material";
+import { Grid, Tab, Box, Button, Skeleton, TextField, Autocomplete, Snackbar, Alert, Tabs, ButtonGroup } from "@mui/material";
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -35,10 +35,22 @@ function StationView(props) {
 
   const { id } = useParams()
   const [data, setData] = useState("");
-  const [temperature, setTemperature] = useState(0);
-  const [humidity, setHumidity] = useState(0);
-  const [pressure, setPressure] = useState(false);
-  const [illuminance, setIlluminance] = useState(false);
+  const [temperature, setTemperature] = useState( [{
+    label: "temperature",
+    data: []
+  }]);
+  const [humidity, setHumidity] = useState([{
+    label: "temperature",
+    data: []
+  }]);
+  const [pressure, setPressure] = useState([{
+    label: "temperature",
+    data: []
+  }]);
+  const [illuminance, setIlluminance] = useState([{
+    label: "temperature",
+    data: []
+  }]);
   const [value, setValue] = useState(0);
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false)
@@ -48,7 +60,9 @@ function StationView(props) {
   const navigate = useNavigate();
   const [counter, setCounter] = useState(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false)
-  const [bird, setBird] = useState("")
+  const [bird, setBird] = useState("") 
+  const [selectedButton, setSelectedButton] = useState("1");
+
 
   useEffect(() => {
     getStation();
@@ -74,11 +88,9 @@ function StationView(props) {
         });
 
         data.measurements.movements = movementData
-        
-
         setData(data);
         ////console.log(res); 
-        getEnvironment()
+        getEnvironment(1)
       }).catch(err => {
         // Handle error
         let text = language[props.language]["stations"]["notFound"]
@@ -95,14 +107,19 @@ function StationView(props) {
     //setText(text)
   }
 
+  const handleButtonClick = (buttonId) => {
+    setSelectedButton(buttonId);
+    getEnvironment(buttonId)
+  };
+
 
   function routeToHome() {
     navigate("/view")
   }
 
-  const getEnvironment = () => {
+  const getEnvironment = (months) => {
 
-    requests.getEnvironment(id)
+    requests.getEnvironment(id,months)
       .then((res) => {
         var data = res.data
         //console.log(res);
@@ -111,7 +128,7 @@ function StationView(props) {
   }
 
   const createSeries = (environment) => {
-    //console.log("triggerd")
+    console.log("triggerd")
 
     var tempSeries = [{
       label: "temperature",
@@ -138,10 +155,6 @@ function StationView(props) {
     }]
 
     if (environment.length === 0) {
-      tempSeries.data = false
-      humSeries.data = false
-      pressSeries.data = false
-      illumanceSeries.data = false
       setTemperature(tempSeries)
       setHumidity(humSeries)
       setPressure(pressSeries)
@@ -339,7 +352,7 @@ function StationView(props) {
 
 
     {data ?
-      <div>
+      <div style={{padding: "10px"}}>
         {data.measurements.movements && data.measurements.movements.length > 0 ?
           <div>
             <TabContext value={value}>
@@ -404,9 +417,19 @@ function StationView(props) {
         {temperature[0] ?
           (temperature[0].data.length > 0 ?
             <div>     <h3 style={{ "marginBlockEnd": "0px" }}>{language[props.language]["stations"]["environment"]}
+            
               <IconButton color="primary" aria-label="upload picture" component="span" onClick={() => { handleClickOpen("environment") }} >
                 <InfoOutlinedIcon />
               </IconButton></h3>
+              <h4> {language[props.language]["stations"]["timespan"]}
+              <ButtonGroup variant="contained" aria-label="outlined primary button group">
+  <Button  onClick={() => handleButtonClick("1")} 
+  variant={selectedButton== "1"? "outlined" : "contained"}>{language[props.language]["stations"]["button1"]}</Button>
+  <Button  onClick={() => handleButtonClick("3")}
+        variant={selectedButton== "3"? "outlined" : "contained"}>{language[props.language]["stations"]["button2"]}</Button>
+  <Button  onClick={() => handleButtonClick("all")}
+        variant={selectedButton== "all"? "outlined" : "contained"} >{language[props.language]["stations"]["button3"]}</Button>
+</ButtonGroup></h4>
               <Grid container spacing={2}>
                 <Grid item lg={6} md={12}>
                   <h4>{language[props.language]["stations"]["temperature"]}</h4><TimelineChart series={temperature} />
@@ -432,7 +455,6 @@ function StationView(props) {
             </Grid>
           </Grid> </div>
         }
-
         <h3 style={{ "marginBlockEnd": "0px" }}>{language[props.language]["stations"]["birdsCount"]}
           <IconButton color="primary" aria-label="upload picture" component="span" onClick={() => { handleClickOpen("count") }} >
             <InfoOutlinedIcon />
@@ -441,11 +463,11 @@ function StationView(props) {
           <div> <Grid container spacing={2}>
             <Grid item lg={6}>
               <h4>{language[props.language]["stations"]["today"]}</h4>
-              <AmountTable birds={data.count[date.toISOString().split('T')[0]]} date={date.toISOString().split('T')[0]} language={props.language} handelSearchChange={handelSearchChange}></AmountTable>
+              <AmountTable birds={data.count[date.toISOString().split('T')[0]]? data.count[date.toISOString().split('T')[0]].birds : null} date={date.toISOString().split('T')[0]} language={props.language} handelSearchChange={handelSearchChange}></AmountTable>
             </Grid>
             <Grid item lg={6}>
               <h4>{language[props.language]["stations"]["yesterday"]} </h4>
-              <AmountTable birds={data.count[new Date(date.getTime() - 1000 * 60 * 60 * 24).toISOString().split('T')[0]]} date={new Date(date.getTime() - 1000 * 60 * 60 * 24).toISOString().split('T')[0]} language={props.language} handelSearchChange={handelSearchChange}></AmountTable>
+              <AmountTable birds={data.count[new Date(date.getTime() - 1000 * 60 * 60 * 24).toISOString().split('T')[0]]? data.count[new Date(date.getTime() - 1000 * 60 * 60 * 24).toISOString().split('T')[0]]["birds"] : null} date={new Date(date.getTime() - 1000 * 60 * 60 * 24).toISOString().split('T')[0]} language={props.language} handelSearchChange={handelSearchChange}></AmountTable>
             </Grid>
           </Grid> </div> : <p>{language[props.language]["stations"]["noData2"]}</p>
         }

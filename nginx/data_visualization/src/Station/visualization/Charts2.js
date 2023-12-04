@@ -29,8 +29,6 @@ ChartJS.register(
 
 function TimelineChart(props) {
 
-
-
     const lineChart = props.series[0] ? (
         <Line
             data={{
@@ -68,7 +66,7 @@ function TimelineChart(props) {
 }
 
 function areEqual(prevProps, nextProps) {
-  if (prevProps.series.length == nextProps.series.length){
+  if (prevProps.series[0].data.length == nextProps.series[0].data.length){
     return true
   }
 }

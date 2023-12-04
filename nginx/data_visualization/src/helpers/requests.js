@@ -61,8 +61,11 @@ function searchForSpecies(station_id, species, numberOfMovements, date){
     
 }
 
-function getEnvironment(station_id){
+function getEnvironment(station_id, months){
     var _url = _env.api + "/environment/" + station_id
+    if (months){
+        _url += "?months=" + months
+    }
     return axios.get(_url)
 }
 

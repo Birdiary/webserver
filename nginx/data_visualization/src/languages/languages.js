@@ -59,7 +59,12 @@ const language = {
             notFound: "The station was not found, you will be redirected to the home screen in 5 seconds:",
             exhibitInfo: "Noticd: ",
             exhibitInfo2: "This movement was originally recorded by the station ",
-            exhibitInfo3: " and serves here as an example recording."       },
+            exhibitInfo3: " and serves here as an example recording.",
+            button1: "1 Month",
+            button2: "3 Months",
+            button3: "All",
+            timespan: "Specify the period from which the data is displayed"       },
+
         table: {
             noBird: "No bird was detected on the video",
             species: "Species:",
@@ -222,7 +227,11 @@ const language = {
             notFound: "Die Station wurde nicht gefunden, du wirst in 5 Sekunden auf die Home Seite geleitet",
             exhibitInfo: "Hinweis: ",
             exhibitInfo2: "Dieses Movement würde ursprünglich von der Station ",
-            exhibitInfo3: " aufgenommen und dient hier als Beispiel-Aufnahme."
+            exhibitInfo3: " aufgenommen und dient hier als Beispiel-Aufnahme.",
+            button1: "1 Monat",
+            button2: "3 Monate",
+            button3: "Alle",
+            timespan: "Lege fest von welchem Zeitraum die Daten angezeigt werden: "
         },
         table: {
             noBird: "Es wurde kein Vogel auf dem Video erkannt",

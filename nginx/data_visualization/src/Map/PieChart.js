@@ -108,7 +108,7 @@ class ApexChart extends React.Component {
       if ( !data || data === '{}' ){
         this.setState({series: []})
       } else{
-      this.createData(data)
+      this.createData(data.birds)
       }
   }
 

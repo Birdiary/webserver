@@ -121,6 +121,7 @@ app = Flask(__name__)
 redis = Redis(host='redis', port=6379)
 q = Queue(connection=redis)
 q2 = Queue("image", connection=redis)
+q3 = Queue("statistics", connection=redis)
 app.config['SECRET_KEY'] = 'thisisasecret'
 app.config['JSON_SORT_KEYS'] = False
 app.config['UPLOADED_IMAGES_DEST'] = 'uploads/disk/images'
@@ -322,7 +323,7 @@ def modify_image(id, credentials, rotation, time, i):
         return
 
 @enqueueable
-def calculateStatistics():
+def calculateStatistics(reque):
     birdsOfInterest= list(["Passer domesticus", "Parus major","Cyanistes caeruleus","Erithacus rubecula","Turdus merula","Fringilla coelebs","Dendrocopos major","Garrulus glandarius", "Pica pica", "Pyrrhula pyrrhula", "Emberiza citrinella", "Chloris chloris", "Picus viridis", "Coccothraustes coccothraustes", "Sitta europaea", "Vanellus vanellus","Corvus cornix", "Aegithalos caudatus","Sturnus vulgaris","Carduelis carduelis","Troglodytes troglodytes","Phylloscopus collybita", "Psittacula krameri", "Phoenicurus ochruros", "Prunella modularis", "Phoenicurus phoenicurus", "Serinus serinus", "Emberiza citrinella"])
     stationsList = list(stations.find({ "type": {  "$nin": ["test", "exhibit"] } }, {'_id' : False, "mail":False} ))
     stationsComplete = []
@@ -607,6 +608,7 @@ def calculateStatistics():
 
         result = db["statistics"].replace_one({"station_id": station_id},statistics, True)
 
+
     for day in statisticsALL["perDay"]:
             if statisticsALL["maxDay"][0]["sum"] < statisticsALL["perDay"][day]["sum"]:
                 objectToInsert = dict()
@@ -666,6 +668,8 @@ def calculateStatistics():
     
     statisticsALL["createdAt"] = str(datetime.now())
     db["statistics"].replace_one({"station_id": "all"}, statisticsALL, True)
+    if reque:
+        q3.enqueue_in(timedelta(minutes=30), calculateStatistics, True)
 
         
 @enqueueable
@@ -735,25 +739,22 @@ def videoAnalysis(filename, movement_id, station_id, movement):
 
 
     if len(birds) > 0:
-        
         today = movement["start_date"].split()[0]
-
-
         #print(today)
         latinName=birds[0]['latinName']
         germanName=birds[0]["germanName"]
             
-
         if today in count:
             existName = False
-            for i, det in enumerate(count[today]):
+            count[today]["sum"] = count[today]["sum"] + 1
+            for i, det in enumerate(count[today]["birds"]):
                 if det["latinName"] == latinName:
                     existName = True
-                    count[today][i]["amount"] = count[today][i]["amount"] + 1
+                    count[today]["birds"][i]["amount"] = count[today]["birds"][i]["amount"] + 1
             if existName == False:
-                count[today].append({"latinName": latinName, "germanName" : germanName, "amount": 1})
+                count[today]["birds"].append({"latinName": latinName, "germanName" : germanName, "amount": 1})
         else:
-            count[today] = [{"latinName": latinName, "germanName" : germanName, "amount": 1}]
+            count[today] = {"sum": 1, "birds": [{"latinName": latinName, "germanName" : germanName, "amount": 1}]}
         try:
             if station["mail"]["notifcation"]:
                     print(send_email)
@@ -1130,14 +1131,23 @@ def station(station_id: str):
 @app.route('/api/updateStations')
 def updateStations():
     stationList = list(stations.find({}, {'_id' : False, "mail":False} ))
+    print(len(stationList), flush=True)
     for station in stationList:
-        try:
-            test= station["test"]
-            if test:
-                db["stations"].update_one({"station_id":station["station_id"]}, {'$set': {"type":"test"}})
-        except:
-            db["stations"].update_one({"station_id":station["station_id"]}, {'$set': {"type":"observer"}})
-    return 200
+        newCount = dict()
+        update =False
+        for date in station["count"]:
+            #print(date, flush=True)
+            if("birds" not in station["count"][date]):
+                update= True
+                newCount[date] = dict()
+                #print(date, flush=True) 
+                newCount[date]["birds"] = station["count"][date]
+                newCount[date]["sum"] = 0
+                for detections in station["count"][date]:
+                        newCount[date]["sum"] =  detections["amount"] + newCount[date]["sum"]  
+        if update:
+            db["stations"].update_one({"station_id":station["station_id"]}, {'$set': {"count":newCount}})
+    return "ok", 200
 
 @app.route('/api/environment/<station_id>', methods=['POST'])
 def add_environment(station_id: str):
@@ -1154,12 +1164,22 @@ def add_environment(station_id: str):
 
 @app.route('/api/environment/<station_id>', methods=['GET'])
 def get_environment(station_id: str):
+    months = request.args.get('months', default="all")
     environment= db["environments_"+station_id].find({}, {'_id' : False}).sort("month",-1)
     environment = list(environment)
         #print(environment, flush=True)
     environments = []
-    for months in environment:
-            environments= environments + months["measurements"]
+    try:
+        months = int(months)
+    except:
+        months = "all"
+    if months=="all":
+        for months in environment:
+                environments= environments + months["measurements"]
+    else:
+        months = min(months,len(environment)-1)
+        for month in range(0,months):
+            environments = environments + environment[month]["measurements"]
 
     return jsonify(environments), 200
 
@@ -1295,23 +1315,21 @@ def count():
         try:
             countObjects = dict(countObjects["count"])
             for date  in countObjects:
-                #print(date, flush=True) 
-                for detections in countObjects[date]: 
-                    #print(detections, flush=True)
+                for detections in countObjects[date]["birds"]: 
                     latinName = detections["latinName"]
                     germanName = detections["germanName"]
                     if date in count:
                         existName = False
-                        for i, det in enumerate(count[date]):
+                        for i, det in enumerate(count[date]["birds"]):
                             if det["latinName"] == latinName:
                                 existName = True
-                                count[date][i]["amount"] = count[date][i]["amount"] + detections["amount"]
+                                count[date]["birds"][i]["amount"] = count[date]["birds"][i]["amount"] + detections["amount"]
                         if existName == False:
-                            count[date].append({"latinName": latinName, "germanName" : germanName, "amount": detections["amount"]})
+                            count[date]["birds"].append({"latinName": latinName, "germanName" : germanName, "amount": detections["amount"]})
                     else:
-                        count[date] = [{"latinName": latinName, "germanName" : germanName, "amount": detections["amount"]}]
+                        count[date]= {"birds": [{"latinName": latinName, "germanName" : germanName, "amount": detections["amount"]}]}
         except:
-            print("No count available")
+           print("No count available")
     return count
 
 @app.route('/api/movement', methods=['GET'])
@@ -1352,7 +1370,8 @@ def getStatistics(station_id: str):
 
 @app.route('/api/statistics', methods=['GET'])
 def runStatistics():
-    job =q.enqueue(calculateStatistics)
+    reque = request.args.get('reque')
+    job =q3.enqueue(calculateStatistics, reque)
     return "ok", 200
 
 
