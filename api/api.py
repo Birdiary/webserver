@@ -514,7 +514,7 @@ def calculateStatistics(reque):
                     objectToInsert["temperature"] = float(env["temperature"])
                     objectToInsert["date"] = env["date"]
                     statistics["maxTemp"]= insertMax(statistics["maxTemp"], objectToInsert, "temperature")
-                    if env["temperature"] > statisticsALL["maxTemp"][0]["temperature"]:
+                    if float(env["temperature"]) > statisticsALL["maxTemp"][0]["temperature"]:
                         objectToInsertALL = objectToInsert.copy()
                         objectToInsertALL["station_id"] =station_id
                         objectToInsertALL["station_name"] = station["name"]
