@@ -152,12 +152,10 @@ stations= db.stations
 
 
 
-images = UploadSet('images', IMAGES)
-
-
+imagesSet = UploadSet('images', IMAGES)
 audios = UploadSet('audios', AUDIO)
 videos = UploadSet('videos', ALL)
-configure_uploads(app, (images, audios, videos))
+configure_uploads(app, (imagesSet, audios, videos))
 
 
 def insert(list, n):
@@ -669,6 +667,7 @@ def calculateStatistics(reque):
     statisticsALL["createdAt"] = str(datetime.now())
     db["statistics"].replace_one({"station_id": "all"}, statisticsALL, True)
     if reque:
+        print(reque)
         q3.enqueue_in(timedelta(minutes=30), calculateStatistics, True)
 
         
@@ -678,7 +677,7 @@ def calculateStatistics(reque):
 # It then processes the detected birds to create a list of dictionaries, where each dictionary contains the details of each bird. It then updates the database with the movement and counts the number of each bird seen for a given day. 
 # It also sends an email to the provided email addresses with the details of the detected birds.  
 def videoAnalysis(filename, movement_id, station_id, movement):
-    if  os.path.splitext(filename)[1] == ".h264":
+    if  os.path.splitext(filename)[1] != ".mp4":
         command = "MP4Box -add {} {}.mp4".format("./uploads/disk/videos/" + filename, "./uploads/disk/videos/" + os.path.splitext(filename)[0])
         command2 = "rm ./uploads/disk/videos/" + filename
         try:
@@ -767,6 +766,130 @@ def videoAnalysis(filename, movement_id, station_id, movement):
     stations.update_one({"station_id":station_id}, {'$set': {"count":count, "lastMovement" : completeMovement}})
 
     return birds
+
+def create_video(files, output_video_path):
+    
+    result_array = []
+    with open("uploads/disk/images/input.txt", "w") as file:
+        for index, filename in enumerate(files, start=1):
+            file.write(f"file '{filename}'\n")
+    #image_array = cv2.imread('uploads/disk/images/' + files[0])
+    #height, width, layers = image_array.shape
+
+    #fourcc = cv2.VideoWriter_fourcc(*"H264")  # Use MP4V codec for mp4 format
+    #video = cv2.VideoWriter(output_video_path, fourcc, 1, (width, height))
+
+    #for file in files:
+    #    print(file, flush=True)
+    #    image = cv2.imread('uploads/disk/images/' + file)
+    #    for _ in range(5):  # 3 seconds at 30 frames per second
+    #        video.write(image)
+    #cv2.destroyAllWindows()
+    #video.release()
+    # FFmpeg command to create video from image filenames
+    ffmpeg_command = [
+        "ffmpeg",
+        "-f", "concat",
+        "-i", "uploads/disk/images/input.txt",
+        "-r", "0.33",
+        "-c:v", "libx264",
+        "-pix_fmt", "yuv420p",
+        output_video_path
+    ]
+
+    # Run FFmpeg command
+    subprocess.run(ffmpeg_command)
+
+
+
+@enqueueable
+#The function first checks if the file extension is ".h264" and converts the file to ".mp4" format using MP4Box if so. 
+# It then reads the video using OpenCV, extracts frames from the video, and calls a classify function to classify the image and detect any birds present in it. 
+# It then processes the detected birds to create a list of dictionaries, where each dictionary contains the details of each bird. It then updates the database with the movement and counts the number of each bird seen for a given day. 
+# It also sends an email to the provided email addresses with the details of the detected birds.  
+def videoAnalysisImage(filenames, movement_id, station_id, movement):
+    station = stations.find_one({"station_id":station_id})
+    #print(total_frames)
+    result=[]
+    for files in filenames:
+        image_array = cv2.imread('uploads/disk/images/' + files)
+        result.append(classify(image_array))
+        # read next frame
+    output = {}
+    for i in range(len(result)): 
+        for key in result[i]:
+            if key in output:
+                if result[i][key] > output[key]:
+                    output[key]=result[i][key]
+            elif key!= "None":
+                threshold = 0.3
+                try:
+                    threshold = station["advancedSettings"]["detectionThreshold"]
+                except: 
+                    threshold = 0.3
+                if result[i][key] > threshold:
+                    output[key]=result[i][key]
+    #print(output)
+    output2 = {k: v for k, v in output.items()}
+    marklist = sorted(output2.items(), key=lambda x:x[1], reverse=True)
+    output3 = dict(marklist)
+    birds = []
+    for key, value in output3.items():
+        germanName = ""
+        try:
+            germanName = birdJSON[key]
+        except:
+            germanName = ""
+        birds.append({"latinName":key, "germanName": germanName, "score" : value})
+    #print(birds)
+
+    newMovement= dict()
+
+    newMovement["detections"] = birds
+
+
+    videofile= "uploads/disk/videos/" + station_id + movement_id + ".mp4"
+    create_video(filenames, videofile)
+
+    newMovement["video"] = str(host)+ "/api/"+ "uploads/videos/" + station_id + movement_id + ".mp4"
+
+
+    station = stations.find_one({"station_id":station_id})
+    count = {}
+    if "count" in station: 
+        count = station["count"]
+
+
+    if len(birds) > 0:
+        today = movement["start_date"].split()[0]
+        #print(today)
+        latinName=birds[0]['latinName']
+        germanName=birds[0]["germanName"]
+            
+        if today in count:
+            existName = False
+            count[today]["sum"] = count[today]["sum"] + 1
+            for i, det in enumerate(count[today]["birds"]):
+                if det["latinName"] == latinName:
+                    existName = True
+                    count[today]["birds"][i]["amount"] = count[today]["birds"][i]["amount"] + 1
+            if existName == False:
+                count[today]["birds"].append({"latinName": latinName, "germanName" : germanName, "amount": 1})
+        else:
+            count[today] = {"sum": 1, "birds": [{"latinName": latinName, "germanName" : germanName, "amount": 1}]}
+        try:
+            if station["mail"]["notifcation"]:
+                    print(send_email)
+                    send_email(station["mail"]["adresses"][0], videofile, str(host)+ "/api/uploads/videos/" + videofile, birds, pwd, str(host) +"/view/station/" +station_id )
+        except:
+                print("mail to failed") 
+
+    db["movements_"+station_id].update_one({"mov_id": movement_id}, {'$set': newMovement})
+    completeMovement = db["movements_"+station_id].find_one({"mov_id": movement_id}, {'_id' : False})
+    stations.update_one({"station_id":station_id}, {'$set': {"count":count, "lastMovement" : completeMovement}})
+
+    return birds
+
 
 @enqueueable
 def saveEnvironment(body, env_id, station_id):
@@ -942,7 +1065,7 @@ def image():
     if request.method=="POST":
         data = request.files['image']
         #print (data)
-        filename = images.save(data)
+        filename = imagesSet.save(data)
         result = classify('uploads/disk/images/' + filename)
 
         return jsonify(
@@ -1177,7 +1300,7 @@ def get_environment(station_id: str):
         for months in environment:
                 environments= environments + months["measurements"]
     else:
-        months = min(months,len(environment)-1)
+        months = min(months,len(environment))
         for month in range(0,months):
             environments = environments + environment[month]["measurements"]
 
@@ -1237,6 +1360,64 @@ def add_movement(station_id: str):
 
     return jsonify(id = mov_id), 200
 
+
+
+@app.route('/api/movement/image/<station_id>', methods=['POST'])
+def add_movement_image(station_id: str):
+    content_type = request.headers.get('Content-Type')
+    print(content_type, flush=True)
+    ##TODO: Count Birds in image and Crop images to bird onyl 
+
+    body = request.form['json']
+    body = json.loads(body)
+
+    if 'start_date' not in body:
+        return "movement has no start_date", 400
+    
+    movementsClass = dict()
+    mov_id = str(uuid.uuid4())
+    movementsClass["station_id"] =station_id
+    movementsClass["mov_id"] = mov_id
+    movementsClass["start_date"] = body['start_date']
+    movementsClass["end_date"] = body['end_date']
+    movementsClass["weight"] = body['weight']
+    movementsClass["detections"] = []
+    name = "audio_" +str(datetime.now()).replace(" ", "") + "."
+    audio = request.files[body['audio']]
+    filename = audios.save(audio, name = name)
+    movementsClass["audio"] = str(host)+ "/api/uploads/audios/" + filename
+    filenames = []
+    for img in body['images']:
+        image = request.files[img]
+        filename = imagesSet.save(image)
+        filenames.append(filename)
+    movementsClass["video"] = "pending"
+    
+
+    environmentClass = dict()
+    for name,value in body['environment'].items():
+        environmentClass[name]= value
+    env_id = str(uuid.uuid4())
+    environmentClass["env_id"] = env_id
+
+    movementsClass["environment"] = environmentClass
+    movementsClass["createdAt"] = datetime.utcnow()
+    
+    
+    db["movements_"+station_id].insert_one(movementsClass)
+    job= q.enqueue(videoAnalysisImage, filenames, mov_id, station_id, movementsClass)
+    station = stations.find_one({"station_id":station_id}, {'_id' : False} )
+    if station["type"] in ["test", "exhibit"]:
+        try: 
+            deleteMinutes = station["advancedSettings"]["deleteMinutes"]
+            job = q.enqueue_in(timedelta(minutes=deleteMinutes), deleteMovement, mov_id, station_id)
+        except:
+            print("No deleteMinutes given")
+
+
+    #print(movementList)
+
+    return jsonify(id = mov_id), 200
 @app.route('/api/movement/<station_id>/<movement_id>', methods=['GET', 'DELETE'])
 def handle_movement(station_id: str, movement_id: str):
     if request.method=="DELETE":
@@ -1371,7 +1552,7 @@ def getStatistics(station_id: str):
 @app.route('/api/statistics', methods=['GET'])
 def runStatistics():
     reque = request.args.get('reque')
-    job =q3.enqueue(calculateStatistics, reque)
+    job = q3.enqueue(calculateStatistics, reque)
     return "ok", 200
 
 
