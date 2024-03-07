@@ -501,14 +501,14 @@ def calculateStatistics(reque):
         for env in station["measurements"]["environment"]:
                 
                 if float(env["temperature"]) > -20 and float(env["temperature"]) < 60 :
-                    statistics["sumTemperature"] = statistics["sumTemperature"] + env["temperature"]
-                    statisticsALL["sumTemperature"] = statisticsALL["sumTemperature"] + env["temperature"]
+                    statistics["sumTemperature"] = statistics["sumTemperature"] + float(env["temperature"])
+                    statisticsALL["sumTemperature"] = statisticsALL["sumTemperature"] + float(env["temperature"])
                 if float(env["humidity"]) > -1 and float(env["humidity"]) < 101 :
                     
                     statistics["sumEnvironment"] = statistics["sumEnvironment"] + 1 
-                    statistics["sumHumidity"] = statistics["sumHumidity"] + env["humidity"]
+                    statistics["sumHumidity"] = statistics["sumHumidity"] + float(env["humidity"])
                     statisticsALL["sumEnvironment"] = statisticsALL["sumEnvironment"] + 1 
-                    statisticsALL["sumHumidity"] = statisticsALL["sumHumidity"] + env["humidity"]
+                    statisticsALL["sumHumidity"] = statisticsALL["sumHumidity"] + float(env["humidity"])
                 if float(env["temperature"]) > statistics["maxTemp"][0]["temperature"] and float(env["temperature"]) < 60:
                     objectToInsert = {}
                     objectToInsert["temperature"] = float(env["temperature"])
