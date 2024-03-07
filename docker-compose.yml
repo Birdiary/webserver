@@ -50,7 +50,7 @@ services:
 
   worker:
     image: api
-    command: rq worker default image statistics --url redis://redis:6379 --with-scheduler
+    command: rq worker default --url redis://redis:6379 --with-scheduler
     env_file:
       - server.env
     volumes:
@@ -74,7 +74,7 @@ services:
 
   worker3:
     image: api
-    command: rq worker default --url redis://redis:6379
+    command: rq worker default image statistics --url redis://redis:6379
     env_file:
       - server.env
     volumes:

@@ -500,18 +500,18 @@ def calculateStatistics(reque):
         
         for env in station["measurements"]["environment"]:
                 
-                if int(env["temperature"]) > -20 and int(env["temperature"]) < 60 :
+                if float(env["temperature"]) > -20 and float(env["temperature"]) < 60 :
                     statistics["sumTemperature"] = statistics["sumTemperature"] + env["temperature"]
                     statisticsALL["sumTemperature"] = statisticsALL["sumTemperature"] + env["temperature"]
-                if int(env["humidity"]) > -1 and int(env["humidity"]) < 101 :
+                if float(env["humidity"]) > -1 and float(env["humidity"]) < 101 :
                     
                     statistics["sumEnvironment"] = statistics["sumEnvironment"] + 1 
                     statistics["sumHumidity"] = statistics["sumHumidity"] + env["humidity"]
                     statisticsALL["sumEnvironment"] = statisticsALL["sumEnvironment"] + 1 
                     statisticsALL["sumHumidity"] = statisticsALL["sumHumidity"] + env["humidity"]
-                if int(env["temperature"]) > statistics["maxTemp"][0]["temperature"] and int(env["temperature"]) < 60:
+                if float(env["temperature"]) > statistics["maxTemp"][0]["temperature"] and float(env["temperature"]) < 60:
                     objectToInsert = {}
-                    objectToInsert["temperature"] = int(env["temperature"])
+                    objectToInsert["temperature"] = float(env["temperature"])
                     objectToInsert["date"] = env["date"]
                     statistics["maxTemp"]= insertMax(statistics["maxTemp"], objectToInsert, "temperature")
                     if env["temperature"] > statisticsALL["maxTemp"][0]["temperature"]:
@@ -519,32 +519,32 @@ def calculateStatistics(reque):
                         objectToInsertALL["station_id"] =station_id
                         objectToInsertALL["station_name"] = station["name"]
                         statisticsALL["maxTemp"]= insertMax(statisticsALL["maxTemp"], objectToInsertALL, "temperature")
-                if int(env["temperature"]) < statistics["minTemp"][0]["temperature"] and int(env["temperature"]) > -30:
+                if float(env["temperature"]) < statistics["minTemp"][0]["temperature"] and float(env["temperature"]) > -30:
                     objectToInsert = {}
-                    objectToInsert["temperature"] = int(env["temperature"])
+                    objectToInsert["temperature"] = float(env["temperature"])
                     objectToInsert["date"] = env["date"]
                     statistics["minTemp"] = insertMin(statistics["minTemp"], objectToInsert, "temperature")
-                    if int(env["temperature"]) < statisticsALL["minTemp"][0]["temperature"]:
+                    if float(env["temperature"]) < statisticsALL["minTemp"][0]["temperature"]:
                         objectToInsertALL = objectToInsert.copy()
                         objectToInsertALL["station_id"] =station_id
                         objectToInsertALL["station_name"] = station["name"]
                         statisticsALL["minTemp"] = insertMin(statisticsALL["minTemp"], objectToInsertALL, "temperature")
-                if int(env["humidity"]) > statistics["maxHum"][0]["humidity"] and int(env["humidity"]) < 100.1:
+                if float(env["humidity"]) > statistics["maxHum"][0]["humidity"] and float(env["humidity"]) < 100.1:
                     objectToInsert = {}
-                    objectToInsert["humidity"] = int(env["humidity"])
+                    objectToInsert["humidity"] = float(env["humidity"])
                     objectToInsert["date"] = env["date"]
                     statistics["maxHum"] = insertMax(statistics["maxHum"], objectToInsert, "humidity")
-                    if int(env["humidity"]) > statisticsALL["maxHum"][0]["humidity"]:
+                    if float(env["humidity"]) > statisticsALL["maxHum"][0]["humidity"]:
                         objectToInsertALL = objectToInsert.copy()
                         objectToInsertALL["station_id"] =station_id
                         objectToInsertALL["station_name"] = station["name"]
                         statisticsALL["maxHum"] = insertMax(statisticsALL["maxHum"], objectToInsertALL, "humidity")
-                if int(env["humidity"]) < statistics["minHum"][0]["humidity"] and int(env["humidity"]) > -0.1:
+                if float(env["humidity"]) < statistics["minHum"][0]["humidity"] and float(env["humidity"]) > -0.1:
                     objectToInsert = {}
-                    objectToInsert["humidity"] = int(env["humidity"])
+                    objectToInsert["humidity"] = float(env["humidity"])
                     objectToInsert["date"] = env["date"]
                     statistics["minHum"] =  insertMin(statistics["minHum"], objectToInsert, "humidity")
-                    if int(env["humidity"]) < statisticsALL["minHum"][0]["humidity"]:
+                    if float(env["humidity"]) < statisticsALL["minHum"][0]["humidity"]:
                         objectToInsertALL = objectToInsert.copy()
                         objectToInsertALL["station_id"] =station_id
                         objectToInsertALL["station_name"] = station["name"]
