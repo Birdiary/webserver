@@ -678,7 +678,11 @@ def calculateStatistics(reque):
 # It also sends an email to the provided email addresses with the details of the detected birds.  
 def videoAnalysis(filename, movement_id, station_id, movement):
     if  os.path.splitext(filename)[1] != ".mp4":
-        command = "MP4Box -add {} {}.mp4".format("./uploads/disk/videos/" + filename, "./uploads/disk/videos/" + os.path.splitext(filename)[0])
+	if os.path.splitext(filename)[1] == ".avi":
+           command = "ffmpeg -i {} -an  -c:v libx264 {}.mp4".format("./uploads/disk/videos/" + filename, "./uploads/disk/videos/" + os.path.splitext(filename)[0])
+        else:
+           command = "MP4Box -add {} {}.mp4".format("./uploads/disk/videos/" + filename, "./uploads/disk/videos/" + os.path.splitext(filename)[0])
+
         command2 = "rm ./uploads/disk/videos/" + filename
         try:
             output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
