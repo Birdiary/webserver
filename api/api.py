@@ -679,7 +679,7 @@ def calculateStatistics(reque):
 def videoAnalysis(filename, movement_id, station_id, movement):
     if  os.path.splitext(filename)[1] != ".mp4":
         if os.path.splitext(filename)[1] == ".avi":
-           command = "ffmpeg -i {} {}.mp4".format("./uploads/disk/videos/" + filename, "./uploads/disk/videos/" + os.path.splitext(filename)[0])
+           command = "ffmpeg -i {} -an -c:v libx264 -pix_fmt yuv420p {}.mp4".format("./uploads/disk/videos/" + filename, "./uploads/disk/videos/" + os.path.splitext(filename)[0])
         else:
            command = "MP4Box -add {} {}.mp4".format("./uploads/disk/videos/" + filename, "./uploads/disk/videos/" + os.path.splitext(filename)[0])
 
