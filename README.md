@@ -18,7 +18,7 @@ If you got any questions contact us via: [info@wiediversistmeingarten.org](mailt
 
 Any further information you can find via: [birdiary.de](https://www.wiediversistmeingarten.org/). 
 
-## Installtion
+## Installation
 To run the platform you first have to install docker, which then installs all further needed packages and programs. After the installation you can clone and run the platform in development or production environment.
 
 ### Docker
