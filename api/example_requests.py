@@ -16,7 +16,7 @@ def run_function():
     choice = input("Enter your choice: ")
     
     if choice == "1":
-        url = input("Enter URL (http://localhost:8080/ or https://wiediversistmeingarten.org/): ")
+        url = input("Enter URL (http://localhost:8080 or https://wiediversistmeingarten.org): ")
         stationid = input("Enter station ID: ")
         audiofile = input("Enter audio file path: ")
         videofile = input("Enter video file path: ")
@@ -68,7 +68,7 @@ def run_function():
             payload["mail"] ={"adresses": []}
         create_station(payload, url)
     elif choice == "4":
-        url = input("Enter URL (http://localhost:8080 or https://wiediversistmeingarten.org): ")
+        url = input("Enter URL (http://localhost:8080 or https://wiediversistmeingarten.org/): ")
         stationid = input("Enter station ID: ")
         apiKey = input("Enter API key: ")
         deleteStation(url, stationid, apiKey)
