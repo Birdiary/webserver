@@ -16,7 +16,7 @@ def run_function():
     choice = input("Enter your choice: ")
     
     if choice == "1":
-        url = input("Enter URL (http://localhost:8080 or https://wiediversistmeingarten.org): ")
+        url = input("Enter URL (http://localhost:8080/ or https://wiediversistmeingarten.org/): ")
         stationid = input("Enter station ID: ")
         audiofile = input("Enter audio file path: ")
         videofile = input("Enter video file path: ")
