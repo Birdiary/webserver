@@ -68,7 +68,7 @@ def run_function():
             payload["mail"] ={"adresses": []}
         create_station(payload, url)
     elif choice == "4":
-        url = input("Enter URL (http://localhost:8080 or https://wiediversistmeingarten.org): ")
+        url = input("Enter URL (http://localhost:8080 or https://wiediversistmeingarten.org/): ")
         stationid = input("Enter station ID: ")
         apiKey = input("Enter API key: ")
         deleteStation(url, stationid, apiKey)
