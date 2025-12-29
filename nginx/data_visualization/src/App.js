@@ -33,6 +33,19 @@ const Footer = (props) => {
       <div id="links" style={{ color: "white" }}>
         <a id="link" href="/doc">API</a> |&nbsp;
         Version&nbsp;<code>1.0.2</code>
+        <div
+          style={{
+            marginTop: 8,
+            display: "inline-block",
+            backgroundColor: "#cc5500",
+            padding: "10px 14px",
+            borderRadius: 4,
+            fontWeight: "bold",
+            textTransform: "uppercase",
+          }}
+        >
+          Hackathon-Treffen: 24.01.2026 · 11:00 · Geo 1 (WWU). Alle Infos unter <a href="/#news">EN #news</a> / <a href="/de/#news">DE #news</a>. Nächstes Discord-Treffen 07.01.2026 · 19:00.
+        </div>
       </div>
     </div>
   );
