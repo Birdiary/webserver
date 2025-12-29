@@ -24,6 +24,9 @@ import csv
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 import unicodedata
+import secrets
+from bson.objectid import ObjectId
+from werkzeug.security import generate_password_hash, check_password_hash
 def remove_control_characters(s):
     return "".join(ch for ch in s if unicodedata.category(ch)[0]!="C")
 
@@ -149,6 +152,81 @@ client = MongoClient('mongodb',27017)
 db = client.birdiary_database
 
 stations= db.stations
+users = db.users
+sessions = db.sessions
+
+SESSION_DURATION_HOURS = int(os.getenv('SESSION_DURATION_HOURS', '24'))
+ALLOWED_STATION_SOFTWARE = {"birdiary", "duisbird"}
+
+
+def sanitize_user(user):
+    return {
+        "id": str(user["_id"]),
+        "email": user.get("email"),
+        "name": user.get("name", "")
+    }
+
+
+def create_session_token(user_id):
+    token = secrets.token_hex(32)
+    expires_at = datetime.utcnow() + timedelta(hours=SESSION_DURATION_HOURS)
+    sessions.insert_one({
+        "token": token,
+        "user_id": str(user_id),
+        "expires_at": expires_at
+    })
+    return token
+
+
+def get_authorization_token():
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header:
+        return None
+    parts = auth_header.split(" ", 1)
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        return None
+    return parts[1].strip()
+
+
+def get_authenticated_user(include_password=False):
+    token = get_authorization_token()
+    if not token:
+        return None
+    session = sessions.find_one({"token": token})
+    if not session:
+        return None
+    expires_at = session.get("expires_at")
+    if expires_at and expires_at < datetime.utcnow():
+        sessions.delete_one({"_id": session["_id"]})
+        return None
+    try:
+        user = users.find_one({"_id": ObjectId(session["user_id"])})
+    except Exception:
+        return None
+    if not user:
+        return None
+    if not include_password:
+        user = dict(user)
+        user.pop("passwordHash", None)
+    return user
+
+
+def is_station_owner(station, user):
+    if not station or not user:
+        return False
+    return station.get("ownerId") == str(user.get("_id"))
+
+
+def ensure_station_key(station):
+    if not station:
+        return None
+    existing_key = station.get("key")
+    if existing_key:
+        return existing_key
+    new_key = secrets.token_hex(16)
+    stations.update_one({"station_id": station.get("station_id")}, {"$set": {"key": new_key}})
+    station["key"] = new_key
+    return new_key
 
 
 
@@ -743,21 +821,29 @@ def videoAnalysis(filename, movement_id, station_id, movement):
 
     if len(birds) > 0:
         today = movement["start_date"].split()[0]
+        yesterday = (datetime.strptime(today, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
         #print(today)
         latinName=birds[0]['latinName']
         germanName=birds[0]["germanName"]
-            
+
+        newCount = dict()
+        
         if today in count:
+            newCount[today] = count[today]
+        if yesterday in count:
+            newCount[yesterday] = count[yesterday]
+
+        if today in newCount:
             existName = False
-            count[today]["sum"] = count[today]["sum"] + 1
-            for i, det in enumerate(count[today]["birds"]):
+            newCount[today]["sum"] = newCount[today]["sum"] + 1
+            for i, det in enumerate(newCount[today]["birds"]):
                 if det["latinName"] == latinName:
                     existName = True
-                    count[today]["birds"][i]["amount"] = count[today]["birds"][i]["amount"] + 1
+                    newCount[today]["birds"][i]["amount"] = newCount[today]["birds"][i]["amount"] + 1
             if existName == False:
-                count[today]["birds"].append({"latinName": latinName, "germanName" : germanName, "amount": 1})
+                newCount[today]["birds"].append({"latinName": latinName, "germanName" : germanName, "amount": 1})
         else:
-            count[today] = {"sum": 1, "birds": [{"latinName": latinName, "germanName" : germanName, "amount": 1}]}
+            newCount[today] = {"sum": 1, "birds": [{"latinName": latinName, "germanName" : germanName, "amount": 1}]}
         try:
             if station["mail"]["notifcation"]:
                     print(send_email)
@@ -767,7 +853,7 @@ def videoAnalysis(filename, movement_id, station_id, movement):
 
     db["movements_"+station_id].update_one({"mov_id": movement_id}, {'$set': newMovement})
     completeMovement = db["movements_"+station_id].find_one({"mov_id": movement_id}, {'_id' : False})
-    stations.update_one({"station_id":station_id}, {'$set': {"count":count, "lastMovement" : completeMovement}})
+    stations.update_one({"station_id":station_id}, {'$set': {"count":newCount, "lastMovement" : completeMovement}})
 
     return birds
 
@@ -1146,6 +1232,13 @@ def add_station():
             if type == "exhibit" and "numberVisualExamples" not in advancedSettings:
                 return "exhibit station must have property numberVisualExamples in advancedSettings property", 400
 
+        sationSoftware = 'birdiary'
+        software_value = body.get('software')
+        if software_value:
+            normalized_software = software_value.lower()
+            if normalized_software not in ALLOWED_STATION_SOFTWARE:
+                return "software must be one of birdiary or duisbird", 400
+            sationSoftware = normalized_software
         location = dict()
         location['lat'] = body['location']['lat']
         location['lng']= body['location']['lng']
@@ -1155,6 +1248,7 @@ def add_station():
         createSensebox = False # body['createSensebox']
         sensebox_id = ''
         name = body["name"]
+        key = secrets.token_hex(16)
         if createSensebox:
             # login to opensensemap account to get token
             loginUrl = 'https://api.opensensemap.org/users/sign-in'
@@ -1178,36 +1272,73 @@ def add_station():
 
         #print(mail)
         count = dict()
+        owner_id = None
+        current_user = get_authenticated_user()
+        if current_user:
+            owner_id = str(current_user["_id"])
+        station_payload = {"station_id": id, "location":location, "name":body['name'], "mail":mail, "count": count, "sensebox_id":sensebox_id, "type": type, "advancedSettings": advancedSettings, "key":key, "stationSoftware": sationSoftware}
+        if owner_id:
+            station_payload["ownerId"] = owner_id
         # Add object to movie and save
-        station = stations.insert_one({"station_id": id, "location":location, "name":body['name'], "mail":mail, "count": count, "sensebox_id":sensebox_id, "type": type, "advancedSettings": advancedSettings})
+        station = stations.insert_one(station_payload)
         movementsCollection = db["movements_"+ id]
         movementsCollection.create_index( [( "start_date", -1 )] )
         environmentCollection = db["environments_"+ id]
         environmentCollection.create_index( [( "month", -1 )] )
 
-        return {"id": id}, 201
-    station = list(stations.find({ "type": {  "$ne": "test" } }, {'_id' : False, "mail":False} ))
+        return {"id": id, "key": key}, 201
+    station = list(stations.find({ "type": {  "$ne": "test" } }, {'_id' : False, "mail":False, "count":False, "key":False} ))
     return  jsonify(station), 200
 
 
 @app.route('/api/station/<station_id>', methods=['GET', 'PUT', 'DELETE'])
 def station(station_id: str):
     if request.method=="GET":
-        numberOfMovements = request.args.get('movements')
+        movement_limit_raw = request.args.get('movements')
+        movement_offset_raw = request.args.get('movementsOffset')
+        if movement_offset_raw is None:
+            movement_offset_raw = request.args.get('movements_offset', 0)
+        movement_limit = 0
+        movement_offset = 0
+        try:
+            if movement_limit_raw:
+                movement_limit = max(int(movement_limit_raw), 0)
+        except Exception:
+            movement_limit = 0
+        try:
+            if movement_offset_raw:
+                movement_offset = max(int(movement_offset_raw), 0)
+        except Exception:
+            movement_offset = 0
         apikey= request.args.get("apikey")
-        station = None
-        if API_KEY == apikey:
-            station = stations.find_one({"station_id":station_id}, {'_id' : False} )
-        else: 
-            station = stations.find_one({"station_id":station_id}, {'_id' : False, "mail":False} )
-        #print(station, flush=True)
+        station = stations.find_one({"station_id":station_id}, {'_id' : False} )
         if station is None:
             return "not found", 404
-        movements=[]
-        if numberOfMovements and int(numberOfMovements) > 0:
-            movements = list(db["movements_" + station_id].find({}, {'_id' : False}).sort("start_date",-1).limit(int(numberOfMovements)))
-        else:
-            movements = list(db["movements_" + station_id].find({}, {'_id' : False}).sort("start_date",-1))
+        station_key = ensure_station_key(station)
+        auth_user = get_authenticated_user()
+        has_api_access = API_KEY == apikey or station_key == apikey
+        is_owner = is_station_owner(station, auth_user)
+        response_station = dict(station)
+        if not has_api_access and not is_owner:
+            response_station.pop("mail", None)
+            response_station.pop("key", None)
+        movements_collection = db["movements_" + station_id]
+        movements_cursor = movements_collection.find({}, {'_id' : False}).sort("start_date",-1)
+        if movement_offset > 0:
+            movements_cursor = movements_cursor.skip(movement_offset)
+        if movement_limit > 0:
+            movements_cursor = movements_cursor.limit(movement_limit)
+        movements = list(movements_cursor)
+        movements_meta = None
+        if movement_limit > 0 or movement_offset > 0:
+            total_movements = movements_collection.count_documents({})
+            movements_meta = {
+                "limit": movement_limit,
+                "offset": movement_offset,
+                "returned": len(movements),
+                "total": total_movements,
+                "hasMore": (movement_offset + len(movements)) < total_movements
+            }
         if station["type"] == "exhibit":
             statistics = db["statistics"].find_one({"station_id": "all"}, {'_id' : False})
             start = 0
@@ -1218,9 +1349,10 @@ def station(station_id: str):
                 bird = random.choice(statistics["specialBirds"])
                 movement = random.choice(bird["movements"])
                 movements.append(movement)       
-                    
-        station["measurements"] = dict()
-        station["measurements"]["movements"] = movements
+        if movements_meta:
+            response_station["movementsMeta"] = movements_meta
+        response_station["measurements"] = dict()
+        response_station["measurements"]["movements"] = movements
         envWanted = request.args.get('environment')
         if envWanted:
             environment= db["environments_"+station_id].find({}, {'_id' : False}).sort("month",-1)
@@ -1229,19 +1361,35 @@ def station(station_id: str):
             environments = []
             for months in environment:
                 environments= environments + months["measurements"]
-            station["measurements"]["environment"] = environments
-        return jsonify(station), 200
+            response_station["measurements"]["environment"] = environments
+        return jsonify(response_station), 200
     if request.method=="PUT":
         apikey= request.args.get("apikey")
         body = request.get_json()
-        if API_KEY != apikey:
+        station = stations.find_one({"station_id":station_id}, {'_id' : False} )
+        if station is None:
+            return "not found", 404
+        station_key = ensure_station_key(station)
+        user = get_authenticated_user()
+        if API_KEY != apikey and station_key != apikey and not is_station_owner(station, user):
             return "Not authorized", 401
+        software_value = body.get("stationSoftware")
+        if software_value:
+            normalized_software = software_value.lower()
+            if normalized_software not in ALLOWED_STATION_SOFTWARE:
+                return "stationSoftware must be one of birdiary or duisbird", 400
+            body["stationSoftware"] = normalized_software
         result= stations.update_one({"station_id":station_id}, {'$set': body})
         return jsonify(result.modified_count), 200
     if request.method=="DELETE":
         apikey= request.args.get("apikey")
         deleteData = request.args.get("deleteData")
-        if API_KEY != apikey:
+        station = stations.find_one({"station_id":station_id}, {'_id' : False} )
+        if station is None:
+            return "not found", 404
+        station_key = ensure_station_key(station)
+        user = get_authenticated_user()
+        if API_KEY != apikey and station_key != apikey and not is_station_owner(station, user):
             return "Not authorized", 401
         stations.delete_one({"station_id": station_id})
         if(deleteData):
@@ -1427,7 +1575,10 @@ def handle_movement(station_id: str, movement_id: str):
     if request.method=="DELETE":
         apikey= request.args.get("apikey")
         deleteData = request.args.get("deleteData")
-        if API_KEY != apikey:
+        station = stations.find_one({"station_id": station_id}, {'_id' : False})
+        station_key = ensure_station_key(station) if station else None
+        user = get_authenticated_user()
+        if API_KEY != apikey and (not station or station_key != apikey) and not is_station_owner(station, user):
             return "Not authorized", 401
         if deleteData:
             movements = db["movements_" + station_id].find({"mov_id": movement_id})
@@ -1615,6 +1766,145 @@ def get_feed(station_id: str):
     for months in feed:
             feeds= feeds + months["measurements"]
     return jsonify(feeds), 200
+
+
+@app.route('/api/register', methods=['POST'])
+def register_user():
+    body = request.get_json() or {}
+    email = body.get('email', '').strip().lower()
+    password = body.get('password')
+    name = body.get('name', '').strip()
+    if not email or not password:
+        return jsonify({"message": "Email and password are required."}), 400
+    if len(password) < 8:
+        return jsonify({"message": "Password must be at least 8 characters long."}), 400
+    if users.find_one({"email": email}):
+        return jsonify({"message": "User already exists."}), 400
+    user_doc = {
+        "email": email,
+        "name": name,
+        "passwordHash": generate_password_hash(password),
+        "createdAt": datetime.utcnow()
+    }
+    result = users.insert_one(user_doc)
+    user_doc["_id"] = result.inserted_id
+    sessions.delete_many({"user_id": str(result.inserted_id)})
+    token = create_session_token(result.inserted_id)
+    return jsonify({"token": token, "user": sanitize_user(user_doc)}), 201
+
+
+@app.route('/api/login', methods=['POST'])
+def login_user():
+    body = request.get_json() or {}
+    email = body.get('email', '').strip().lower()
+    password = body.get('password')
+    if not email or not password:
+        return jsonify({"message": "Email and password are required."}), 400
+    user = users.find_one({"email": email})
+    if not user or not check_password_hash(user.get("passwordHash", ""), password):
+        return jsonify({"message": "Invalid email or password."}), 401
+    sessions.delete_many({"user_id": str(user["_id"])})
+    token = create_session_token(user["_id"])
+    return jsonify({"token": token, "user": sanitize_user(user)}), 200
+
+
+@app.route('/api/logout', methods=['POST'])
+def logout_user():
+    token = get_authorization_token()
+    if token:
+        sessions.delete_one({"token": token})
+    return jsonify({"message": "Logged out"}), 200
+
+
+@app.route('/api/me', methods=['GET'])
+def get_current_user():
+    user = get_authenticated_user()
+    if not user:
+        return "Not authorized", 401
+    return jsonify(sanitize_user(user)), 200
+
+
+@app.route('/api/reset-password', methods=['POST'])
+def reset_password():
+    user = get_authenticated_user(include_password=True)
+    if not user:
+        return "Not authorized", 401
+    body = request.get_json() or {}
+    current_password = body.get('currentPassword')
+    new_password = body.get('newPassword')
+    if not current_password or not new_password:
+        return jsonify({"message": "Both currentPassword and newPassword are required."}), 400
+    if len(new_password) < 8:
+        return jsonify({"message": "New password must be at least 8 characters long."}), 400
+    if not check_password_hash(user.get("passwordHash", ""), current_password):
+        return jsonify({"message": "Current password is incorrect."}), 400
+    users.update_one({"_id": user["_id"]}, {'$set': {"passwordHash": generate_password_hash(new_password)}})
+    sessions.delete_many({"user_id": str(user["_id"])})
+    token = create_session_token(user["_id"])
+    return jsonify({"message": "Password updated", "token": token}), 200
+
+
+@app.route('/api/my-stations', methods=['GET'])
+def get_my_stations():
+    user = get_authenticated_user()
+    if not user:
+        return "Not authorized", 401
+    movement_limit_raw = request.args.get('movements', default=0)
+    movement_offset_raw = request.args.get('movementsOffset', default=0)
+    try:
+        movement_limit = max(int(movement_limit_raw), 0)
+    except Exception:
+        movement_limit = 0
+    try:
+        movement_offset = max(int(movement_offset_raw), 0)
+    except Exception:
+        movement_offset = 0
+    owner_id = str(user["_id"])
+    owned_stations = list(stations.find({"ownerId": owner_id}, {'_id': False}))
+    if movement_limit > 0:
+        for station in owned_stations:
+            collection_name = "movements_" + station["station_id"]
+            movements_collection = db[collection_name]
+            movements_cursor = movements_collection.find({}, {'_id': False}).sort("start_date", -1)
+            if movement_offset > 0:
+                movements_cursor = movements_cursor.skip(movement_offset)
+            if movement_limit > 0:
+                movements_cursor = movements_cursor.limit(movement_limit)
+            station_movements = list(movements_cursor)
+            station["movements"] = station_movements
+            total_movements = movements_collection.count_documents({})
+            station["movementsMeta"] = {
+                "limit": movement_limit,
+                "offset": movement_offset,
+                "returned": len(station_movements),
+                "total": total_movements,
+                "hasMore": (movement_offset + len(station_movements)) < total_movements
+            }
+    return jsonify(owned_stations), 200
+
+
+@app.route('/api/claim-station', methods=['POST'])
+def claim_station():
+    user = get_authenticated_user()
+    if not user:
+        return "Not authorized", 401
+    body = request.get_json() or {}
+    station_id = (body.get('stationId') or '').strip()
+    if not station_id:
+        return jsonify({"message": "stationId is required."}), 400
+    station = stations.find_one({"station_id": station_id})
+    if not station:
+        return jsonify({"message": "Station not found."}), 404
+    current_owner = station.get("ownerId")
+    current_user_id = str(user["_id"])
+    if current_owner and current_owner != current_user_id:
+        return jsonify({"message": "Station is already assigned to another user."}), 409
+    if current_owner == current_user_id:
+        updated_station = stations.find_one({"station_id": station_id}, {'_id': False})
+        return jsonify({"message": "Station already linked to your account.", "station": updated_station}), 200
+    stations.update_one({"station_id": station_id}, {'$set': {"ownerId": current_user_id}})
+    updated_station = stations.find_one({"station_id": station_id}, {'_id': False})
+    return jsonify({"message": "Station assigned to your account.", "station": updated_station}), 200
 
 if __name__==('__main__'):
     app.run(host="0.0.0.0", debug=False)

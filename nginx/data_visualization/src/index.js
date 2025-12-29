@@ -11,6 +11,7 @@ import {
   createRoutesFromChildren,
   matchRoutes,
 } from "react-router-dom";
+import { AuthProvider } from './context/AuthContext';
 
 Sentry.init({
   dsn: "https://15b5f4a11ed143b89a1dba7af4ee76e7@o4504179650723840.ingest.sentry.io/4504179659898881",
@@ -40,7 +41,9 @@ const myFallback = <FallbackComponent />;
 ReactDOM.render(
   <React.StrictMode>
     <Sentry.ErrorBoundary fallback={myFallback} showDialog>
-    <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </Sentry.ErrorBoundary>
   </React.StrictMode>,
   document.getElementById('root')

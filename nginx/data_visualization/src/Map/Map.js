@@ -2,7 +2,6 @@
 import React from 'react'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 // icon creation
-import L, { icon } from 'leaflet'
 import requests from '../helpers/requests'
 import { Button, Grid, Dialog, AppBar, IconButton, Toolbar, Divider } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
@@ -22,7 +21,8 @@ class OwnMap extends React.Component {
       stations: [],
       open: false,
       map: null,
-      legendOpen: true
+      legendOpen: true,
+      showAllStations: false
     };
   };
 
@@ -66,8 +66,59 @@ class OwnMap extends React.Component {
   }
 
 
+  parseDate = (value) => {
+    const timestamp = Date.parse(value);
+    return Number.isNaN(timestamp) ? null : timestamp;
+  };
+
+
+  getStationLastDataTime = (station) => {
+    const timestamps = [];
+    if (station.lastEnvironment && station.lastEnvironment.date) {
+      const parsed = this.parseDate(station.lastEnvironment.date);
+      if (parsed !== null) {
+        timestamps.push(parsed);
+      }
+    }
+    if (station.lastMovement && station.lastMovement.start_date) {
+      const parsed = this.parseDate(station.lastMovement.start_date);
+      if (parsed !== null) {
+        timestamps.push(parsed);
+      }
+    }
+    if (station.lastFeedStatus && station.lastFeedStatus.date) {
+      const parsed = this.parseDate(station.lastFeedStatus.date);
+      if (parsed !== null) {
+        timestamps.push(parsed);
+      }
+    }
+    if (timestamps.length === 0) {
+      return null;
+    }
+    return Math.max(...timestamps);
+  };
+
+
+  isStationActive = (station) => {
+    const lastDataTime = this.getStationLastDataTime(station);
+    if (!lastDataTime) {
+      return false;
+    }
+    const threshold = new Date();
+    threshold.setMonth(threshold.getMonth() - 3);
+    return lastDataTime >= threshold.getTime();
+  };
+
+
+  toggleShowAllStations = () => {
+    this.setState((prevState) => ({ showAllStations: !prevState.showAllStations }));
+  };
+
+
 
   render() {
+    const stationsToDisplay = this.state.showAllStations ? this.state.stations : this.state.stations.filter(this.isStationActive);
+    const hiddenStationCount = this.state.stations.length - stationsToDisplay.length;
     const bounds = [[
       48.87194147722911,
       5.943603515625
@@ -84,14 +135,14 @@ class OwnMap extends React.Component {
             <Button variant="contained" style={{ top: 10, right: 10, position: "absolute", zIndex: "5000", backgroundColor: "orange" }} onClick={this.handleClickOpen} >
               {language[this.props.language]["map"]["statistics"]}
             </Button>}
-          <MapContainer style={{ height: "calc(100vh - (2.5rem + 64px))" }} bounds={bounds} zoom={15} whenCreated={this.setMap} >
+          <MapContainer style={{ height: "calc(100vh - (5.25rem + 64px))" }} bounds={bounds} zoom={15} whenCreated={this.setMap} >
 
             <TileLayer
               attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             {/* Map markers on the Map,if marker was clicked turn green*/}
-            {this.state.stations.map((marker, i) => {
+            {stationsToDisplay.map((marker, i) => {
               let environment = false
               let movement = false
               let feed = false
@@ -172,20 +223,27 @@ class OwnMap extends React.Component {
                   </div>
                 </Popup> </Marker>
             })}
-            <Legend map={this.state.map} language={this.props.language} open={this.state.legendOpen} />
+            <Legend
+              map={this.state.map}
+              language={this.props.language}
+              open={this.state.legendOpen}
+              showAllStations={this.state.showAllStations}
+              hiddenStationCount={hiddenStationCount}
+              onToggleShowAll={this.toggleShowAllStations}
+            />
           </MapContainer>
           {this.state.legendOpen ?
             <IconButton
               color="inherit"
               onClick={this.handleCloseLegend}
               aria-label="close"
-              style={{ position: "absolute", right: "10px", bottom: "350px", zIndex: 2000 }}
+              style={{ position: "absolute", right: "10px", bottom: "400px", zIndex: 2000 }}
             >
               <CloseIcon />
             </IconButton> : ""}
         </Grid>
         {this.state.open ?
-          <Grid item xs={this.state.open ? 12 : 0} md={this.state.open ? 12 : 0} lg={this.state.open ? 4 : 0} style={{ maxHeight: "calc(100vh - (2.5rem + 64px))" }}>
+          <Grid item xs={this.state.open ? 12 : 0} md={this.state.open ? 12 : 0} lg={this.state.open ? 4 : 0} style={{ maxHeight: "calc(100vh - (5.25rem + 64px))" }}>
             <AppBar sx={{ position: 'relative' }} style={{ backgroundColor: "orange" }} >
               <Toolbar>
                 <IconButton

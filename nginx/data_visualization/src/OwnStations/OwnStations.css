@@ -1,0 +1,87 @@
+.own-stations-wrapper {
+  padding: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.own-stations-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.own-stations-card {
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.station-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.station-key-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.station-field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.station-advanced-field {
+  margin-top: 16px;
+}
+
+.station-advanced-field .MuiTextField-root {
+  margin-bottom: 4px;
+}
+
+.station-movement-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.movement-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fafafa;
+  border-radius: 8px;
+  padding: 12px 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.movement-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.own-stations-loading {
+  text-align: center;
+  font-weight: 600;
+  padding: 48px 0;
+}
+
+.password-form {
+  max-width: 480px;
+}

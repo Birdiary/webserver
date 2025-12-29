@@ -55,11 +55,40 @@ body {
 
 #footer {
   box-sizing: border-box;
-  background-color: #004286;
+  background-color: orange;
   position: fixed;
   bottom: 0;
   min-width: 100%;
-  height: 2.5rem;
+  height: 5.25rem;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+  width: 100%;
+}
+
+.footer-alert {
+  width: 100%;
+  max-width: 960px;
+  background-color: #f57c00;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1.3;
+}
+
+.footer-alert a {
+  color: #fff;
+  text-decoration: underline;
 }
 
 #header {
@@ -69,6 +98,7 @@ body {
 #links {
   text-align: center;
   color: white;
+  font-size: 0.95rem;
 }
 
 #link {
@@ -93,8 +123,17 @@ body {
 #mainView {
   overflow-y: auto;
   overflow-x: hidden;
-  max-height: calc(100vh - (2.5rem + 64px));
-  min-height: calc(100vh - (2.5rem + 64px));
+  max-height: calc(100vh - (5.25rem + 64px));
+  min-height: calc(100vh - (5.25rem + 64px));
   margin-top: 64px;
-  margin-bottom: 2.5rem;
+  margin-bottom: 5.25rem;
+}
+
+.page-loading {
+  min-height: calc(100vh - (2.5.25rem + 64px));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1.25rem;
 }

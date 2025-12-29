@@ -14,37 +14,46 @@ import {
   useNavigationType,
   createRoutesFromChildren,
   matchRoutes,
+  Navigate,
 } from "react-router-dom";
 import Header from './Navbar/Navbar';
 import * as Sentry from "@sentry/react";
+import Login from './Login/Login';
+import Register from './Register/Register';
+import OwnStations from './OwnStations/OwnStations';
+import { useAuth } from './context/AuthContext';
 
 import './App.css';
-import { useNavigate, Link } from 'react-router-dom';
 import Movement from './Movement/Movement';
 
 const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes)
 
+const RequireAuth = ({ children }) => {
+  const { user, loading } = useAuth();
+  const location = useLocation();
 
-const Footer = (props) => {
+  if (loading) {
+    return <div className="page-loading">Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/view/login" state={{ from: location }} replace />;
+  }
+
+  return children;
+};
 
 
+const Footer = () => {
   return (
-    <div style={{ backgroundColor: "orange" }} className="mui-container mui--text-center" id="footer">
-      <div id="links" style={{ color: "white" }}>
-        <a id="link" href="/doc">API</a> |&nbsp;
-        Version&nbsp;<code>1.0.2</code>
-        <div
-          style={{
-            marginTop: 8,
-            display: "inline-block",
-            backgroundColor: "#cc5500",
-            padding: "10px 14px",
-            borderRadius: 4,
-            fontWeight: "bold",
-            textTransform: "uppercase",
-          }}
-        >
-          Hackathon-Treffen: 24.01.2026 · 11:00 · Geo 1 (WWU). Alle Infos unter <a href="/#news">EN #news</a> / <a href="/de/#news">DE #news</a>. Nächstes Discord-Treffen 07.01.2026 · 19:00.
+    <div className="mui-container mui--text-center" id="footer">
+      <div className="footer-content">
+        <div className="footer-alert">
+          <strong>Hackathon-Treffen:</strong>&nbsp;24.01.2026 · 11:00 · Geo 1 (WWU). Alle Infos unter <a href="/#news">EN</a> / <a href="/de/#news">DE</a>. Nächstes Discord-Treffen 07.01.2026 · 19:00.
+        </div>
+        <div id="links">
+          <a id="link" href="/doc">API</a> |&nbsp;
+          Version&nbsp;<code>1.0.2</code>
         </div>
       </div>
     </div>
@@ -93,6 +102,9 @@ class App extends React.Component {
           <div>
             <div className="content" id="mainView" style={{position : "relative"}}>
               <SentryRoutes>
+                <Route path="/view/login" element={<Login language={this.state.language} />} />
+                <Route path="/view/register" element={<Register language={this.state.language} />} />
+                <Route path="/view/own-stations" element={<RequireAuth><OwnStations language={this.state.language} /></RequireAuth>} />
                 <Route exact path="/view" element={<OwnMap language={this.state.language} changeLang={this.changeLang} />} />
                 <Route exact path="/view/station/:id" element={<StationView language={this.state.language} />}></Route>
                 <Route path="/view/station/:id/:mov_id" element={<Movement language={this.state.language} />}></Route>

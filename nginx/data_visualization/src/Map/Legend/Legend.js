@@ -1,5 +1,5 @@
-import L, { map } from "leaflet";
-import { useEffect, useState } from "react";
+import L from "leaflet";
+import { useEffect } from "react";
 import "./Legend.css"
 import language from "../../languages/languages";
 import birdHouseGreen from '../../helpers/icons/bird-house-green.svg'
@@ -26,14 +26,19 @@ function Legend(props) {
     if (props.map && props.open) {
 
       legend = L.control({ position: "bottomright" });
-      let head = language[props.language]["legend"]["head"]
-      let description = language[props.language]["legend"]["description"]
-      let symbol = language[props.language]["legend"]["symbol"]
-      let meaning = language[props.language]["legend"]["meaning"]
-      let black = language[props.language]["legend"]["black"]
-      let green = language[props.language]["legend"]["green"]
-      let bird = language[props.language]["legend"]["bird"]
-      let blackBird = language[props.language]["legend"]["blackBird"]
+      const legendLanguage = language[props.language]["legend"]
+      let head = legendLanguage["head"]
+      let description = legendLanguage["description"]
+      let symbol = legendLanguage["symbol"]
+      let meaning = legendLanguage["meaning"]
+      let black = legendLanguage["black"]
+      let green = legendLanguage["green"]
+      let bird = legendLanguage["bird"]
+      let blackBird = legendLanguage["blackBird"]
+      const inactiveNotice = legendLanguage["inactiveNotice"]
+      const showAllLabel = props.showAllStations ? legendLanguage["hideInactive"] : legendLanguage["showAll"]
+      const hiddenStations = props.hiddenStationCount || 0
+      const hiddenStationsText = hiddenStations > 0 ? ` (${hiddenStations})` : ""
 
       legend.onAdd = () => {
         const div = L.DomUtil.create("div", "info legend");
@@ -61,7 +66,23 @@ function Legend(props) {
         "<td><img src='"+ birdHouseBlackBird + "' width=50 height=50/></td>"+
         "<td>"+ blackBird + "</td>"+
       "</tr>"+
-        "</table>"
+        "</table>"+
+        `<div class="legend__inactive-notice">${inactiveNotice}${hiddenStationsText}</div>`+
+        `<button type="button" class="legend__toggle-btn">${showAllLabel}</button>`;
+
+        L.DomEvent.disableClickPropagation(div);
+
+        const toggleButton = div.querySelector(".legend__toggle-btn");
+        if (toggleButton) {
+          toggleButton.addEventListener("click", (event) => {
+            L.DomEvent.stopPropagation(event);
+            event.preventDefault();
+            if (props.onToggleShowAll) {
+              props.onToggleShowAll();
+            }
+          });
+        }
+
         return div;
       };
 

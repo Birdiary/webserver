@@ -4,19 +4,66 @@ const _env = {
     api: config.apiUrl // eslint-disable-line
 }
 
-function getStation(id, movements) {
-    var _url = _env.api + '/station/' + id + "?movements=" + movements;
-    //var _url = "https://wiediversistmeingarten.org/api/station/4a936912-65db-475d-bcd6-9ee292079830"
-    return axios.get(_url);
+function authHeaders(token) {
+    if (!token) {
+        return {};
+    }
+    return {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    };
+}
+
+function buildConfig(token, params) {
+    const config = authHeaders(token);
+    if (params) {
+        config.params = params;
+    }
+    return config;
+}
+
+function normalizeMovementParams(arg) {
+    const params = {};
+    if (typeof arg === 'number') {
+        if (arg > 0) {
+            params.movements = arg;
+        }
+        return params;
+    }
+    if (arg && typeof arg === 'object') {
+        const limit = typeof arg.movements === 'number' ? arg.movements : arg.limit;
+        const offset = typeof arg.movementsOffset === 'number' ? arg.movementsOffset : arg.offset;
+        if (typeof limit === 'number' && limit > 0) {
+            params.movements = limit;
+        }
+        if (typeof offset === 'number' && offset > 0) {
+            params.movementsOffset = offset;
+        }
+        return params;
+    }
+    return params;
+}
+
+function getStation(id, options, token) {
+    let authToken = token;
+    let movementOptions = options;
+    if (typeof options === 'string' && typeof token === 'undefined') {
+        authToken = options;
+        movementOptions = undefined;
+    }
+    const params = normalizeMovementParams(movementOptions);
+    const config = buildConfig(authToken, Object.keys(params).length ? params : undefined);
+    return axios.get(_env.api + '/station/' + id, config);
 }
 
 function getStations() {
     return axios.get(_env.api + '/station');
 }
 
-function sendStation(body) {
+function sendStation(body, token) {
     var _url = _env.api + '/station';
-    return axios.post(_url, body);
+    return axios.post(_url, body, authHeaders(token));
 }
 
 
@@ -91,6 +138,59 @@ function returnImageUrl(id){
     return _url
 }
 
+function registerUser(body){
+    var _url = _env.api + '/register';
+    return axios.post(_url, body);
+}
+
+function login(body){
+    var _url = _env.api + '/login';
+    return axios.post(_url, body);
+}
+
+function logout(token){
+    var _url = _env.api + '/logout';
+    return axios.post(_url, {}, authHeaders(token));
+}
+
+function getCurrentUser(token){
+    var _url = _env.api + '/me';
+    return axios.get(_url, authHeaders(token));
+}
+
+function resetPassword(payload, token){
+    var _url = _env.api + '/reset-password';
+    return axios.post(_url, payload, authHeaders(token));
+}
+
+function getMyStations(token, options){
+    const params = normalizeMovementParams(options);
+    const config = buildConfig(token, Object.keys(params).length ? params : undefined);
+    return axios.get(_env.api + '/my-stations', config);
+}
+
+function updateStation(stationId, payload, token){
+    var _url = _env.api + `/station/${stationId}`;
+    return axios.put(_url, payload, authHeaders(token));
+}
+
+function claimStation(payload, token){
+    var _url = _env.api + '/claim-station';
+    return axios.post(_url, payload, authHeaders(token));
+}
+
+function deleteStation(stationId, token, deleteData){
+    var _url = _env.api + `/station/${stationId}`;
+    const config = buildConfig(token, deleteData ? { deleteData: true } : null);
+    return axios.delete(_url, config);
+}
+
+function deleteMovement(stationId, movementId, token, deleteData){
+    var _url = _env.api + `/movement/${stationId}/${movementId}`;
+    const config = buildConfig(token, deleteData ? { deleteData: true } : null);
+    return axios.delete(_url, config);
+}
+
 module.exports = {
     getStation : getStation,
     sendStation : sendStation,
@@ -105,4 +205,14 @@ module.exports = {
     getImage: getImage,
     returnImageUrl: returnImageUrl,
     createImage: createImage,
+    registerUser: registerUser,
+    login: login,
+    logout: logout,
+    getCurrentUser: getCurrentUser,
+    resetPassword: resetPassword,
+    getMyStations: getMyStations,
+    updateStation: updateStation,
+    claimStation: claimStation,
+    deleteStation: deleteStation,
+    deleteMovement: deleteMovement,
 };

@@ -1,0 +1,21 @@
+.register-wrapper {
+  min-height: calc(100vh - (5.25rem + 64px));
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 32px;
+  background: linear-gradient(135deg, rgba(255,165,0,0.15), rgba(255,255,255,0));
+}
+
+.register-card {
+  width: 100%;
+  max-width: 520px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.register-form {
+  width: 100%;
+}

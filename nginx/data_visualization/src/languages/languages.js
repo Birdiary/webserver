@@ -6,7 +6,10 @@ const language = {
                 "Learn more about our project",
             overview: "Map",
             validation: "Validation",
-            statistics: "Statistics"
+            statistics: "Statistics",
+            ownStations: "My Stations",
+            login: "Log in",
+            logout: "Log out"
         },
 
         map: {
@@ -17,6 +20,100 @@ const language = {
             statistics: "Show statistics",
             level: "Silo level: "
         },
+        login: {
+            title: "Welcome back",
+            subtitle: "Sign in to manage your stations and alerts.",
+            email: "Email",
+            password: "Password",
+            submit: "Log in",
+            error: "We couldn't sign you in. Double-check your credentials.",
+            backToMap: "Back to the map",
+            registerPrompt: "Need an account?",
+            registerLink: "Create one now"
+        },
+        register: {
+            title: "Create your account",
+            subtitle: "Sign up to manage your bird stations and notifications.",
+            name: "Display name (optional)",
+            email: "Email",
+            password: "Password",
+            confirmPassword: "Confirm password",
+            submit: "Register",
+            success: "Account created successfully.",
+            error: "We couldn't create your account.",
+            passwordMismatch: "Passwords do not match.",
+            backToLogin: "Back to login",
+            backToMap: "Back to the map"
+        },
+        ownStations: {
+            title: "My Stations",
+            subtitle: "Rename, review, or remove the stations linked to your account.",
+            refresh: "Refresh",
+            loading: "Loading your stations...",
+            loadError: "We couldn't load your stations right now.",
+            empty: "No stations are linked to your account yet.",
+            createCta: "Create a station",
+            viewStation: "Open station view",
+            deleteStation: "Delete station",
+            deleteConfirm: "Delete station {name}? All recordings will be removed.",
+            deleteSuccess: "Station deleted.",
+            deleteError: "Unable to delete the station.",
+            stationKey: "Station key",
+            copyKey: "Copy",
+            keyCopied: "Station key copied to clipboard.",
+            keyCopyError: "Unable to copy the key. Please copy it manually.",
+            nameLabel: "Station name",
+            locationLat: "Latitude",
+            locationLng: "Longitude",
+            mailAddresses: "Notification emails",
+            mailHelper: "Separate multiple addresses with commas",
+            mailNotifications: "Send notifications",
+            senseboxLabel: "senseBox ID",
+            softwareLabel: "Station software",
+            softwareOptions: {
+                birdiary: "Birdiary",
+                duisbird: "DuisBird"
+            },
+            typeLabel: "Station type",
+            advancedSettings: "Advanced settings (JSON)",
+            advancedSettingsHelper: "Include exhibit/test options or custom overrides as JSON.",
+            saveStation: "Save station",
+            saveSuccess: "Station updated.",
+            saveError: "Unable to update the station.",
+            invalidLocation: "Latitude and longitude must be valid numbers.",
+            invalidAdvancedSettings: "Advanced settings must be valid JSON.",
+            types: {
+                observer: "Observer",
+                test: "Test",
+                exhibit: "Exhibit"
+            },
+            movements: "Latest movements",
+            movementDate: "Captured",
+            movementSpecies: "Species",
+            noSpecies: "No detection recorded",
+            loadMoreMovements: "Load more movements",
+            loadAllMovements: "Load all movements",
+            loadingMovements: "Loading movements...",
+            allMovementsLoaded: "All movements are visible.",
+            deleteMovement: "Delete",
+            deleteMovementConfirm: "Delete this movement? The video and audio will be removed.",
+            deleteMovementSuccess: "Movement deleted.",
+            deleteMovementError: "Unable to delete the movement.",
+            noMovements: "No movements recorded yet.",
+            passwordTitle: "Password & security",
+            currentPassword: "Current password",
+            newPassword: "New password",
+            passwordAction: "Update password",
+            passwordSuccess: "Password updated successfully.",
+            passwordError: "Unable to update the password.",
+            claimTitle: "Claim an existing station",
+            claimSubtitle: "Link a station you created earlier by providing its ID.",
+            claimStationId: "Station ID",
+            claimAction: "Link station to my account",
+            claimSuccess: "Station linked to your account.",
+            claimError: "We couldn't link that station. Check the ID and try again.",
+            claimMissingFields: "Enter a station ID."
+        },
         legend: {
             head: "Legend",
             description: "The symbols represent the for environmental data the last 24 and for birds the last 72 hours",
@@ -25,7 +122,10 @@ const language = {
             black: "No environmental data",
             green: "Environmental data",
             bird: "Environmental data and birds",
-            blackBird: "Birds but no environmental data"
+            blackBird: "Birds but no environmental data",
+            inactiveNotice: "Stations without new data in the last 3 months are hidden by default.",
+            showAll: "Show all stations",
+            hideInactive: "Hide inactive stations"
         },
         dashboard: {
             header:  "Top 10 bird species, that were detected:"
@@ -63,7 +163,10 @@ const language = {
             button1: "1 Month",
             button2: "3 Months",
             button3: "All",
-            timespan: "Specify the period from which the data is displayed"       },
+            timespan: "Specify the period from which the data is displayed",
+            loadMoreMovements: "Load more recordings",
+            loadingMovements: "Loading recordings...",
+            allMovementsLoaded: "All recordings are visible."       },
 
         table: {
             noBird: "No bird was detected on the video",
@@ -105,6 +208,12 @@ const language = {
             numberVisualExamples: "Number of examples to be displayed on the ward and recorded by other stations.",
             type: "Type of the Station",
             typeHelper: 'There is a choice of 3 possible types. The normal station is the "Observer" type, which permanently records data. The "Test" type means that the station is not shown on the map and detections are automatically deleted. This is suitable for development purposes. The type "Exhibit" also automatically deletes the recorded videos. However, this is displayed on the map. In addition, examples of other stations can be displayed here.',
+            stationSoftwareLabel: "Station software",
+            stationSoftwareHelper: "Only Birdiary or DuisBird firmware is supported by the backend.",
+            softwareOptions: {
+                birdiary: "Birdiary",
+                duisbird: "DuisBird"
+            },
             deleteMinutes: "Time interval in minutes after which the recorded videos are deleted.",
             detectionThreshold: "Necessary probability from which the detections are stored by the AI.",
             detectionThresholdHelper: "Example: At 0.3, a detection is saved when the model claims with the probability of 30% that the detected bird on the video is a blue tit."        
@@ -172,7 +281,10 @@ const language = {
                 "Erfahre mehr über unser Projekt",
             overview: "Übersichtskarte",
             validation: "Validierung",
-            statistics: "Statistiken"
+            statistics: "Statistiken",
+            ownStations: "Meine Stationen",
+            login: "Anmelden",
+            logout: "Abmelden"
         },
 
         map: {
@@ -185,6 +297,100 @@ const language = {
             level: "Füllstand: "
 
         },
+        login: {
+            title: "Willkommen zurück",
+            subtitle: "Melde dich an, um deine Stationen zu verwalten.",
+            email: "E-Mail-Adresse",
+            password: "Passwort",
+            submit: "Anmelden",
+            error: "Anmeldung fehlgeschlagen. Bitte prüfe deine Zugangsdaten.",
+            backToMap: "Zurück zur Karte",
+            registerPrompt: "Noch kein Konto?",
+            registerLink: "Jetzt registrieren"
+        },
+        register: {
+            title: "Erstelle dein Konto",
+            subtitle: "Registriere dich, um Stationen zu verwalten und Benachrichtigungen zu erhalten.",
+            name: "Anzeigename (optional)",
+            email: "E-Mail-Adresse",
+            password: "Passwort",
+            confirmPassword: "Passwort bestätigen",
+            submit: "Registrieren",
+            success: "Konto wurde erstellt.",
+            error: "Konto konnte nicht erstellt werden.",
+            passwordMismatch: "Die Passwörter stimmen nicht überein.",
+            backToLogin: "Zur Anmeldung",
+            backToMap: "Zurück zur Karte"
+        },
+        ownStations: {
+            title: "Meine Stationen",
+            subtitle: "Benenne Stationen um, lösche Aufnahmen oder entferne ganze Stationen.",
+            refresh: "Aktualisieren",
+            loading: "Lade deine Stationen...",
+            loadError: "Die Stationen konnten nicht geladen werden.",
+            empty: "Dir ist noch keine Station zugeordnet.",
+            createCta: "Station anlegen",
+            viewStation: "Station öffnen",
+            deleteStation: "Station löschen",
+            deleteConfirm: "Station {name} löschen? Alle Aufnahmen werden entfernt.",
+            deleteSuccess: "Station gelöscht.",
+            deleteError: "Station konnte nicht gelöscht werden.",
+            stationKey: "Stationsschlüssel",
+            copyKey: "Kopieren",
+            keyCopied: "Stationsschlüssel kopiert.",
+            keyCopyError: "Schlüssel konnte nicht kopiert werden.",
+            nameLabel: "Stationsname",
+            locationLat: "Breitengrad",
+            locationLng: "Längengrad",
+            mailAddresses: "E-Mail-Benachrichtigungen",
+            mailHelper: "Mehrere Adressen durch Kommas trennen",
+            mailNotifications: "Benachrichtigungen senden",
+            senseboxLabel: "senseBox-ID",
+            softwareLabel: "Stationssoftware",
+            softwareOptions: {
+                birdiary: "Birdiary",
+                duisbird: "DuisBird"
+            },
+            typeLabel: "Stationstyp",
+            advancedSettings: "Erweiterte Einstellungen (JSON)",
+            advancedSettingsHelper: "Hier können Exhibit/Test-Optionen oder andere Parameter als JSON gepflegt werden.",
+            saveStation: "Station speichern",
+            saveSuccess: "Station aktualisiert.",
+            saveError: "Station konnte nicht aktualisiert werden.",
+            invalidLocation: "Breiten- und Längengrad müssen gültige Zahlen sein.",
+            invalidAdvancedSettings: "Die erweiterten Einstellungen müssen gültiges JSON sein.",
+            types: {
+                observer: "Observer",
+                test: "Test",
+                exhibit: "Exhibit"
+            },
+            movements: "Neueste Bewegungen",
+            movementDate: "Aufgenommen",
+            movementSpecies: "Art",
+            noSpecies: "Keine Bestimmung vorhanden",
+            loadMoreMovements: "Weitere Bewegungen laden",
+            loadAllMovements: "Alle Bewegungen laden",
+            loadingMovements: "Bewegungen werden geladen...",
+            allMovementsLoaded: "Alle Bewegungen werden angezeigt.",
+            deleteMovement: "Löschen",
+            deleteMovementConfirm: "Diese Bewegung löschen? Video und Audio werden entfernt.",
+            deleteMovementSuccess: "Bewegung gelöscht.",
+            deleteMovementError: "Bewegung konnte nicht gelöscht werden.",
+            noMovements: "Noch keine Bewegungen vorhanden.",
+            passwordTitle: "Passwort & Sicherheit",
+            currentPassword: "Aktuelles Passwort",
+            newPassword: "Neues Passwort",
+            passwordAction: "Passwort aktualisieren",
+            passwordSuccess: "Passwort wurde aktualisiert.",
+            passwordError: "Passwort konnte nicht aktualisiert werden.",
+            claimTitle: "Station zuordnen",
+            claimSubtitle: "Verknüpfe eine bereits bestehende Station mit deinem Account. Gib dazu die Stations-ID ein.",
+            claimStationId: "Stations-ID",
+            claimAction: "Station meinem Account zuordnen",
+            claimSuccess: "Station wurde deinem Account zugeordnet.",
+            claimError: "Station konnte nicht zugeordnet werden. Bitte prüfe die ID.",
+            claimMissingFields: "Bitte gib eine Stations-ID ein."
+        },
         legend: {
             head: "Legende",
             description: "Die Symbole repräsentieren die für Umweltdaten die letzten 24  und für Vögel die letzten 72 Stunden",
@@ -193,7 +399,10 @@ const language = {
             black: "Keine Umweltdaten",
             green: "Umweltdaten",
             bird: "Umweltdaten und Vögel",
-            blackBird: "Vögel aber keine Umweltdaten"
+            blackBird: "Vögel aber keine Umweltdaten",
+            inactiveNotice: "Stationen ohne neue Daten in den letzten 3 Monaten werden standardmäßig ausgeblendet.",
+            showAll: "Alle Stationen anzeigen",
+            hideInactive: "Inaktive Stationen ausblenden"
         },
         dashboard: {
             header:  "Top 10 Vogelarten, die an den Stationen erkannt wurden:"
@@ -231,7 +440,10 @@ const language = {
             button1: "1 Monat",
             button2: "3 Monate",
             button3: "Alle",
-            timespan: "Lege fest von welchem Zeitraum die Daten angezeigt werden: "
+            timespan: "Lege fest von welchem Zeitraum die Daten angezeigt werden: ",
+            loadMoreMovements: "Weitere Aufnahmen laden",
+            loadingMovements: "Aufnahmen werden geladen...",
+            allMovementsLoaded: "Alle Aufnahmen werden angezeigt."
         },
         table: {
             noBird: "Es wurde kein Vogel auf dem Video erkannt",
@@ -272,6 +484,12 @@ const language = {
             numberVisualExamples: "Anzahl an Beispielen, die auf der Station angezeigt werden sollen und von anderen Stationen aufgenommen wurden.",
             type: "Art der Station",
             typeHelper: 'Es gibt die Auswahl von 3 möglichen Arten. Die normale Station ist die Art "Observer" die dauerhaft Daten aufnimmt. Die Art "Test" bedeuted, dass die Station nicht auf der Karte angezeigt wird und Erkennungen automatisch gelöscht werden. Diese  ist für Entwicklungszwecke geeignet. Auch bei dem Typen "Exhibit" werdend die aufgenomennen Videos automatisch gelöscht. Diese wird jedoch auf der Karte angezeigt. Zusätzlich können hier Beispiele von anderen Stationen angezeigt werden.',
+            stationSoftwareLabel: "Stationssoftware",
+            stationSoftwareHelper: "Es werden nur Birdiary oder DuisBird unterstützt.",
+            softwareOptions: {
+                birdiary: "Birdiary",
+                duisbird: "DuisBird"
+            },
             deleteMinutes: "Zeitintervall in Minuten, nach dem die aufgenommen Videos wieder gelsöcht werden",
             detectionThreshold: "Notwendige Wahrscheinlichkeit, ab dem die Erkennungen von der KI gespeichert werden.",
             detectionThresholdHelper: "Bsp: Bei 0,3 wird ein Erkennung gespeichert, wenn das Modell behauptet mit der Wahrscheinlichkeit von 30% ist der erkannte Vogel auf dem Video eine Blaumeise."

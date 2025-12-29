@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from 'react-router-dom';
 import requests from "../helpers/requests";
 import ReactPlayer from 'react-player'
 import ReactAudioPlayer from 'react-audio-player';
 import ApexChart from "./visualization/Chart"
-import { Grid, Tab, Box, Button, Skeleton, TextField, Autocomplete, Snackbar, Alert, Tabs, ButtonGroup } from "@mui/material";
+import { Grid, Tab, Box, Button, Skeleton, TextField, Autocomplete, Snackbar, Alert, Tabs, ButtonGroup, Typography } from "@mui/material";
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -30,6 +30,7 @@ import 'onsenui/css/onsen-css-components.css';
 import { GestureDetector } from 'react-onsenui';
 import { useNavigate, Link } from 'react-router-dom';
 
+const MOVEMENT_PAGE_SIZE = 30;
 
 function StationView(props) {
 
@@ -62,6 +63,16 @@ function StationView(props) {
   const [snackbarOpen, setSnackbarOpen] = useState(false)
   const [bird, setBird] = useState("") 
   const [selectedButton, setSelectedButton] = useState("1");
+  const [movementMeta, setMovementMeta] = useState({
+    limit: MOVEMENT_PAGE_SIZE,
+    offset: 0,
+    returned: 0,
+    total: 0,
+    hasMore: false,
+    loading: false,
+    loadedAll: true,
+  });
+  const [movementSource, setMovementSource] = useState('station');
 
 
   useEffect(() => {
@@ -75,22 +86,60 @@ function StationView(props) {
   }, [counter]);
 
 
-  const getStation = () => {
-    requests.getStation(id, 30)
+  const getStation = ({ limit = MOVEMENT_PAGE_SIZE, offset = 0, append = false, refreshEnvironment = true } = {}) => {
+    setMovementSource('station');
+    setMovementMeta((prev) => ({ ...prev, loading: true }));
+    requests.getStation(id, { movements: limit, movementsOffset: offset })
       .then((res) => {
-        //console.log(res)
-
-        var data = res.data
-        var movementData = []
-        var movements = res.data.measurements.movements;
-        movements.map((item, i) => {
-          movementData.push(item);
+        const fetchedMovements = res.data?.measurements?.movements || [];
+        setData((prev) => {
+          if (!append || !prev || !prev.measurements) {
+            return res.data;
+          }
+          const existingMovements = prev.measurements.movements || [];
+          const existingIds = new Set(existingMovements.map((movement) => movement.mov_id));
+          const mergedMovements = [...existingMovements];
+          fetchedMovements.forEach((movement) => {
+            if (!existingIds.has(movement.mov_id)) {
+              mergedMovements.push(movement);
+            }
+          });
+          return {
+            ...res.data,
+            measurements: {
+              ...res.data.measurements,
+              movements: mergedMovements,
+            },
+          };
         });
-
-        data.measurements.movements = movementData
-        setData(data);
-        ////console.log(res); 
-        getEnvironment(1)
+        if (refreshEnvironment) {
+          getEnvironment(selectedButton);
+        }
+        const meta = res.data?.movementsMeta;
+        if (meta) {
+          setMovementMeta({
+            limit: meta.limit ?? limit,
+            offset: meta.offset ?? offset,
+            returned: meta.returned ?? fetchedMovements.length,
+            total: meta.total ?? fetchedMovements.length,
+            hasMore: Boolean(meta.hasMore),
+            loading: false,
+            loadedAll: !meta.hasMore,
+          });
+        } else {
+          const totalCount = append
+            ? (res.data?.measurements?.movements?.length || 0)
+            : fetchedMovements.length;
+          setMovementMeta({
+            limit,
+            offset: append ? Math.max(0, totalCount - fetchedMovements.length) : 0,
+            returned: fetchedMovements.length,
+            total: totalCount,
+            hasMore: false,
+            loading: false,
+            loadedAll: true,
+          });
+        }
       }).catch(err => {
         // Handle error
         let text = language[props.language]["stations"]["notFound"]
@@ -99,6 +148,22 @@ function StationView(props) {
         changeCounter(5)
         const myTimeout = setTimeout(routeToHome, 5000)
       })
+      .finally(() => {
+        setMovementMeta((prev) => ({ ...prev, loading: false }));
+      });
+  }
+
+  const handleLoadMoreMovements = () => {
+    if (movementMeta.loading || movementSource !== 'station' || !movementMeta.hasMore) {
+      return;
+    }
+    const currentCount = data?.measurements?.movements?.length || 0;
+    getStation({
+      limit: MOVEMENT_PAGE_SIZE,
+      offset: currentCount,
+      append: true,
+      refreshEnvironment: false,
+    });
   }
 
   function changeCounter(count) {
@@ -255,11 +320,32 @@ function StationView(props) {
     if (day) {
       searchDay = day.format("YYYY-MM-DD")
     }
-
+    setMovementSource('search');
+    setMovementMeta((prev) => ({ ...prev, loading: true }));
     requests.searchForSpecies(id, search, 30, searchDay)
       .then((res) => {
-        data.measurements.movements = res.data
-        setData({ ...data })
+        setData((prev) => {
+          const base = (prev && typeof prev === 'object') ? prev : {};
+          return {
+            ...base,
+            measurements: {
+              ...(base.measurements || {}),
+              movements: res.data,
+            },
+          };
+        });
+        setMovementMeta({
+          limit: 0,
+          offset: 0,
+          returned: res.data.length,
+          total: res.data.length,
+          hasMore: false,
+          loading: false,
+          loadedAll: true,
+        });
+      })
+      .catch(() => {
+        setMovementMeta((prev) => ({ ...prev, loading: false }));
       })
   }
 
@@ -395,7 +481,7 @@ function StationView(props) {
                       </IconButton>
                       <h4>{language[props.language]["stations"]["species"]}</h4>
 
-                      <BasicTable birds={movement.detections} finished={movement.video} getStation={event => getStation(event)} language={props.language} setBird={setBird} bird={bird} validation={movement.validation}></BasicTable>
+                      <BasicTable birds={movement.detections} finished={movement.video} getStation={getStation} language={props.language} setBird={setBird} bird={bird} validation={movement.validation}></BasicTable>
                       <br />
                       <ValidationForm setBird={setBird} bird={bird} language={props.language} />
                       <br></br>
@@ -408,6 +494,19 @@ function StationView(props) {
                   </GestureDetector>
                 </TabPanel>)}
             </TabContext>
+            {movementSource === 'station' && movementMeta.hasMore ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                <Button variant="outlined" onClick={handleLoadMoreMovements} disabled={movementMeta.loading}>
+                  {movementMeta.loading ? language[props.language]["stations"]["loadingMovements"] : language[props.language]["stations"]["loadMoreMovements"]}
+                </Button>
+              </Box>
+            ) : movementSource === 'station' && !movementMeta.hasMore && data && data.measurements && data.measurements.movements && data.measurements.movements.length > 0 ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                <Typography variant="caption" color="textSecondary">
+                  {language[props.language]["stations"]["allMovementsLoaded"]}
+                </Typography>
+              </Box>
+            ) : null}
           </div>
           : <p>{language[props.language]["stations"]["noData1"]}</p>}
           {

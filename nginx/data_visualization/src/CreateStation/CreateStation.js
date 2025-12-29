@@ -2,6 +2,10 @@ import React from 'react';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import FormHelperText from '@mui/material/FormHelperText';
 import requests from '../helpers/requests'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { MapContainer, Marker, Popup, TileLayer, useMapEvents, } from 'react-leaflet'
@@ -27,11 +31,18 @@ import { Link } from 'react-router-dom';
 import language from '../languages/languages';
 import L from "leaflet";
 import CryptoJS from 'crypto-js';
+import { AuthContext } from '../context/AuthContext';
 
 const center = {
   lat: 51.9606649,
   lng: 7.6261347,
 }
+
+const SOFTWARE_VALUES = ['birdiary', 'duisbird'];
+const normalizeSoftware = (value) => {
+  const normalized = (value || '').toLowerCase();
+  return SOFTWARE_VALUES.includes(normalized) ? normalized : SOFTWARE_VALUES[0];
+};
 
 
 
@@ -94,7 +105,8 @@ class CreateStation extends React.Component {
       numberVisualExamples: 6,
       detectionThreshold: 0.3,
       deleteMinutes: 20,
-      creatingImage : false
+      creatingImage : false,
+      stationSoftware: SOFTWARE_VALUES[0]
     };
     this.handler = this.handler.bind(this)
     this.secretKey = process.env.REACT_APP_SECRET_KEY;
@@ -142,6 +154,11 @@ class CreateStation extends React.Component {
   handleTypeChange = (event, value) => {
     var value = event.target.value
     this.setState({ type: value });
+  };
+
+  handleStationSoftwareChange = (event) => {
+    const value = normalizeSoftware(event.target.value)
+    this.setState({ stationSoftware: value });
   };
 
   handlePwdChange = (event, value) => {
@@ -230,11 +247,13 @@ class CreateStation extends React.Component {
   sendData = () => {
     const self = this;
     self.setState({ open: true })
+    const stationSoftware = normalizeSoftware(this.state.stationSoftware)
 
     var payload = {
       "name": this.state.name,
       "location": this.state.position,
       "type": this.state.type,
+      "software": stationSoftware,
       "mail": {
         "adresses": [this.state.mail],
         "notifications": this.state.mailChecked
@@ -249,7 +268,8 @@ class CreateStation extends React.Component {
       }
     }
 
-    requests.sendStation(payload)
+    const { token } = this.context || {};
+    requests.sendStation(payload, token)
       .then(function (res) {
         var id = res.data.id
         if (res.data.sensebox_id != '') {
@@ -262,6 +282,8 @@ class CreateStation extends React.Component {
 
   render() {
     const self = this
+    const langKey = this.props.language
+    const softwareLabels = (language[langKey]?.createStation?.softwareOptions) || (language.en?.createStation?.softwareOptions) || {}
     return (
       <div style={{ textAlign: "center" }}>
         <h1>{language[this.props.language]["createStation"]["title"]} </h1>
@@ -341,6 +363,23 @@ class CreateStation extends React.Component {
     </FormControl>
     <br/>
     <br/>
+        <FormControl style={{ width: "50vw", textAlign: "left" }}>
+          <InputLabel>{language[this.props.language]["createStation"]["stationSoftwareLabel"]}</InputLabel>
+          <Select
+            value={this.state.stationSoftware}
+            label={language[this.props.language]["createStation"]["stationSoftwareLabel"]}
+            onChange={this.handleStationSoftwareChange}
+          >
+            {SOFTWARE_VALUES.map((value) => (
+              <MenuItem key={value} value={value}>
+                {softwareLabels[value] || value}
+              </MenuItem>
+            ))}
+          </Select>
+          <FormHelperText>{language[this.props.language]["createStation"]["stationSoftwareHelper"]}</FormHelperText>
+        </FormControl>
+        <br />
+        <br />
         <FormControlLabel style={{ "max-width": "45vw", textAlign: "left" }} control={<Checkbox checked={this.state.checked} onChange={this.handleChecked} />} label={language[this.props.language]["createStation"]["dataPrivacyText"]} />
         <br></br>
         <br />
@@ -502,5 +541,7 @@ class CreateStation extends React.Component {
     )
   }
 }
+
+CreateStation.contextType = AuthContext;
 
 export default CreateStation

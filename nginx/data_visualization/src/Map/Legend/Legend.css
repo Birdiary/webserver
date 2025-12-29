@@ -11,3 +11,25 @@
     color: #555;
   }
   
+  .legend__inactive-notice {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #333;
+  }
+  
+  .legend__toggle-btn {
+    margin-top: 8px;
+    width: 100%;
+    border: none;
+    background-color: orange;
+    color: #fff;
+    padding: 6px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  
+  .legend__toggle-btn:hover {
+    opacity: 0.9;
+  }
+  
