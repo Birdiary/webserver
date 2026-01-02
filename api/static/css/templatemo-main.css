@@ -160,6 +160,38 @@ a:hover { color: #FF0; }
   background-position: center center !important;
 }
 
+.news-content {
+  padding-top: 10vh;
+  text-align: center;
+  background-image: url(../img/Zaunkönig_Moment.jpg);
+  background-attachment: fixed;
+  min-height: 100vh;
+  background-size: cover;
+  background-position: center center !important;
+}
+
+.news-content .container {
+  text-align: center;
+}
+
+.news-content h4 {
+  color: #fff;
+}
+
+.news-content .news-text {
+  width: 85vw;
+  max-width: 900px;
+  margin: 0 auto;
+  background-color: rgba(0, 0, 0, 0.55);
+  padding: 30px 35px;
+  color: #fff;
+  text-align: center;
+}
+
+.news-content .news-text p {
+  margin-bottom: 20px;
+}
+
 .workshop-content {
   padding-top: 10vh;
   text-align: center;
