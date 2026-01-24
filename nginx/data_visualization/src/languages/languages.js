@@ -216,7 +216,7 @@ const language = {
         },
         legend: {
             head: "Legend",
-            description: "The symbols represent the for environmental data the last 24 and for birds the last 72 hours",
+            description: "The symbols represent station activity from the last 24 hours (environment) and 72 hours (birds).",
             symbol: "Symbol",
             meaning: "Meaning",
             birdiaryLabel: "Birdiary",
@@ -603,7 +603,7 @@ const language = {
         },
         legend: {
             head: "Legende",
-            description: "Die Symbole repräsentieren die für Umweltdaten die letzten 24  und für Vögel die letzten 72 Stunden",
+            description: "Die Symbole zeigen Aktivität der letzten 24 Stunden (Umwelt) und 72 Stunden (Vögel).",
             symbol: "Symbol",
             meaning: "Bedeutung",
             birdiaryLabel: "Birdiary",

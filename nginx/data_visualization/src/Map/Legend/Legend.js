@@ -74,7 +74,8 @@ export function LegendCard({ open, language: languageKey, onClose }) {
             <thead>
               <tr>
                 <th>{meaning}</th>
-                <th colSpan={2}>{legendLanguage["symbol"]}</th>
+                <th>{legendLanguage["birdiaryLabel"] || "Birdiary"}</th>
+                <th>{legendLanguage["duisbirdLabel"] || "DuisBird"}</th>
               </tr>
             </thead>
             <tbody>
