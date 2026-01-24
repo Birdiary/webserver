@@ -66,10 +66,15 @@ export const AuthProvider = ({ children }) => {
   const register = useCallback(async ({ email, password, name }) => {
     setError(null);
     const response = await requests.registerUser({ email, password, name });
-    const newToken = response.data.token;
-    persistToken(newToken);
-    setUser(response.data.user);
-    return response.data.user;
+    const { token: newToken, user, requiresVerification } = response.data || {};
+    if (newToken && user) {
+      persistToken(newToken);
+      setUser(user);
+    } else {
+      persistToken(null);
+      setUser(null);
+    }
+    return response.data;
   }, [persistToken]);
 
   const logout = useCallback(async () => {
@@ -113,6 +118,35 @@ export const AuthProvider = ({ children }) => {
     }
   }, [persistToken, token]);
 
+  const authenticateWithToken = useCallback(async (newToken) => {
+    persistToken(newToken);
+    if (!newToken) {
+      setUser(null);
+      return null;
+    }
+    try {
+      const response = await requests.getCurrentUser(newToken);
+      setUser(response.data);
+      return response.data;
+    } catch (e) {
+      persistToken(null);
+      setUser(null);
+      throw e;
+    }
+  }, [persistToken]);
+
+  const verifyEmail = useCallback(async (tokenValue) => {
+    const response = await requests.verifyEmail({ token: tokenValue });
+    if (response.data?.token) {
+      await authenticateWithToken(response.data.token);
+    }
+    return response.data;
+  }, [authenticateWithToken]);
+
+  const resendVerification = useCallback(async (email) => {
+    return requests.resendVerificationEmail({ email });
+  }, []);
+
   const value = useMemo(() => ({
     token,
     user,
@@ -123,8 +157,11 @@ export const AuthProvider = ({ children }) => {
     logout,
     resetPassword,
     refreshUser,
+    authenticateWithToken,
+    verifyEmail,
+    resendVerification,
     setError,
-  }), [token, user, loading, error, login, register, logout, resetPassword, refreshUser, setError]);
+  }), [token, user, loading, error, login, register, logout, resetPassword, refreshUser, authenticateWithToken, verifyEmail, resendVerification, setError]);
 
   return (
     <AuthContext.Provider value={value}>

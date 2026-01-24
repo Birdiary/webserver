@@ -83,6 +83,32 @@ const Login = ({ language: langKey }) => {
         </form>
         <Box sx={{ mt: 2, textAlign: 'center' }}>
           <Typography variant="body2" color="textSecondary">
+            {copy.forgotPrompt}
+          </Typography>
+          <Button
+            component={RouterLink}
+            to="/view/reset-password"
+            color="primary"
+            sx={{ mt: 1 }}
+          >
+            {copy.forgotLink}
+          </Button>
+        </Box>
+        <Box sx={{ mt: 2, textAlign: 'center' }}>
+          <Typography variant="body2" color="textSecondary">
+            {copy.verifyPrompt}
+          </Typography>
+          <Button
+            component={RouterLink}
+            to="/view/verify-email"
+            color="primary"
+            sx={{ mt: 1 }}
+          >
+            {copy.verifyLink}
+          </Button>
+        </Box>
+        <Box sx={{ mt: 2, textAlign: 'center' }}>
+          <Typography variant="body2" color="textSecondary">
             {copy.registerPrompt}
           </Typography>
           <Button

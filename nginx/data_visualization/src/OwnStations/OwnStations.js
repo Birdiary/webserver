@@ -55,7 +55,8 @@ const parseMailAddresses = (value) => (
 
 const OwnStations = ({ language: langKey }) => {
   const copy = language[langKey]?.ownStations || language.en.ownStations;
-  const { token, resetPassword } = useAuth();
+  const { token, resetPassword, user, resendVerification: resendVerificationEmail } = useAuth();
+  const isAdmin = Boolean(user?.isAdmin);
   const [stations, setStations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -65,10 +66,25 @@ const OwnStations = ({ language: langKey }) => {
   const [passwordForm, setPasswordForm] = useState({ current: '', next: '' });
   const [passwordStatus, setPasswordStatus] = useState(null);
   const [passwordError, setPasswordError] = useState(null);
+  const [movementMeta, setMovementMeta] = useState({});
+  const [assignForms, setAssignForms] = useState({});
+  const [assignFeedback, setAssignFeedback] = useState({});
   const [claimForm, setClaimForm] = useState({ stationId: '' });
   const [claimStatus, setClaimStatus] = useState(null);
   const [claimError, setClaimError] = useState(null);
-  const [movementMeta, setMovementMeta] = useState({});
+  const [verificationStatus, setVerificationStatus] = useState(null);
+  const [verificationError, setVerificationError] = useState(null);
+  const [verificationLoading, setVerificationLoading] = useState(false);
+  const [adminPasswordForm, setAdminPasswordForm] = useState({ userId: '', newPassword: '' });
+  const [adminPasswordStatus, setAdminPasswordStatus] = useState(null);
+  const [adminPasswordError, setAdminPasswordError] = useState(null);
+  const userEmail = (user?.email || '').trim();
+  const normalizedResendEmail = userEmail.toLowerCase();
+  const isEmailVerified = Boolean(user?.emailVerified);
+  const serverResendAvailable = stations.some((station) => station?.canResendVerificationEmail);
+  const showVerificationInfo = Boolean(userEmail);
+  const verificationMessage = isEmailVerified ? copy.emailStatusVerified : copy.emailStatusPending;
+  const canResendVerificationEmail = !isEmailVerified && (normalizedResendEmail.length > 0 || serverResendAvailable);
   const softwareOptions = useMemo(() => (
     SOFTWARE_VALUES.map((value) => ({
       value,
@@ -82,6 +98,14 @@ const OwnStations = ({ language: langKey }) => {
       setStationDrafts({});
       setStationErrors({});
       setMovementMeta({});
+      setAssignForms({});
+      setAssignFeedback({});
+      setClaimForm({ stationId: '' });
+      setClaimStatus(null);
+      setClaimError(null);
+      setVerificationStatus(null);
+      setVerificationError(null);
+      setVerificationLoading(false);
       setLoading(false);
       return;
     }
@@ -92,6 +116,7 @@ const OwnStations = ({ language: langKey }) => {
       setStations(response.data);
       const drafts = {};
       const meta = {};
+      const assignState = {};
       response.data.forEach((station) => {
         drafts[station.station_id] = createDraftFromStation(station);
         const stationMeta = ensureMovementMetaShape({
@@ -100,20 +125,45 @@ const OwnStations = ({ language: langKey }) => {
           loading: false,
         });
         meta[station.station_id] = stationMeta;
+        assignState[station.station_id] = { userId: '', email: '' };
       });
       setStationDrafts(drafts);
       setStationErrors({});
       setMovementMeta(meta);
+      if (isAdmin) {
+        setAssignForms(assignState);
+      } else {
+        setAssignForms({});
+      }
+      setAssignFeedback({});
     } catch (err) {
       setError(err.response?.data?.message || copy.loadError);
     } finally {
       setLoading(false);
     }
-  }, [token, copy.loadError]);
+  }, [token, copy.loadError, isAdmin]);
 
   useEffect(() => {
     fetchStations();
   }, [fetchStations]);
+
+  const handleResendVerification = useCallback(async () => {
+    if (!normalizedResendEmail) {
+      setVerificationError(copy.resendVerificationError);
+      return;
+    }
+    setVerificationStatus(null);
+    setVerificationError(null);
+    setVerificationLoading(true);
+    try {
+      await resendVerificationEmail(normalizedResendEmail);
+      setVerificationStatus(copy.resendVerificationSuccess);
+    } catch (err) {
+      setVerificationError(err.response?.data?.message || copy.resendVerificationError);
+    } finally {
+      setVerificationLoading(false);
+    }
+  }, [normalizedResendEmail, resendVerificationEmail, copy.resendVerificationError, copy.resendVerificationSuccess]);
 
   const updateDraftState = (stationId, updater) => {
     setStationDrafts((prev) => {
@@ -137,6 +187,15 @@ const OwnStations = ({ language: langKey }) => {
     const { checked } = event.target;
     updateDraftState(stationId, (draft) => ({ ...draft, [field]: checked }));
     setStationErrors((prev) => ({ ...prev, [stationId]: null }));
+  };
+
+  const handleAssignFieldChange = (stationId, field) => (event) => {
+    const { value } = event.target;
+    setAssignForms((prev) => {
+      const current = prev[stationId] || { userId: '', email: '' };
+      return { ...prev, [stationId]: { ...current, [field]: value } };
+    });
+    setAssignFeedback((prev) => ({ ...prev, [stationId]: null }));
   };
 
   const requestStationMovements = async (stationId, { limit, offset = 0, mergeMode = 'replace' } = {}) => {
@@ -359,6 +418,51 @@ const OwnStations = ({ language: langKey }) => {
     }
   };
 
+  const handleAssignOwner = async (stationId) => {
+    if (!isAdmin) {
+      return;
+    }
+    const currentForm = assignForms[stationId] || { userId: '', email: '' };
+    const payload = {};
+    if (currentForm.userId?.trim()) {
+      payload.userId = currentForm.userId.trim();
+    }
+    if (currentForm.email?.trim()) {
+      payload.email = currentForm.email.trim();
+    }
+    if (!payload.userId && !payload.email) {
+      setAssignFeedback((prev) => ({
+        ...prev,
+        [stationId]: { error: copy.adminAssignMissingFields },
+      }));
+      return;
+    }
+    setAssignFeedback((prev) => ({ ...prev, [stationId]: null }));
+    try {
+      const response = await requests.adminAssignStationOwner(stationId, payload, token);
+      if (response.data?.station) {
+        setStations((prev) => prev.map((station) => (
+          station.station_id === stationId ? response.data.station : station
+        )));
+      } else {
+        await fetchStations();
+      }
+      setAssignFeedback((prev) => ({
+        ...prev,
+        [stationId]: { status: copy.adminAssignSuccess },
+      }));
+      setAssignForms((prev) => ({
+        ...prev,
+        [stationId]: { userId: '', email: '' },
+      }));
+    } catch (err) {
+      setAssignFeedback((prev) => ({
+        ...prev,
+        [stationId]: { error: err.response?.data?.message || copy.adminAssignError },
+      }));
+    }
+  };
+
   const handleClaimInput = (event) => {
     const { name, value } = event.target;
     setClaimForm((prev) => ({ ...prev, [name]: value }));
@@ -379,6 +483,33 @@ const OwnStations = ({ language: langKey }) => {
       fetchStations();
     } catch (err) {
       setClaimError(err.response?.data?.message || copy.claimError);
+    }
+  };
+
+  const handleAdminPasswordInput = (event) => {
+    const { name, value } = event.target;
+    setAdminPasswordForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAdminPasswordSubmit = async (event) => {
+    event.preventDefault();
+    if (!isAdmin) {
+      return;
+    }
+    setAdminPasswordStatus(null);
+    setAdminPasswordError(null);
+    const trimmedId = adminPasswordForm.userId.trim();
+    const trimmedPassword = adminPasswordForm.newPassword.trim();
+    if (!trimmedId || trimmedPassword.length < 8) {
+      setAdminPasswordError(copy.adminPasswordValidationError);
+      return;
+    }
+    try {
+      await requests.adminSetUserPassword({ userId: trimmedId, newPassword: trimmedPassword }, token);
+      setAdminPasswordStatus(copy.adminPasswordSuccess);
+      setAdminPasswordForm({ userId: '', newPassword: '' });
+    } catch (err) {
+      setAdminPasswordError(err.response?.data?.message || copy.adminPasswordError);
     }
   };
 
@@ -412,6 +543,37 @@ const OwnStations = ({ language: langKey }) => {
         </Alert>
       )}
 
+      {verificationStatus && (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          {verificationStatus}
+        </Alert>
+      )}
+
+      {verificationError && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {verificationError}
+        </Alert>
+      )}
+
+      {showVerificationInfo && (
+        <Alert
+          severity={isEmailVerified ? 'success' : 'warning'}
+          sx={{ mb: 2 }}
+          action={canResendVerificationEmail ? (
+            <Button
+              color="inherit"
+              size="small"
+              onClick={handleResendVerification}
+              disabled={verificationLoading}
+            >
+              {verificationLoading ? copy.resendVerificationSending : copy.resendVerification}
+            </Button>
+          ) : null}
+        >
+          {verificationMessage}
+        </Alert>
+      )}
+
       {loading ? (
         <div className="own-stations-loading">{copy.loading}</div>
       ) : stationList.length === 0 ? (
@@ -434,6 +596,12 @@ const OwnStations = ({ language: langKey }) => {
             loadedAll: !fallbackHasMore,
             loading: false,
           });
+          const assignForm = assignForms[station.station_id] || { userId: '', email: '' };
+          const assignState = assignFeedback[station.station_id];
+          const ownerSummary = station.owner;
+          const ownerDisplay = ownerSummary
+            ? [ownerSummary.name, ownerSummary.email].filter(Boolean).join(' · ')
+            : (station.ownerId ? `${copy.ownerIdLabel}: ${station.ownerId}` : copy.ownerNone);
           return (
           <Paper key={station.station_id} className="own-stations-card" elevation={3}>
             <Box className="station-card-header">
@@ -567,6 +735,50 @@ const OwnStations = ({ language: langKey }) => {
                     {copy.saveStation}
                   </Button>
 
+            {isAdmin && (
+              <>
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="subtitle1" gutterBottom>
+                  {copy.adminAssignTitle}
+                </Typography>
+                <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
+                  {copy.ownerLabel}: {ownerDisplay || copy.ownerNone}
+                </Typography>
+                <Box className="station-field-grid">
+                  <TextField
+                    label={copy.adminAssignUserId}
+                    value={assignForm.userId}
+                    onChange={handleAssignFieldChange(station.station_id, 'userId')}
+                  />
+                  <TextField
+                    label={copy.adminAssignEmail}
+                    value={assignForm.email}
+                    onChange={handleAssignFieldChange(station.station_id, 'email')}
+                  />
+                </Box>
+                <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 1 }}>
+                  {copy.adminAssignHelper}
+                </Typography>
+                {assignState?.status && (
+                  <Alert severity="success" sx={{ mt: 1 }}>
+                    {assignState.status}
+                  </Alert>
+                )}
+                {assignState?.error && (
+                  <Alert severity="error" sx={{ mt: 1 }}>
+                    {assignState.error}
+                  </Alert>
+                )}
+                <Button
+                  variant="outlined"
+                  sx={{ mt: 2 }}
+                  onClick={() => handleAssignOwner(station.station_id)}
+                >
+                  {copy.adminAssignSubmit}
+                </Button>
+              </>
+            )}
+
             <Divider sx={{ my: 2 }} />
 
             <Typography variant="subtitle1" gutterBottom>
@@ -627,38 +839,50 @@ const OwnStations = ({ language: langKey }) => {
         })
       )}
 
-      <Paper className="own-stations-card" elevation={3}>
-        <Typography variant="h6" gutterBottom>
-          {copy.claimTitle}
-        </Typography>
-        <Typography variant="body2" color="textSecondary" gutterBottom>
-          {copy.claimSubtitle}
-        </Typography>
-        {claimStatus && (
-          <Alert severity="success" sx={{ mb: 2 }}>
-            {claimStatus}
-          </Alert>
-        )}
-        {claimError && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {claimError}
-          </Alert>
-        )}
-        <form className="claim-station-form" onSubmit={handleClaimStation}>
-          <TextField
-            label={copy.claimStationId}
-            name="stationId"
-            value={claimForm.stationId}
-            onChange={handleClaimInput}
-            required
-            fullWidth
-            margin="normal"
-          />
-          <Button type="submit" variant="contained" sx={{ mt: 2 }} disabled={!token}>
-            {copy.claimAction}
-          </Button>
-        </form>
-      </Paper>
+      {isAdmin && (
+        <Paper className="own-stations-card" elevation={3}>
+          <Typography variant="h6" gutterBottom>
+            {copy.adminPasswordTitle}
+          </Typography>
+          <Typography variant="body2" color="textSecondary" gutterBottom>
+            {copy.adminPasswordHelper}
+          </Typography>
+          {adminPasswordStatus && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {adminPasswordStatus}
+            </Alert>
+          )}
+          {adminPasswordError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {adminPasswordError}
+            </Alert>
+          )}
+          <form className="password-form" onSubmit={handleAdminPasswordSubmit}>
+            <TextField
+              label={copy.adminPasswordUserId}
+              name="userId"
+              value={adminPasswordForm.userId}
+              onChange={handleAdminPasswordInput}
+              required
+              fullWidth
+              margin="normal"
+            />
+            <TextField
+              label={copy.adminPasswordNewPassword}
+              name="newPassword"
+              type="password"
+              value={adminPasswordForm.newPassword}
+              onChange={handleAdminPasswordInput}
+              required
+              fullWidth
+              margin="normal"
+            />
+            <Button type="submit" variant="contained" sx={{ mt: 2 }}>
+              {copy.adminPasswordSubmit}
+            </Button>
+          </form>
+        </Paper>
+      )}
 
       <Paper className="own-stations-card" elevation={3}>
         <Typography variant="h6" gutterBottom>

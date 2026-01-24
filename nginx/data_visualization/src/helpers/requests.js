@@ -163,6 +163,26 @@ function resetPassword(payload, token){
     return axios.post(_url, payload, authHeaders(token));
 }
 
+function requestPasswordReset(payload){
+    var _url = _env.api + '/reset-password/request';
+    return axios.post(_url, payload);
+}
+
+function confirmPasswordReset(payload){
+    var _url = _env.api + '/reset-password/confirm';
+    return axios.post(_url, payload);
+}
+
+function verifyEmail(payload){
+    var _url = _env.api + '/verify-email';
+    return axios.post(_url, payload);
+}
+
+function resendVerificationEmail(payload){
+    var _url = _env.api + '/verify-email/resend';
+    return axios.post(_url, payload);
+}
+
 function getMyStations(token, options){
     const params = normalizeMovementParams(options);
     const config = buildConfig(token, Object.keys(params).length ? params : undefined);
@@ -172,11 +192,6 @@ function getMyStations(token, options){
 function updateStation(stationId, payload, token){
     var _url = _env.api + `/station/${stationId}`;
     return axios.put(_url, payload, authHeaders(token));
-}
-
-function claimStation(payload, token){
-    var _url = _env.api + '/claim-station';
-    return axios.post(_url, payload, authHeaders(token));
 }
 
 function deleteStation(stationId, token, deleteData){
@@ -189,6 +204,19 @@ function deleteMovement(stationId, movementId, token, deleteData){
     var _url = _env.api + `/movement/${stationId}/${movementId}`;
     const config = buildConfig(token, deleteData ? { deleteData: true } : null);
     return axios.delete(_url, config);
+}
+
+function adminSetUserPassword(payload, token){
+    if (!payload || !payload.userId) {
+        throw new Error('userId is required');
+    }
+    var _url = _env.api + `/admin/users/${payload.userId}/password`;
+    return axios.put(_url, { newPassword: payload.newPassword }, authHeaders(token));
+}
+
+function adminAssignStationOwner(stationId, payload, token){
+    var _url = _env.api + `/admin/stations/${stationId}/owner`;
+    return axios.put(_url, payload, authHeaders(token));
 }
 
 module.exports = {
@@ -210,9 +238,14 @@ module.exports = {
     logout: logout,
     getCurrentUser: getCurrentUser,
     resetPassword: resetPassword,
+    requestPasswordReset: requestPasswordReset,
+    confirmPasswordReset: confirmPasswordReset,
+    verifyEmail: verifyEmail,
+    resendVerificationEmail: resendVerificationEmail,
     getMyStations: getMyStations,
     updateStation: updateStation,
-    claimStation: claimStation,
     deleteStation: deleteStation,
     deleteMovement: deleteMovement,
+    adminSetUserPassword: adminSetUserPassword,
+    adminAssignStationOwner: adminAssignStationOwner,
 };

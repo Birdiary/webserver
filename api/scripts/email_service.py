@@ -37,6 +37,72 @@ def send_email (receiver_email, imageName, imagePath, count, pw, stationPath):
         server.login(sender_email, password)
         server.sendmail(sender_email, receiver_email, text)
 
+
+def send_password_reset_email(receiver_email, reset_link, token, pw, username=None, sender_email="info@wiediversistmeingarten.org"):
+    subject = "Birdiary Passwort zuruecksetzen"
+    password = pw
+
+    message = MIMEMultipart()
+    message["From"] = sender_email
+    message["To"] = receiver_email
+    message["Subject"] = subject
+    context = ssl.create_default_context()
+
+    display_name = username.strip() if isinstance(username, str) else ""
+    greeting_name = display_name if display_name else "there"
+    greeting_line = f"Hallo {greeting_name},\n\n"
+    account_lines = f"Account-E-Mail: {receiver_email}\n"
+    if display_name:
+        account_lines += f"Anzeigename: {display_name}\n"
+
+    text_lines = (
+        greeting_line +
+        "wir haben eine Anfrage erhalten, das Passwort fuer dein Birdiary-Konto zurueckzusetzen.\n"
+        f"{account_lines}\n"
+        f"Link zum Zuruecksetzen: {reset_link}\n\n"
+        f"Zuruecksetz-Code: {token}\n\n"
+        "Wenn du das nicht warst, kannst du diese E-Mail ignorieren."
+    )
+
+    text = MIMEText(text_lines)
+    message.attach(text)
+
+    text = message.as_string()
+    with smtplib.SMTP_SSL("smtp.strato.de", 465, context=context) as server:
+        server.login(sender_email, password)
+        server.sendmail(sender_email, receiver_email, text)
+
+
+def send_email_verification_email(receiver_email, verify_link, token, pw, username=None, sender_email="info@wiediversistmeingarten.org"):
+    subject = "Bestaetige dein Birdiary-Konto"
+    password = pw
+
+    message = MIMEMultipart()
+    message["From"] = sender_email
+    message["To"] = receiver_email
+    message["Subject"] = subject
+    context = ssl.create_default_context()
+
+    display_name = username.strip() if isinstance(username, str) else ""
+    greeting_name = display_name if display_name else "there"
+    greeting_line = f"Hallo {greeting_name},\n\n"
+
+    text_lines = (
+        greeting_line +
+        "danke fuer deine Registrierung bei Birdiary. Bitte bestaetige deine E-Mail-Adresse.\n\n"
+        f"Bestaetigungslink: {verify_link}\n\n"
+        f"Bestaetigungscode: {token}\n\n"
+        "Falls du dich nicht registriert hast, ignoriere diese E-Mail."
+    )
+
+    text = MIMEText(text_lines)
+    message.attach(text)
+
+    text = message.as_string()
+    with smtplib.SMTP_SSL("smtp.strato.de", 465, context=context) as server:
+        server.login(sender_email, password)
+        server.sendmail(sender_email, receiver_email, text)
+
 #send_email ("nick121298@outlook.de", "bird.jpg", "../static/data/images/svetozar-cenisev-pvqTCIOx9MQ-unsplash_1.jpg", {
 #    "bird1": 1
 #})

@@ -22,6 +22,8 @@ import Login from './Login/Login';
 import Register from './Register/Register';
 import OwnStations from './OwnStations/OwnStations';
 import { useAuth } from './context/AuthContext';
+import PasswordReset from './PasswordReset/PasswordReset';
+import VerifyEmail from './VerifyEmail/VerifyEmail';
 
 import './App.css';
 import Movement from './Movement/Movement';
@@ -104,6 +106,8 @@ class App extends React.Component {
               <SentryRoutes>
                 <Route path="/view/login" element={<Login language={this.state.language} />} />
                 <Route path="/view/register" element={<Register language={this.state.language} />} />
+                <Route path="/view/reset-password" element={<PasswordReset language={this.state.language} />} />
+                <Route path="/view/verify-email" element={<VerifyEmail language={this.state.language} />} />
                 <Route path="/view/own-stations" element={<RequireAuth><OwnStations language={this.state.language} /></RequireAuth>} />
                 <Route exact path="/view" element={<OwnMap language={this.state.language} changeLang={this.changeLang} />} />
                 <Route exact path="/view/station/:id" element={<StationView language={this.state.language} />}></Route>

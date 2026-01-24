@@ -27,11 +27,19 @@ const Register = ({ language: langKey }) => {
     setSubmitting(true);
     setError(null);
     try {
-      await registerUser({
+      const response = await registerUser({
         name: form.name.trim(),
         email: form.email.trim().toLowerCase(),
         password: form.password,
       });
+      const targetEmail = form.email.trim().toLowerCase();
+      if (response?.requiresVerification) {
+        navigate(`/view/verify-email?email=${encodeURIComponent(targetEmail)}`, {
+          replace: true,
+          state: { email: targetEmail }
+        });
+        return;
+      }
       navigate('/view/own-stations', { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || copy.error);

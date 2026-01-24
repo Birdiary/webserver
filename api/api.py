@@ -1,10 +1,10 @@
-from flask import Flask, render_template, request, jsonify, send_from_directory, send_file
+from flask import Flask, render_template, request, jsonify, send_from_directory, send_file, abort
 
 from pymongo import MongoClient
 import json
 from flask_uploads import configure_uploads, IMAGES, UploadSet, AUDIO, ALL
 from scripts.classify_birds import classify
-from scripts.email_service import send_email
+from scripts.email_service import send_email, send_password_reset_email, send_email_verification_email
 from sys import modules
 from os.path import basename, splitext
 from datetime import datetime, timedelta, date
@@ -118,6 +118,13 @@ pwd = os.getenv('Mail_PWD', "ABC")
 sensemapUser = os.getenv('opensensemap_User')
 sensemapPwd = os.getenv('opensensemap_PWD')
 API_KEY = os.getenv('API_KEY', "ABC")
+PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES = int(os.getenv('PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES', '60'))
+EMAIL_VERIFICATION_TOKEN_EXPIRATION_HOURS = int(os.getenv('EMAIL_VERIFICATION_TOKEN_EXPIRATION_HOURS', '24'))
+ADMIN_EMAILS = set(
+    email.strip().lower()
+    for email in os.getenv('ADMIN_EMAILS', '').split(',')
+    if email.strip()
+)
 
 
 app = Flask(__name__)
@@ -154,6 +161,13 @@ db = client.birdiary_database
 stations= db.stations
 users = db.users
 sessions = db.sessions
+password_resets = db.password_resets
+email_verifications = db.email_verifications
+
+password_resets.create_index("token", unique=True, background=True)
+password_resets.create_index("expires_at", expireAfterSeconds=0, background=True)
+email_verifications.create_index("token", unique=True, background=True)
+email_verifications.create_index("expires_at", expireAfterSeconds=0, background=True)
 
 SESSION_DURATION_HOURS = int(os.getenv('SESSION_DURATION_HOURS', '24'))
 ALLOWED_STATION_SOFTWARE = {"birdiary", "duisbird"}
@@ -163,7 +177,9 @@ def sanitize_user(user):
     return {
         "id": str(user["_id"]),
         "email": user.get("email"),
-        "name": user.get("name", "")
+        "name": user.get("name", ""),
+        "emailVerified": bool(user.get("emailVerified", False)),
+        "isAdmin": is_admin_user(user)
     }
 
 
@@ -227,6 +243,140 @@ def ensure_station_key(station):
     stations.update_one({"station_id": station.get("station_id")}, {"$set": {"key": new_key}})
     station["key"] = new_key
     return new_key
+
+
+def is_admin_email(email):
+    if not email:
+        return False
+    return email.strip().lower() in ADMIN_EMAILS
+
+
+def is_admin_user(user):
+    if not user:
+        return False
+    if user.get("isAdmin"):
+        return True
+    return is_admin_email(user.get("email"))
+
+
+def require_admin_user():
+    user = get_authenticated_user()
+    if not user:
+        abort(401, description="Not authorized")
+    if not is_admin_user(user):
+        abort(403, description="Admin privileges required")
+    return user
+
+
+def get_station_owner_summary(owner_id):
+    if not owner_id:
+        return None
+    try:
+        owner_object_id = ObjectId(owner_id)
+    except Exception:
+        return None
+    owner_doc = users.find_one({"_id": owner_object_id})
+    if not owner_doc:
+        return None
+    return {
+        "id": str(owner_doc["_id"]),
+        "email": owner_doc.get("email"),
+        "name": owner_doc.get("name", "")
+    }
+
+def auto_assign_stations_by_email(user):
+    if not user:
+        return 0
+    user_email = (user.get("email") or "").strip().lower()
+    if not user_email:
+        return 0
+    user_id = str(user["_id"])
+    unassigned_stations = stations.find({
+        "$or": [
+            {"ownerId": {"$exists": False}},
+            {"ownerId": None},
+            {"ownerId": ""}
+        ]
+    })
+    assigned_count = 0
+    for station in unassigned_stations:
+        mail_addresses = station.get("mail", {}).get("adresses", [])
+        normalized_addresses = [addr.strip().lower() for addr in mail_addresses if addr]
+        if user_email in normalized_addresses:
+            stations.update_one(
+                {"station_id": station["station_id"]},
+                {"$set": {"ownerId": user_id}}
+            )
+            assigned_count += 1
+    return assigned_count
+
+
+def build_password_reset_link(token):
+    base_host = str(host or "http://localhost").rstrip("/")
+    return f"{base_host}/view/reset-password?token={token}"
+
+
+def get_valid_password_reset_entry(token):
+    if not token:
+        return None
+    entry = password_resets.find_one({"token": token})
+    if not entry or entry.get("used"):
+        return None
+    expires_at = entry.get("expires_at")
+    if expires_at and expires_at < datetime.utcnow():
+        return None
+    return entry
+
+
+def build_email_verification_link(token):
+    base_host = str(host or "http://localhost").rstrip("/")
+    return f"{base_host}/view/verify-email?token={token}"
+
+
+def issue_email_verification(user):
+    if not user:
+        return None
+    email = (user.get("email") or "").strip()
+    if not email:
+        return None
+    user_id = str(user["_id"])
+    email_verifications.delete_many({"user_id": user_id})
+    token = secrets.token_hex(32)
+    expires_at = datetime.utcnow() + timedelta(hours=EMAIL_VERIFICATION_TOKEN_EXPIRATION_HOURS)
+    email_verifications.insert_one({
+        "token": token,
+        "user_id": user_id,
+        "email": email,
+        "createdAt": datetime.utcnow(),
+        "expires_at": expires_at,
+        "used": False
+    })
+    verification_link = build_email_verification_link(token)
+    try:
+        send_email_verification_email(email, verification_link, token, pwd, user.get("name"))
+    except Exception as exc:
+        print(f"Failed to send verification email to {email}: {exc}", flush=True)
+    return token
+
+
+def get_valid_email_verification_entry(token):
+    if not token:
+        return None
+    entry = email_verifications.find_one({"token": token})
+    if not entry or entry.get("used"):
+        return None
+    expires_at = entry.get("expires_at")
+    if expires_at and expires_at < datetime.utcnow():
+        return None
+    return entry
+
+
+def ensure_email_verified_flag(user):
+    if not user:
+        return None
+    if "emailVerified" in user:
+        user["emailVerified"] = bool(user.get("emailVerified"))
+    return user
 
 
 
@@ -847,7 +997,7 @@ def videoAnalysis(filename, movement_id, station_id, movement):
         try:
             if station["mail"]["notifcation"]:
                     print(send_email)
-                    send_email(station["mail"]["adresses"][0], filename, str(host)+ "/api/uploads/videos/" + filename, birds, pwd, str(host) +"/view/station/" +station_id )
+                    #send_email(station["mail"]["adresses"][0], filename, str(host)+ "/api/uploads/videos/" + filename, birds, pwd, str(host) +"/view/station/" +station_id )
         except:
                 print("mail to failed") 
 
@@ -970,7 +1120,7 @@ def videoAnalysisImage(filenames, movement_id, station_id, movement):
         try:
             if station["mail"]["notifcation"]:
                     print(send_email)
-                    send_email(station["mail"]["adresses"][0], videofile, str(host)+ "/api/uploads/videos/" + videofile, birds, pwd, str(host) +"/view/station/" +station_id )
+                    #send_email(station["mail"]["adresses"][0], videofile, str(host)+ "/api/uploads/videos/" + videofile, birds, pwd, str(host) +"/view/station/" +station_id )
         except:
                 print("mail to failed") 
 
@@ -1318,8 +1468,9 @@ def station(station_id: str):
         auth_user = get_authenticated_user()
         has_api_access = API_KEY == apikey or station_key == apikey
         is_owner = is_station_owner(station, auth_user)
+        is_admin = is_admin_user(auth_user)
         response_station = dict(station)
-        if not has_api_access and not is_owner:
+        if not has_api_access and not is_owner and not is_admin:
             response_station.pop("mail", None)
             response_station.pop("key", None)
         movements_collection = db["movements_" + station_id]
@@ -1371,7 +1522,7 @@ def station(station_id: str):
             return "not found", 404
         station_key = ensure_station_key(station)
         user = get_authenticated_user()
-        if API_KEY != apikey and station_key != apikey and not is_station_owner(station, user):
+        if API_KEY != apikey and station_key != apikey and not is_station_owner(station, user) and not is_admin_user(user):
             return "Not authorized", 401
         software_value = body.get("stationSoftware")
         if software_value:
@@ -1389,7 +1540,7 @@ def station(station_id: str):
             return "not found", 404
         station_key = ensure_station_key(station)
         user = get_authenticated_user()
-        if API_KEY != apikey and station_key != apikey and not is_station_owner(station, user):
+        if API_KEY != apikey and station_key != apikey and not is_station_owner(station, user) and not is_admin_user(user):
             return "Not authorized", 401
         stations.delete_one({"station_id": station_id})
         if(deleteData):
@@ -1578,7 +1729,7 @@ def handle_movement(station_id: str, movement_id: str):
         station = stations.find_one({"station_id": station_id}, {'_id' : False})
         station_key = ensure_station_key(station) if station else None
         user = get_authenticated_user()
-        if API_KEY != apikey and (not station or station_key != apikey) and not is_station_owner(station, user):
+        if API_KEY != apikey and (not station or station_key != apikey) and not is_station_owner(station, user) and not is_admin_user(user):
             return "Not authorized", 401
         if deleteData:
             movements = db["movements_" + station_id].find({"mov_id": movement_id})
@@ -1784,13 +1935,56 @@ def register_user():
         "email": email,
         "name": name,
         "passwordHash": generate_password_hash(password),
-        "createdAt": datetime.utcnow()
+        "createdAt": datetime.utcnow(),
+        "emailVerified": False
     }
     result = users.insert_one(user_doc)
     user_doc["_id"] = result.inserted_id
-    sessions.delete_many({"user_id": str(result.inserted_id)})
-    token = create_session_token(result.inserted_id)
-    return jsonify({"token": token, "user": sanitize_user(user_doc)}), 201
+    auto_assign_stations_by_email(user_doc)
+    issue_email_verification(user_doc)
+    response_payload = {
+        "message": "Registrierung erfolgreich. Du kannst dich direkt anmelden und die E-Mail spaeter bestaetigen.",
+        "requiresVerification": False,
+        "verificationEmailSent": True,
+        "user": sanitize_user(user_doc)
+    }
+    return jsonify(response_payload), 201
+
+
+@app.route('/api/verify-email', methods=['POST'])
+def verify_email():
+    body = request.get_json() or {}
+    token = (body.get('token') or '').strip()
+    if not token:
+        return jsonify({"message": "token is required."}), 400
+    entry = get_valid_email_verification_entry(token)
+    if not entry:
+        return jsonify({"message": "Invalid or expired token."}), 400
+    user_id = entry.get("user_id")
+    try:
+        object_id = ObjectId(user_id)
+    except Exception:
+        return jsonify({"message": "Invalid or expired token."}), 400
+    users.update_one({"_id": object_id}, {'$set': {"emailVerified": True, "verifiedAt": datetime.utcnow()}})
+    email_verifications.update_one({"_id": entry["_id"]}, {'$set': {"used": True, "usedAt": datetime.utcnow()}})
+    sessions.delete_many({"user_id": user_id})
+    token_value = create_session_token(object_id)
+    user = users.find_one({"_id": object_id})
+    return jsonify({"message": "Email verified", "token": token_value, "user": sanitize_user(user)}), 200
+
+
+@app.route('/api/verify-email/resend', methods=['POST'])
+def resend_verification_email():
+    body = request.get_json() or {}
+    email = (body.get('email') or '').strip().lower()
+    if not email:
+        return jsonify({"message": "Email is required."}), 400
+    user = users.find_one({"email": email})
+    generic_response = {"message": "If the account exists and is unverified, a new verification email has been sent."}
+    if not user or user.get("emailVerified"):
+        return jsonify(generic_response), 200
+    issue_email_verification(user)
+    return jsonify(generic_response), 200
 
 
 @app.route('/api/login', methods=['POST'])
@@ -1803,9 +1997,32 @@ def login_user():
     user = users.find_one({"email": email})
     if not user or not check_password_hash(user.get("passwordHash", ""), password):
         return jsonify({"message": "Invalid email or password."}), 401
+    legacy_user_without_flag = "emailVerified" not in user
+    if legacy_user_without_flag:
+        auto_assign_stations_by_email(user)
+        try:
+            issue_email_verification(user)
+        except Exception as exc:
+            print(f"Failed to send verification email to legacy user {email}: {exc}", flush=True)
+        users.update_one({"_id": user["_id"]}, {
+            "$set": {
+                "emailVerified": False,
+                "emailVerificationMigratedAt": datetime.utcnow()
+            }
+        })
+        user["emailVerified"] = False
+    user = ensure_email_verified_flag(user)
+    verification_pending = not user.get("emailVerified")
     sessions.delete_many({"user_id": str(user["_id"])})
     token = create_session_token(user["_id"])
-    return jsonify({"token": token, "user": sanitize_user(user)}), 200
+    response_payload = {
+        "token": token,
+        "user": sanitize_user(user),
+        "emailVerificationPending": verification_pending
+    }
+    if verification_pending:
+        response_payload["message"] = "Du kannst dich anmelden, die E-Mail-Bestaetigung bleibt jedoch optional."
+    return jsonify(response_payload), 200
 
 
 @app.route('/api/logout', methods=['POST'])
@@ -1844,11 +2061,76 @@ def reset_password():
     return jsonify({"message": "Password updated", "token": token}), 200
 
 
+@app.route('/api/reset-password/request', methods=['POST'])
+def request_password_reset():
+    body = request.get_json() or {}
+    email = (body.get('email') or '').strip().lower()
+    if not email:
+        return jsonify({"message": "Email is required."}), 400
+    generic_response = {"message": "If an account exists for that email, you will receive reset instructions shortly."}
+    user = users.find_one({"email": email})
+    if not user:
+        return jsonify(generic_response), 200
+    user = ensure_email_verified_flag(user)
+    if not user.get("emailVerified"):
+        issue_email_verification(user)
+        return jsonify({
+            "message": "Please verify your email before resetting your password. We've just re-sent the verification email.",
+            "requiresVerification": True,
+            "verificationEmailSent": True
+        }), 400
+    user_id_str = str(user["_id"])
+    password_resets.delete_many({"user_id": user_id_str})
+    token = secrets.token_hex(32)
+    expires_at = datetime.utcnow() + timedelta(minutes=PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES)
+    password_resets.insert_one({
+        "token": token,
+        "user_id": user_id_str,
+        "expires_at": expires_at,
+        "createdAt": datetime.utcnow(),
+        "used": False
+    })
+    reset_link = build_password_reset_link(token)
+    try:
+        user_name = (user.get("name") or "").strip()
+        send_password_reset_email(user["email"], reset_link, token, pwd, user_name)
+    except Exception as exc:
+        print(f"Failed to send password reset email for {email}: {exc}", flush=True)
+    return jsonify(generic_response), 200
+
+
+@app.route('/api/reset-password/confirm', methods=['POST'])
+def confirm_password_reset():
+    body = request.get_json() or {}
+    token = (body.get('token') or '').strip()
+    new_password = body.get('newPassword')
+    if not token or not new_password:
+        return jsonify({"message": "token and newPassword are required."}), 400
+    if len(new_password) < 8:
+        return jsonify({"message": "New password must be at least 8 characters long."}), 400
+    reset_entry = get_valid_password_reset_entry(token)
+    if not reset_entry:
+        return jsonify({"message": "Invalid or expired token."}), 400
+    user_id = reset_entry.get("user_id")
+    try:
+        object_id = ObjectId(user_id)
+    except Exception:
+        return jsonify({"message": "Invalid or expired token."}), 400
+    users.update_one({"_id": object_id}, {'$set': {"passwordHash": generate_password_hash(new_password)}})
+    sessions.delete_many({"user_id": user_id})
+    password_resets.update_one({"_id": reset_entry["_id"]}, {'$set': {"used": True, "usedAt": datetime.utcnow()}})
+    token_value = create_session_token(object_id)
+    return jsonify({"message": "Password updated", "token": token_value}), 200
+
+
 @app.route('/api/my-stations', methods=['GET'])
 def get_my_stations():
     user = get_authenticated_user()
     if not user:
         return "Not authorized", 401
+    admin_user = is_admin_user(user)
+    sanitized_user = sanitize_user(user)
+    verification_pending = not sanitized_user.get("emailVerified", True)
     movement_limit_raw = request.args.get('movements', default=0)
     movement_offset_raw = request.args.get('movementsOffset', default=0)
     try:
@@ -1860,7 +2142,18 @@ def get_my_stations():
     except Exception:
         movement_offset = 0
     owner_id = str(user["_id"])
-    owned_stations = list(stations.find({"ownerId": owner_id}, {'_id': False}))
+    station_filter = {}
+    if not admin_user:
+        station_filter["ownerId"] = owner_id
+    owned_stations = list(stations.find(station_filter, {'_id': False}))
+    for station in owned_stations:
+        owner_summary = get_station_owner_summary(station.get("ownerId"))
+        if owner_summary:
+            station["owner"] = owner_summary
+        station["currentUserEmailVerified"] = not verification_pending
+        station["canResendVerificationEmail"] = verification_pending
+        if verification_pending:
+            station["verificationMessage"] = "Deine E-Mail ist noch nicht bestaetigt. Du kannst die Bestaetigungsmail erneut senden."
     if movement_limit > 0:
         for station in owned_stations:
             collection_name = "movements_" + station["station_id"]
@@ -1883,28 +2176,50 @@ def get_my_stations():
     return jsonify(owned_stations), 200
 
 
-@app.route('/api/claim-station', methods=['POST'])
-def claim_station():
-    user = get_authenticated_user()
-    if not user:
-        return "Not authorized", 401
+@app.route('/api/admin/users/<user_id>/password', methods=['PUT'])
+def admin_set_user_password(user_id):
+    require_admin_user()
     body = request.get_json() or {}
-    station_id = (body.get('stationId') or '').strip()
-    if not station_id:
-        return jsonify({"message": "stationId is required."}), 400
-    station = stations.find_one({"station_id": station_id})
+    new_password = (body.get('newPassword') or '').strip()
+    if len(new_password) < 8:
+        return jsonify({"message": "New password must be at least 8 characters long."}), 400
+    try:
+        target_user_id = ObjectId(user_id)
+    except Exception:
+        return jsonify({"message": "Invalid userId."}), 400
+    user_doc = users.find_one({"_id": target_user_id})
+    if not user_doc:
+        return jsonify({"message": "User not found."}), 404
+    users.update_one({"_id": target_user_id}, {'$set': {"passwordHash": generate_password_hash(new_password)}})
+    sessions.delete_many({"user_id": str(target_user_id)})
+    return jsonify({"message": "Password updated."}), 200
+
+
+@app.route('/api/admin/stations/<station_id>/owner', methods=['PUT'])
+def admin_assign_station_owner(station_id):
+    require_admin_user()
+    body = request.get_json() or {}
+    user_id_raw = (body.get('userId') or '').strip()
+    email_raw = (body.get('email') or '').strip().lower()
+    if not user_id_raw and not email_raw:
+        return jsonify({"message": "userId or email is required."}), 400
+    target_user = None
+    if user_id_raw:
+        try:
+            target_user_id = ObjectId(user_id_raw)
+        except Exception:
+            return jsonify({"message": "Invalid userId."}), 400
+        target_user = users.find_one({"_id": target_user_id})
+    else:
+        target_user = users.find_one({"email": email_raw})
+    if not target_user:
+        return jsonify({"message": "User not found."}), 404
+    station = stations.find_one({"station_id": station_id}, {'_id': False})
     if not station:
         return jsonify({"message": "Station not found."}), 404
-    current_owner = station.get("ownerId")
-    current_user_id = str(user["_id"])
-    if current_owner and current_owner != current_user_id:
-        return jsonify({"message": "Station is already assigned to another user."}), 409
-    if current_owner == current_user_id:
-        updated_station = stations.find_one({"station_id": station_id}, {'_id': False})
-        return jsonify({"message": "Station already linked to your account.", "station": updated_station}), 200
-    stations.update_one({"station_id": station_id}, {'$set': {"ownerId": current_user_id}})
+    stations.update_one({"station_id": station_id}, {'$set': {"ownerId": str(target_user["_id"])}})
     updated_station = stations.find_one({"station_id": station_id}, {'_id': False})
-    return jsonify({"message": "Station assigned to your account.", "station": updated_station}), 200
+    return jsonify({"message": "Station owner updated.", "station": updated_station}), 200
 
 if __name__==('__main__'):
     app.run(host="0.0.0.0", debug=False)
