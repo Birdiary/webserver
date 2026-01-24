@@ -29,12 +29,14 @@ import DropdownShareButton from "./Share";
 import 'onsenui/css/onsen-css-components.css';
 import { GestureDetector } from 'react-onsenui';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const MOVEMENT_PAGE_SIZE = 30;
 
 function StationView(props) {
 
   const { id } = useParams()
+  const { user, token } = useAuth();
   const [data, setData] = useState("");
   const [temperature, setTemperature] = useState( [{
     label: "temperature",
@@ -73,6 +75,60 @@ function StationView(props) {
     loadedAll: true,
   });
   const [movementSource, setMovementSource] = useState('station');
+  const [movementDeletion, setMovementDeletion] = useState({ loading: false, movementId: null });
+  const [deleteFeedback, setDeleteFeedback] = useState({ open: false, message: '', severity: 'success' });
+  const stationCopy = language[props.language]?.stations || language.en.stations;
+  const canDeleteMovements = Boolean(user && data && (user.isAdmin || (data.ownerId && user.id === data.ownerId)));
+
+  const showDeleteFeedback = (message, severity = 'success') => {
+    setDeleteFeedback({ open: true, message, severity });
+  };
+
+  const handleDeleteFeedbackClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setDeleteFeedback((prev) => ({ ...prev, open: false }));
+  };
+
+  const handleDeleteMovement = async (movementId) => {
+    if (!canDeleteMovements) {
+      showDeleteFeedback(
+        stationCopy.deleteMovementLoginRequired || language.en.stations.deleteMovementLoginRequired,
+        'warning'
+      );
+      return;
+    }
+    if (!token) {
+      showDeleteFeedback(
+        stationCopy.deleteMovementLoginRequired || language.en.stations.deleteMovementLoginRequired,
+        'warning'
+      );
+      return;
+    }
+    const confirmText = stationCopy.deleteMovementConfirm || language.en.stations.deleteMovementConfirm;
+    const confirmed = window.confirm(confirmText);
+    if (!confirmed) {
+      return;
+    }
+    try {
+      setMovementDeletion({ loading: true, movementId });
+      await requests.deleteMovement(id, movementId, token, true);
+      showDeleteFeedback(
+        stationCopy.deleteMovementSuccess || language.en.stations.deleteMovementSuccess,
+        'success'
+      );
+      getStation();
+    } catch (error) {
+      const apiMessage = error?.response?.data?.message || error?.response?.data;
+      showDeleteFeedback(
+        apiMessage || stationCopy.deleteMovementError || language.en.stations.deleteMovementError,
+        'error'
+      );
+    } finally {
+      setMovementDeletion({ loading: false, movementId: null });
+    }
+  };
 
 
   useEffect(() => {
@@ -487,6 +543,19 @@ function StationView(props) {
                       <br></br>
                       <Button variant="contained" onClick={sendValidation} style={{ marginRight: "5px", marginBottom: "5px" }}>{language[props.language]["validation"]["send"]}</Button>
                       <Button variant="contained" onClick={sendValidationNone} style={{ marginRight: "5px", marginBottom: "5px" }}>{language[props.language]["validation"]["noBird"]}</Button>
+                      {canDeleteMovements && movement.station_id === id ? (
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          onClick={() => handleDeleteMovement(movement.mov_id)}
+                          disabled={movementDeletion.loading && movementDeletion.movementId === movement.mov_id}
+                          sx={{ mt: 1, mr: 1 }}
+                        >
+                          {(movementDeletion.loading && movementDeletion.movementId === movement.mov_id)
+                            ? (stationCopy.deleteMovementPending || language.en.stations.deleteMovementPending || stationCopy.deleteMovement || language.en.stations.deleteMovement)
+                            : (stationCopy.deleteMovement || language.en.stations.deleteMovement)}
+                        </Button>
+                      ) : null}
                       {data.type == "exhibit" && movement.station_id != id ? <div> <h4>{language[props.language]["stations"]["exhibitInfo"]} </h4> <span> {language[props.language]["stations"]["exhibitInfo2"]} <a href={'/view/station/' +movement.station_id} >{movement.station_name}</a>  {language[props.language]["stations"]["exhibitInfo3"] } </span> </div> :""
                        }
                     </Grid>
@@ -639,6 +708,11 @@ function StationView(props) {
     <Snackbar open={snackbarOpen} onClose={handleToClose} autoHideDuration={6000} anchorOrigin={{ vertical: "bottom", horizontal: "right" }} >
       <Alert severity="success" onClose={handleToClose} sx={{ width: '100%' }}>
         Validation send!
+      </Alert>
+    </Snackbar>
+    <Snackbar open={deleteFeedback.open} onClose={handleDeleteFeedbackClose} autoHideDuration={6000} anchorOrigin={{ vertical: "bottom", horizontal: "right" }}>
+      <Alert severity={deleteFeedback.severity} onClose={handleDeleteFeedbackClose} sx={{ width: '100%' }}>
+        {deleteFeedback.message}
       </Alert>
     </Snackbar>
 

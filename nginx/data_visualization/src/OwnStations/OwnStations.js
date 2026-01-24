@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Box, Button, Divider, IconButton, Paper, TextField, Tooltip, Typography, FormControl, InputLabel, MenuItem, Select, FormControlLabel, Switch } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -13,6 +13,7 @@ import './OwnStations.css';
 const SOFTWARE_VALUES = ['birdiary', 'duisbird'];
 const MOVEMENT_INITIAL_LIMIT = 5;
 const MOVEMENT_INCREMENT = 20;
+const DEFAULT_ADMIN_SEARCH_FORM = { stationId: '', name: '' };
 const ensureMovementMetaShape = (meta = {}) => {
   const limit = typeof meta.limit === 'number' ? meta.limit : MOVEMENT_INITIAL_LIMIT;
   const offset = typeof meta.offset === 'number' ? meta.offset : 0;
@@ -32,6 +33,34 @@ const ensureMovementMetaShape = (meta = {}) => {
 const normalizeSoftware = (value) => {
   const normalized = (value || '').toLowerCase();
   return SOFTWARE_VALUES.includes(normalized) ? normalized : SOFTWARE_VALUES[0];
+};
+
+const normalizeStationQuery = (rawQuery = {}) => {
+  const normalized = {};
+  if (typeof rawQuery.stationId === 'string' && rawQuery.stationId.trim().length > 0) {
+    normalized.stationId = rawQuery.stationId.trim();
+    return normalized;
+  }
+  if (typeof rawQuery.name === 'string' && rawQuery.name.trim().length > 0) {
+    normalized.name = rawQuery.name.trim();
+  }
+  return normalized;
+};
+
+const queriesEqual = (left, right) => {
+  if (left === right) {
+    return true;
+  }
+  const emptyLeft = !left || Object.keys(left).length === 0;
+  const emptyRight = !right || Object.keys(right).length === 0;
+  if (emptyLeft && emptyRight) {
+    return true;
+  }
+  if (emptyLeft || emptyRight) {
+    return false;
+  }
+  const keys = ['stationId', 'name'];
+  return keys.every((key) => (left?.[key] || '') === (right?.[key] || ''));
 };
 
 const createDraftFromStation = (station) => ({
@@ -73,6 +102,8 @@ const OwnStations = ({ language: langKey }) => {
   const [error, setError] = useState(null);
   const [stationDrafts, setStationDrafts] = useState({});
   const [stationErrors, setStationErrors] = useState({});
+  const [stationQuery, setStationQuery] = useState(null);
+  const stationQueryRef = useRef(null);
   const [statusMessage, setStatusMessage] = useState(null);
   const [passwordForm, setPasswordForm] = useState({ current: '', next: '' });
   const [passwordStatus, setPasswordStatus] = useState(null);
@@ -93,6 +124,9 @@ const OwnStations = ({ language: langKey }) => {
   const [adminUsersError, setAdminUsersError] = useState(null);
   const [adminUserStatus, setAdminUserStatus] = useState(null);
   const [adminUserError, setAdminUserError] = useState(null);
+  const [adminSearchForm, setAdminSearchForm] = useState(() => ({ ...DEFAULT_ADMIN_SEARCH_FORM }));
+  const [adminSearchError, setAdminSearchError] = useState(null);
+  const [adminSearchLoading, setAdminSearchLoading] = useState(false);
   const userEmail = (user?.email || '').trim();
   const normalizedResendEmail = userEmail.toLowerCase();
   const isEmailVerified = Boolean(user?.emailVerified);
@@ -106,8 +140,20 @@ const OwnStations = ({ language: langKey }) => {
       label: copy.softwareOptions?.[value] || value,
     }))
   ), [copy.softwareOptions]);
+  const adminSearchActiveMessage = useMemo(() => {
+    if (!isAdmin || !stationQuery) {
+      return null;
+    }
+    if (stationQuery.stationId) {
+      return copy.adminSearchActiveStation?.replace('{id}', stationQuery.stationId) || '';
+    }
+    if (stationQuery.name) {
+      return copy.adminSearchActiveName?.replace('{name}', stationQuery.name) || '';
+    }
+    return null;
+  }, [isAdmin, stationQuery, copy.adminSearchActiveStation, copy.adminSearchActiveName]);
 
-  const fetchStations = useCallback(async () => {
+  const fetchStations = useCallback(async (overrideQuery = null) => {
     if (!token) {
       setStations([]);
       setStationDrafts({});
@@ -121,13 +167,25 @@ const OwnStations = ({ language: langKey }) => {
       setVerificationStatus(null);
       setVerificationError(null);
       setVerificationLoading(false);
+      setStationQuery(null);
+      stationQueryRef.current = null;
+      setAdminSearchForm({ ...DEFAULT_ADMIN_SEARCH_FORM });
+      setAdminSearchError(null);
+      setAdminSearchLoading(false);
       setLoading(false);
-      return;
+      return false;
     }
     setLoading(true);
     setError(null);
+    const fallbackQuery = typeof overrideQuery === 'undefined' ? stationQueryRef.current : overrideQuery;
+    const baseQuery = fallbackQuery || {};
+    const normalizedQuery = normalizeStationQuery(baseQuery);
+    const nextQuery = Object.keys(normalizedQuery).length > 0 ? normalizedQuery : null;
     try {
-      const response = await requests.getMyStations(token, { movements: MOVEMENT_INITIAL_LIMIT });
+      const response = await requests.getMyStations(token, {
+        ...(nextQuery || {}),
+        movements: MOVEMENT_INITIAL_LIMIT,
+      });
       setStations(response.data);
       const drafts = {};
       const meta = {};
@@ -151,12 +209,19 @@ const OwnStations = ({ language: langKey }) => {
         setAssignForms({});
       }
       setAssignFeedback({});
+      const previousQuery = stationQueryRef.current;
+      if (!queriesEqual(previousQuery, nextQuery)) {
+        setStationQuery(nextQuery);
+      }
+      stationQueryRef.current = nextQuery;
+      return true;
     } catch (err) {
       setError(err.response?.data?.message || copy.loadError);
+      return false;
     } finally {
       setLoading(false);
     }
-  }, [token, copy.loadError, isAdmin]);
+  }, [token, isAdmin, copy.loadError]);
 
   const fetchAdminUsers = useCallback(async () => {
     if (!token || !isAdmin) {
@@ -176,6 +241,47 @@ const OwnStations = ({ language: langKey }) => {
       setAdminUsersLoading(false);
     }
   }, [token, isAdmin, copy.adminUsersLoadError]);
+
+  const handleAdminSearchFieldChange = (field) => (event) => {
+    const { value } = event.target;
+    setAdminSearchForm((prev) => ({ ...prev, [field]: value }));
+    setAdminSearchError(null);
+  };
+
+  const handleAdminSearchSubmit = useCallback(async (event) => {
+    event.preventDefault();
+    if (!isAdmin) {
+      return;
+    }
+    const trimmedId = adminSearchForm.stationId.trim();
+    const trimmedName = adminSearchForm.name.trim();
+    if (!trimmedId && !trimmedName) {
+      setAdminSearchError(copy.adminSearchMissing);
+      return;
+    }
+    setAdminSearchLoading(true);
+    setAdminSearchError(null);
+    const query = trimmedId ? { stationId: trimmedId } : { name: trimmedName };
+    const success = await fetchStations(query);
+    if (!success) {
+      setAdminSearchError(copy.adminSearchFailed);
+    }
+    setAdminSearchLoading(false);
+  }, [isAdmin, adminSearchForm, fetchStations, copy.adminSearchMissing, copy.adminSearchFailed]);
+
+  const handleAdminSearchReset = useCallback(async () => {
+    if (!isAdmin) {
+      return;
+    }
+    setAdminSearchLoading(true);
+    setAdminSearchError(null);
+    setAdminSearchForm({ ...DEFAULT_ADMIN_SEARCH_FORM });
+    const success = await fetchStations({});
+    if (!success) {
+      setAdminSearchError(copy.adminSearchFailed);
+    }
+    setAdminSearchLoading(false);
+  }, [isAdmin, fetchStations, copy.adminSearchFailed]);
 
   useEffect(() => {
     fetchStations();
@@ -652,6 +758,63 @@ const OwnStations = ({ language: langKey }) => {
         >
           {verificationMessage}
         </Alert>
+      )}
+
+      {isAdmin && (
+        <Paper className="own-stations-card" elevation={3}>
+          <Typography variant="h6" gutterBottom>
+            {copy.adminSearchTitle}
+          </Typography>
+          <Typography variant="body2" color="textSecondary">
+            {copy.adminSearchDescription}
+          </Typography>
+          <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 1 }}>
+            {copy.adminSearchHelper}
+          </Typography>
+          {adminSearchError && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              {adminSearchError}
+            </Alert>
+          )}
+          {adminSearchActiveMessage && (
+            <Alert severity="info" sx={{ mt: 2 }}>
+              {adminSearchActiveMessage}
+            </Alert>
+          )}
+          <Box
+            component="form"
+            className="admin-search-form"
+            onSubmit={handleAdminSearchSubmit}
+          >
+            <TextField
+              label={copy.adminSearchStationId}
+              value={adminSearchForm.stationId}
+              onChange={handleAdminSearchFieldChange('stationId')}
+              fullWidth
+            />
+            <TextField
+              label={copy.adminSearchStationName}
+              value={adminSearchForm.name}
+              onChange={handleAdminSearchFieldChange('name')}
+              fullWidth
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={adminSearchLoading}
+            >
+              {adminSearchLoading ? copy.adminSearchLoading : copy.adminSearchAction}
+            </Button>
+            <Button
+              type="button"
+              variant="text"
+              onClick={handleAdminSearchReset}
+              disabled={adminSearchLoading}
+            >
+              {copy.adminSearchReset}
+            </Button>
+          </Box>
+        </Paper>
       )}
 
       {loading ? (

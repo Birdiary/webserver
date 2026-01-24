@@ -25,6 +25,7 @@ import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 import unicodedata
 import secrets
+import re
 from bson.objectid import ObjectId
 from werkzeug.security import generate_password_hash, check_password_hash
 def remove_control_characters(s):
@@ -171,6 +172,17 @@ email_verifications.create_index("expires_at", expireAfterSeconds=0, background=
 
 SESSION_DURATION_HOURS = int(os.getenv('SESSION_DURATION_HOURS', '24'))
 ALLOWED_STATION_SOFTWARE = {"birdiary", "duisbird"}
+ADMIN_STATION_SEARCH_LIMIT = int(os.getenv('ADMIN_STATION_SEARCH_LIMIT', '25'))
+EMAIL_REGEX = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
+
+
+def is_valid_email_address(value):
+    if not isinstance(value, str):
+        return False
+    candidate = value.strip()
+    if not candidate:
+        return False
+    return bool(EMAIL_REGEX.match(candidate))
 
 
 def sanitize_user(user):
@@ -1423,9 +1435,42 @@ def add_station():
         location = dict()
         location['lat'] = body['location']['lat']
         location['lng']= body['location']['lng']
-        mail= dict()
-        mail["adresses"] = body['mail']['adresses']
-        mail["notifications"] = body["mail"]["notifications"]
+        current_user = get_authenticated_user()
+        owner_id = None
+        owner_email = None
+        if current_user:
+            owner_id = str(current_user["_id"])
+            owner_email = (current_user.get("email") or "").strip()
+            if not is_valid_email_address(owner_email):
+                return "authenticated user must have a valid email address", 400
+
+        mail_payload = body.get('mail')
+        if not mail_payload and not owner_email:
+            return "mail payload with at least one address is required", 400
+
+        normalized_addresses = []
+        mail_notifications = True
+        if mail_payload:
+            raw_addresses = mail_payload.get('adresses', [])
+            if not isinstance(raw_addresses, list):
+                return "mail.adresses must be a list", 400
+            for addr in raw_addresses:
+                if isinstance(addr, str):
+                    trimmed = addr.strip()
+                    if trimmed:
+                        if not is_valid_email_address(trimmed):
+                            return f"invalid mail address: {trimmed}", 400
+                        normalized_addresses.append(trimmed)
+            mail_notifications = bool(mail_payload.get("notifications", True))
+
+        mail = dict()
+        mail["notifications"] = mail_notifications
+        if owner_email:
+            mail["adresses"] = [owner_email]
+        else:
+            if not normalized_addresses:
+                return "at least one mail address is required", 400
+            mail["adresses"] = normalized_addresses
         createSensebox = False # body['createSensebox']
         sensebox_id = ''
         name = body["name"]
@@ -1453,10 +1498,6 @@ def add_station():
 
         #print(mail)
         count = dict()
-        owner_id = None
-        current_user = get_authenticated_user()
-        if current_user:
-            owner_id = str(current_user["_id"])
         station_payload = {"station_id": id, "location":location, "name":body['name'], "mail":mail, "count": count, "sensebox_id":sensebox_id, "type": type, "advancedSettings": advancedSettings, "key":key, "stationSoftware": sationSoftware}
         if owner_id:
             station_payload["ownerId"] = owner_id
@@ -2169,6 +2210,9 @@ def get_my_stations():
     verification_pending = not sanitized_user.get("emailVerified", True)
     movement_limit_raw = request.args.get('movements', default=0)
     movement_offset_raw = request.args.get('movementsOffset', default=0)
+    station_id_query = (request.args.get('stationId') or '').strip()
+    station_name_query = (request.args.get('name') or '').strip()
+    search_limit_raw = request.args.get('searchLimit')
     try:
         movement_limit = max(int(movement_limit_raw), 0)
     except Exception:
@@ -2177,11 +2221,37 @@ def get_my_stations():
         movement_offset = max(int(movement_offset_raw), 0)
     except Exception:
         movement_offset = 0
-    owner_id = str(user["_id"])
-    station_filter = {}
     if not admin_user:
-        station_filter["ownerId"] = owner_id
-    owned_stations = list(stations.find(station_filter, {'_id': False}))
+        station_id_query = ''
+        station_name_query = ''
+    owner_id = str(user["_id"])
+    projection = {'_id': False}
+    if admin_user and station_id_query:
+        station_doc = stations.find_one({"station_id": station_id_query}, projection)
+        owned_stations = [station_doc] if station_doc else []
+    else:
+        station_filter = {}
+        if admin_user:
+            if station_name_query:
+                try:
+                    station_filter["name"] = {"$regex": re.escape(station_name_query), "$options": "i"}
+                except re.error:
+                    return jsonify({"message": "Invalid station name search."}), 400
+            else:
+                station_filter["ownerId"] = owner_id
+        else:
+            station_filter["ownerId"] = owner_id
+        cursor = stations.find(station_filter, projection)
+        if admin_user and station_name_query:
+            search_limit = ADMIN_STATION_SEARCH_LIMIT
+            if search_limit_raw is not None:
+                try:
+                    requested_limit = int(search_limit_raw)
+                    search_limit = max(1, min(requested_limit, ADMIN_STATION_SEARCH_LIMIT))
+                except Exception:
+                    search_limit = ADMIN_STATION_SEARCH_LIMIT
+            cursor = cursor.limit(search_limit)
+        owned_stations = list(cursor)
     for station in owned_stations:
         owner_summary = get_station_owner_summary(station.get("ownerId"))
         if owner_summary:

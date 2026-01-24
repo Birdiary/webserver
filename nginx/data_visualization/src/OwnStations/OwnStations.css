@@ -118,6 +118,19 @@
   flex-wrap: wrap;
 }
 
+.admin-search-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 16px;
+  align-items: flex-end;
+}
+
+.admin-search-form .MuiTextField-root {
+  flex: 1;
+  min-width: 220px;
+}
+
 .danger-zone {
   border: 1px solid #f44336;
   background-color: #fff5f5;

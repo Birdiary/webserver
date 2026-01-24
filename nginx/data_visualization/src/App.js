@@ -51,7 +51,7 @@ const Footer = () => {
     <div className="mui-container mui--text-center" id="footer">
       <div className="footer-content">
         <div className="footer-alert">
-          <strong>Hackathon-Treffen:</strong>&nbsp;24.01.2026 · 11:00 · Geo 1 (WWU). Alle Infos unter <a href="/#news">EN</a> / <a href="/de/#news">DE</a>. Nächstes Discord-Treffen 07.01.2026 · 19:00.
+          <strong>Nächstes Discord-Treffen 07.01.2026 · 19:00.</strong>
         </div>
         <div id="links">
           <a id="link" href="/doc">API</a> |&nbsp;

@@ -45,6 +45,24 @@ function normalizeMovementParams(arg) {
     return params;
 }
 
+function normalizeMyStationParams(options) {
+    const params = normalizeMovementParams(options);
+    if (!options || typeof options !== 'object') {
+        return params;
+    }
+    if (typeof options.stationId === 'string' && options.stationId.trim().length > 0) {
+        params.stationId = options.stationId.trim();
+        return params;
+    }
+    if (typeof options.name === 'string' && options.name.trim().length > 0) {
+        params.name = options.name.trim();
+        if (typeof options.searchLimit === 'number' && options.searchLimit > 0) {
+            params.searchLimit = options.searchLimit;
+        }
+    }
+    return params;
+}
+
 function getStation(id, options, token) {
     let authToken = token;
     let movementOptions = options;
@@ -189,7 +207,7 @@ function resendVerificationEmail(payload){
 }
 
 function getMyStations(token, options){
-    const params = normalizeMovementParams(options);
+    const params = normalizeMyStationParams(options);
     const config = buildConfig(token, Object.keys(params).length ? params : undefined);
     return axios.get(_env.api + '/my-stations', config);
 }

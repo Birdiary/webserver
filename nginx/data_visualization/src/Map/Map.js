@@ -8,10 +8,10 @@ import CloseIcon from '@mui/icons-material/Close';
 import language from '../languages/languages';
 import ApexChart from './PieChart';
 import ReactPlayer from 'react-player';
-import { iconBlack, iconGreen, iconWithBird, iconBlackWithBird } from '../helpers/icon';
+import { getStationIcon, ICON_STATE } from '../helpers/icon';
 
 import { useNavigate, Link } from 'react-router-dom';
-import Legend from './Legend/Legend';
+import { LegendCard, LegendInfoCard } from './Legend/Legend';
 
 
 class OwnMap extends React.Component {
@@ -20,8 +20,8 @@ class OwnMap extends React.Component {
     this.state = {
       stations: [],
       open: false,
-      map: null,
-      legendOpen: true,
+      legendCardOpen: true,
+      infoCardOpen: true,
       showAllStations: false
     };
   };
@@ -56,14 +56,13 @@ class OwnMap extends React.Component {
     this.setState({ open: false });
   };
 
-  handleCloseLegend = () => {
-    this.setState({ legendOpen: false });
+  handleCloseLegendCard = () => {
+    this.setState({ legendCardOpen: false });
   };
 
-
-  setMap = (map) => {
-    this.setState({ map });
-  }
+  handleCloseInfoCard = () => {
+    this.setState({ infoCardOpen: false });
+  };
 
 
   parseDate = (value) => {
@@ -135,7 +134,8 @@ class OwnMap extends React.Component {
             <Button variant="contained" style={{ top: 10, right: 10, position: "absolute", zIndex: "5000", backgroundColor: "orange" }} onClick={this.handleClickOpen} >
               {language[this.props.language]["map"]["statistics"]}
             </Button>}
-          <MapContainer style={{ height: "calc(100vh - (5.25rem + 64px))" }} bounds={bounds} zoom={15} whenCreated={this.setMap} >
+          <div className="map-with-overlays">
+          <MapContainer className="map-with-overlays__map" bounds={bounds} zoom={15}>
 
             <TileLayer
               attribution='&amp;copy <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -166,21 +166,17 @@ class OwnMap extends React.Component {
                 feed = true;
               }
               let now = new Date(Date.now())
-              let icon = null
-              if (environment && (now - new Date(marker.lastEnvironment.date)) < 86400000) {
-                if (movement && (now - new Date(marker.lastMovement.start_date)) < 259200000) {
-                  icon = iconWithBird
-                }
-                else {
-                  icon = iconGreen
-                }
+              const envRecent = environment && (now - new Date(marker.lastEnvironment.date)) < 86400000
+              const movementRecent = movement && (now - new Date(marker.lastMovement.start_date)) < 259200000
+              let iconState = ICON_STATE.OFFLINE
+              if (envRecent && movementRecent) {
+                iconState = ICON_STATE.ENVIRONMENT_BIRD
+              } else if (envRecent) {
+                iconState = ICON_STATE.ENVIRONMENT
+              } else if (movementRecent) {
+                iconState = ICON_STATE.BIRD
               }
-              else if (movement && (now - new Date(marker.lastMovement.start_date)) < 259200000) {
-                icon = iconBlackWithBird
-              }
-              else {
-                icon = iconBlack
-              }
+              const icon = getStationIcon(iconState, marker.stationSoftware || marker.software)
 
               return <Marker key={"marker" + i}
                 position={[marker.location.lat, marker.location.lng ? marker.location.lng : marker.location.lon]}
@@ -223,24 +219,21 @@ class OwnMap extends React.Component {
                   </div>
                 </Popup> </Marker>
             })}
-            <Legend
-              map={this.state.map}
+          </MapContainer>
+            <LegendCard
               language={this.props.language}
-              open={this.state.legendOpen}
+              open={this.state.legendCardOpen}
+              onClose={this.handleCloseLegendCard}
+            />
+            <LegendInfoCard
+              language={this.props.language}
+              open={this.state.infoCardOpen}
               showAllStations={this.state.showAllStations}
               hiddenStationCount={hiddenStationCount}
               onToggleShowAll={this.toggleShowAllStations}
+              onClose={this.handleCloseInfoCard}
             />
-          </MapContainer>
-          {this.state.legendOpen ?
-            <IconButton
-              color="inherit"
-              onClick={this.handleCloseLegend}
-              aria-label="close"
-              style={{ position: "absolute", right: "10px", bottom: "400px", zIndex: 2000 }}
-            >
-              <CloseIcon />
-            </IconButton> : ""}
+          </div>
         </Grid>
         {this.state.open ?
           <Grid item xs={this.state.open ? 12 : 0} md={this.state.open ? 12 : 0} lg={this.state.open ? 4 : 0} style={{ maxHeight: "calc(100vh - (5.25rem + 64px))" }}>

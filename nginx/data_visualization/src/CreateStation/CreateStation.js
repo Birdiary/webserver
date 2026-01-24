@@ -44,6 +44,18 @@ const normalizeSoftware = (value) => {
   return SOFTWARE_VALUES.includes(normalized) ? normalized : SOFTWARE_VALUES[0];
 };
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const isValidEmail = (value = '') => {
+  if (typeof value !== 'string') {
+    return false;
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return false;
+  }
+  return EMAIL_REGEX.test(trimmed);
+};
+
 
 
 
@@ -87,7 +99,6 @@ class CreateStation extends React.Component {
     this.state = {
       position: center,
       mail: "",
-      mailChecked: false,
       open: false,
       finished: false,
       checked: false,
@@ -106,7 +117,9 @@ class CreateStation extends React.Component {
       detectionThreshold: 0.3,
       deleteMinutes: 20,
       creatingImage : false,
-      stationSoftware: SOFTWARE_VALUES[0]
+      stationSoftware: SOFTWARE_VALUES[0],
+      submitAttempted: false,
+      mailTouched: false
     };
     this.handler = this.handler.bind(this)
     this.secretKey = process.env.REACT_APP_SECRET_KEY;
@@ -133,7 +146,19 @@ class CreateStation extends React.Component {
 
   handleMailChange = (event, value) => {
     var value = event.target.value
-    this.setState({ mail: value });
+    this.setState((prevState) => ({
+      mail: value,
+      mailTouched: prevState.mailTouched || Boolean(value)
+    }));
+    if (this.state.submitAttempted) {
+      this.setState({ submitAttempted: false });
+    }
+  };
+
+  handleMailBlur = () => {
+    if (!this.state.mailTouched) {
+      this.setState({ mailTouched: true });
+    }
   };
 
   handleSSIDChange = (event, value) => {
@@ -191,11 +216,6 @@ class CreateStation extends React.Component {
     this.setState({ senseboxChecked: event.target.checked });
   };
 
-  handleNotficationsChecked = (event) => {
-    //console.log(event.target.checked)
-    this.setState({ mailChecked: event.target.checked });
-  };
-
   checkDownload = () => {
     const id = this.state.id;
     const self =this;
@@ -245,21 +265,27 @@ class CreateStation extends React.Component {
   }
 
   sendData = () => {
-    const self = this;
-    self.setState({ open: true })
-    const stationSoftware = normalizeSoftware(this.state.stationSoftware)
+    const authContext = this.context || {};
+    const ownerEmail = ((authContext.user && authContext.user.email) || '').trim();
+    const normalizedEmail = (ownerEmail || this.state.mail || '').trim();
+    const emailIsValid = normalizedEmail.length > 0 && isValidEmail(normalizedEmail);
+    if (!this.state.checked || !emailIsValid) {
+      this.setState({ submitAttempted: true });
+      return;
+    }
 
-    var payload = {
+    const stationSoftware = normalizeSoftware(this.state.stationSoftware);
+    const payload = {
       "name": this.state.name,
       "location": this.state.position,
       "type": this.state.type,
       "software": stationSoftware,
       "mail": {
-        "adresses": [this.state.mail],
-        "notifications": this.state.mailChecked
+        "adresses": [normalizedEmail],
+        "notifications": true
       },
       // "createSensebox": this.state.senseboxChecked,
-    }
+    };
 
     if(this.state.type != "observer"){
       payload.advancedSettings ={deleteMinutes: parseInt(this.state.deleteMinutes), detectionThreshold: parseFloat(this.state.detectionThreshold)}
@@ -268,14 +294,15 @@ class CreateStation extends React.Component {
       }
     }
 
-    const { token } = this.context || {};
+    const { token } = authContext;
+    this.setState({ open: true, submitAttempted: false });
     requests.sendStation(payload, token)
-      .then(function (res) {
+      .then((res) => {
         var id = res.data.id
         if (res.data.sensebox_id != '') {
           var createdSensebox = true;
         }
-        self.setState({ id: id, finished: true, senseboxCreated: false }) //TODO Change if sensevox Creation works
+        this.setState({ id: id, finished: true, senseboxCreated: false }) //TODO Change if sensevox Creation works
       })
 
   }
@@ -283,14 +310,30 @@ class CreateStation extends React.Component {
   render() {
     const self = this
     const langKey = this.props.language
-    const softwareLabels = (language[langKey]?.createStation?.softwareOptions) || (language.en?.createStation?.softwareOptions) || {}
+    const createCopy = language[langKey]?.createStation || language.en.createStation
+    const softwareLabels = createCopy.softwareOptions || (language.en?.createStation?.softwareOptions) || {}
+    const authContext = this.context || {}
+    const ownerEmail = ((authContext.user && authContext.user.email) || '').trim()
+    const trimmedMail = (this.state.mail || '').trim()
+    const effectiveEmail = ownerEmail || trimmedMail
+    const emailMissing = effectiveEmail.length === 0
+    const emailInvalid = effectiveEmail.length > 0 && !isValidEmail(effectiveEmail)
+    const helperFallback = createCopy.mailHelper || ''
+    const helperText = ownerEmail ? (createCopy.mailOwnerHelper || helperFallback) : helperFallback
+    const hasManualError = (emailMissing || emailInvalid) && (this.state.mailTouched || this.state.submitAttempted)
+    const manualErrorState = !ownerEmail && hasManualError
+    const mailErrorKey = emailMissing ? "mailRequired" : "mailInvalid"
+    const mailHelperText = manualErrorState
+      ? (createCopy[mailErrorKey] || language.en.createStation[mailErrorKey])
+      : helperText
+    const canSubmit = this.state.checked && !emailMissing && !emailInvalid
     return (
       <div style={{ textAlign: "center" }}>
-        <h1>{language[this.props.language]["createStation"]["title"]} </h1>
+        <h1>{createCopy["title"]} </h1>
         <TextField style={{ width: "50vw" }}
           id="name"
           name="name"
-          label={language[this.props.language]["createStation"]["name"]}
+          label={createCopy["name"]}
           value={this.state.name}
           onChange={this.handleChange}
         />
@@ -299,24 +342,21 @@ class CreateStation extends React.Component {
         <TextField style={{ width: "50vw" }}
           id="mail"
           name="mail"
-          label={language[this.props.language]["createStation"]["mail"]}
-          value={this.state.mail}
+          label={createCopy["mail"]}
+          value={ownerEmail || this.state.mail}
+          required={!ownerEmail}
+          disabled={Boolean(ownerEmail)}
+          error={manualErrorState}
+          helperText={mailHelperText}
           onChange={this.handleMailChange}
+          onBlur={this.handleMailBlur}
         />
-        <br />
-        <br />
-        <FormControlLabel
-          style={{ "max-width": "45vw", textAlign: "left" }}
-          control={<Checkbox
-            notificationsChecked={this.state.checked}
-            onChange={this.handleNotficationsChecked} />}
-          label={language[this.props.language]["createStation"]["notifications"]} />
         <br />
         <br />
         <TextField style={{ width: "50vw" }}
           id="postion"
           name="position"
-          label={language[this.props.language]["createStation"]["position"]}
+          label={createCopy["position"]}
           value={JSON.stringify(this.state.position)}
           onChange={this.handlePositionChange}
         />
@@ -346,8 +386,8 @@ class CreateStation extends React.Component {
         <br />
         <br />
         <FormControl style={{ width: "50vw" }}>
-      <FormLabel id="demo-row-radio-buttons-group-label">{language[this.props.language]["createStation"]["type"]}</FormLabel>
-      <span style={{textAlign: 'justify'}}>{language[this.props.language]["createStation"]["typeHelper"]}</span> <br/>
+      <FormLabel id="demo-row-radio-buttons-group-label">{createCopy["type"]}</FormLabel>
+      <span style={{textAlign: 'justify'}}>{createCopy["typeHelper"]}</span> <br/>
       <RadioGroup
       style={{alignSelf: "center"}} 
         row
@@ -364,10 +404,10 @@ class CreateStation extends React.Component {
     <br/>
     <br/>
         <FormControl style={{ width: "50vw", textAlign: "left" }}>
-          <InputLabel>{language[this.props.language]["createStation"]["stationSoftwareLabel"]}</InputLabel>
+          <InputLabel>{createCopy["stationSoftwareLabel"]}</InputLabel>
           <Select
             value={this.state.stationSoftware}
-            label={language[this.props.language]["createStation"]["stationSoftwareLabel"]}
+            label={createCopy["stationSoftwareLabel"]}
             onChange={this.handleStationSoftwareChange}
           >
             {SOFTWARE_VALUES.map((value) => (
@@ -376,11 +416,11 @@ class CreateStation extends React.Component {
               </MenuItem>
             ))}
           </Select>
-          <FormHelperText>{language[this.props.language]["createStation"]["stationSoftwareHelper"]}</FormHelperText>
+          <FormHelperText>{createCopy["stationSoftwareHelper"]}</FormHelperText>
         </FormControl>
         <br />
         <br />
-        <FormControlLabel style={{ "max-width": "45vw", textAlign: "left" }} control={<Checkbox checked={this.state.checked} onChange={this.handleChecked} />} label={language[this.props.language]["createStation"]["dataPrivacyText"]} />
+        <FormControlLabel style={{ "max-width": "45vw", textAlign: "left" }} control={<Checkbox checked={this.state.checked} onChange={this.handleChecked} />} label={createCopy["dataPrivacyText"]} />
         <br></br>
         <br />
                 {
@@ -394,13 +434,13 @@ class CreateStation extends React.Component {
         <br></br>
         <br/>
           */}
-        <h4>{language[this.props.language]["createStation"]["stationConfig"]}</h4>
-        <p style={{ width: "50vw", display: "inline-block" }}>{language[this.props.language]["createStation"]["stationConfigText"]}</p>
+        <h4>{createCopy["stationConfig"]}</h4>
+        <p style={{ width: "50vw", display: "inline-block" }}>{createCopy["stationConfigText"]}</p>
         <br></br>
         <TextField style={{ width: "50vw" }}
           id="SSID"
           name="SSID"
-          label={language[this.props.language]["createStation"]["ssid"]}
+          label={createCopy["ssid"]}
           value={this.state.SSID}
           onChange={this.handleSSIDChange}
         />
@@ -409,7 +449,7 @@ class CreateStation extends React.Component {
         <TextField style={{ width: "50vw" }}
           id="pwd"
           name="pwd"
-          label={language[this.props.language]["createStation"]["pwd"]}
+          label={createCopy["pwd"]}
           type="password"
           autoComplete="current-password"
           value={this.state.pwd}
@@ -421,7 +461,7 @@ class CreateStation extends React.Component {
           id="rotation"
           name="rotation"
           type= "number"
-          label={language[this.props.language]["createStation"]["rotation"]}
+          label={createCopy["rotation"]}
           value={this.state.rotation}
           onChange={this.handleRotationChange}
         />
@@ -431,7 +471,7 @@ class CreateStation extends React.Component {
           id="time"
           name="time"
           type= "number"
-          label={language[this.props.language]["createStation"]["time"]}
+          label={createCopy["time"]}
           value={this.state.time}
           onChange={this.handleTimeChange}
         />
@@ -444,7 +484,7 @@ class CreateStation extends React.Component {
           type= "number"
           id="deleteMinutes"
           name="deleteMinutes"
-          label={language[this.props.language]["createStation"]["deleteMinutes"]}
+          label={createCopy["deleteMinutes"]}
           value={this.state.deleteMinutes}
           onChange={this.handledeleteMinutesChange}
         />
@@ -453,10 +493,10 @@ class CreateStation extends React.Component {
         <TextField style={{ width: "50vw" }}
           id="detectionThreshold"
           name="detectionThreshold"
-          label={language[this.props.language]["createStation"]["detectionThreshold"]}
+          label={createCopy["detectionThreshold"]}
           value={this.state.detectionThreshold}
           onChange={this.handledetectionThresholdChange}
-          helperText={language[this.props.language]["createStation"]["detectionThresholdHelper"]}
+          helperText={createCopy["detectionThresholdHelper"]}
           ></TextField>
                   <br />
         <br />
@@ -469,7 +509,7 @@ class CreateStation extends React.Component {
           type= "number"
           id="numberVisualExamples"
           name="numberVisualExamples"
-          label={language[this.props.language]["createStation"]["numberVisualExamples"]}
+          label={createCopy["numberVisualExamples"]}
           value={this.state.numberVisualExamples}
           onChange={this.handlenumberVisualExamplesChange}
           ></TextField>         
@@ -477,11 +517,11 @@ class CreateStation extends React.Component {
           <br />
           </div>: ""
         }
-        <Button color="primary" variant="contained" type="submit" onClick={this.sendData} disabled={!this.state.checked}>
-        {language[this.props.language]["createStation"]["submit"]}
+        <Button color="primary" variant="contained" type="submit" onClick={this.sendData} disabled={!canSubmit}>
+        {createCopy["submit"]}
         </Button>
         <br></br>
-        {this.state.checked ? "" : <p>{language[this.props.language]["createStation"]["dataPrivacy"]}</p>}
+        {this.state.checked ? "" : <p>{createCopy["dataPrivacy"]}</p>}
 
         <br />
         <br />
@@ -517,23 +557,23 @@ class CreateStation extends React.Component {
             {this.state.finished ?
               (this.state.senseboxCreated ?
                 <DialogContentText id="alert-dialog-description" style={{ "padding": "10px" }}>
-                  {language[this.props.language]["createStation"]["finished"]} <br></br>{this.state.id}<br></br>
-                  {language[this.props.language]["createStation"]["senseboxCreated"]}
+                  {createCopy["finished"]} <br></br>{this.state.id}<br></br>
+                  {createCopy["senseboxCreated"]}
                 </DialogContentText> :
                 <DialogContentText id="alert-dialog-description" style={{ "padding": "10px" }}>
-                  {language[this.props.language]["createStation"]["finished"]} <br></br>{this.state.id}<br></br>
-                  {language[this.props.language]["createStation"]["senseboxNotCreated"]}
+                  {createCopy["finished"]} <br></br>{this.state.id}<br></br>
+                  {createCopy["senseboxNotCreated"]}
                 </DialogContentText>) :
               <DialogContentText id="alert-dialog-description" style={{ "padding": "10px" }}>
                 {this.state.DialogText} <a href="https://wiediversistmeingarten.org/api/image" target="_blank">https://wiediversistmeingarten.org/api/image</a>
               </DialogContentText>}
           </DialogContent>
           <DialogActions>
-            <Button component={Link} to="/view" >{language[this.props.language]["createStation"]["overview"]}</Button>
-            <Button disabled={!this.state.id} onClick={this.startImageAndCheckImage}>{language[this.props.language]["createStation"]["createImage"]}</Button>
-            <Button disabled={!this.state.downloadReady} onClick={this.startDownload}>{language[this.props.language]["createStation"]["download"]}</Button>
+            <Button component={Link} to="/view" >{createCopy["overview"]}</Button>
+            <Button disabled={!this.state.id} onClick={this.startImageAndCheckImage}>{createCopy["createImage"]}</Button>
+            <Button disabled={!this.state.downloadReady} onClick={this.startDownload}>{createCopy["download"]}</Button>
             <Button component={Link} to={"/view/station/" + this.state.id}>
-              {language[this.props.language]["createStation"]["viewStation"]}
+              {createCopy["viewStation"]}
             </Button>
           </DialogActions>
         </Dialog>
