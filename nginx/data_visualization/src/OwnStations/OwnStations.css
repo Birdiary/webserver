@@ -85,3 +85,40 @@
 .password-form {
   max-width: 480px;
 }
+
+.admin-user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.admin-user-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 12px 0;
+  border-bottom: 1px solid #e0e0e0;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-user-row:last-child {
+  border-bottom: none;
+}
+
+.admin-user-meta {
+  flex: 1;
+  min-width: 220px;
+}
+
+.admin-user-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.danger-zone {
+  border: 1px solid #f44336;
+  background-color: #fff5f5;
+}

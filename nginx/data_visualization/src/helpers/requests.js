@@ -158,6 +158,11 @@ function getCurrentUser(token){
     return axios.get(_url, authHeaders(token));
 }
 
+function deleteCurrentUser(token){
+    var _url = _env.api + '/me';
+    return axios.delete(_url, authHeaders(token));
+}
+
 function resetPassword(payload, token){
     var _url = _env.api + '/reset-password';
     return axios.post(_url, payload, authHeaders(token));
@@ -214,6 +219,16 @@ function adminSetUserPassword(payload, token){
     return axios.put(_url, { newPassword: payload.newPassword }, authHeaders(token));
 }
 
+function adminListUsers(token){
+    var _url = _env.api + '/admin/users';
+    return axios.get(_url, authHeaders(token));
+}
+
+function adminDeleteUser(userId, token){
+    var _url = _env.api + `/admin/users/${userId}`;
+    return axios.delete(_url, authHeaders(token));
+}
+
 function adminAssignStationOwner(stationId, payload, token){
     var _url = _env.api + `/admin/stations/${stationId}/owner`;
     return axios.put(_url, payload, authHeaders(token));
@@ -237,6 +252,7 @@ module.exports = {
     login: login,
     logout: logout,
     getCurrentUser: getCurrentUser,
+    deleteCurrentUser: deleteCurrentUser,
     resetPassword: resetPassword,
     requestPasswordReset: requestPasswordReset,
     confirmPasswordReset: confirmPasswordReset,
@@ -248,4 +264,6 @@ module.exports = {
     deleteMovement: deleteMovement,
     adminSetUserPassword: adminSetUserPassword,
     adminAssignStationOwner: adminAssignStationOwner,
+    adminListUsers: adminListUsers,
+    adminDeleteUser: adminDeleteUser,
 };

@@ -174,12 +174,18 @@ ALLOWED_STATION_SOFTWARE = {"birdiary", "duisbird"}
 
 
 def sanitize_user(user):
+    created_at = user.get("createdAt")
+    if isinstance(created_at, datetime):
+        created_at_value = created_at.isoformat()
+    else:
+        created_at_value = created_at
     return {
         "id": str(user["_id"]),
         "email": user.get("email"),
         "name": user.get("name", ""),
         "emailVerified": bool(user.get("emailVerified", False)),
-        "isAdmin": is_admin_user(user)
+        "isAdmin": is_admin_user(user),
+        "createdAt": created_at_value
     }
 
 
@@ -221,6 +227,7 @@ def get_authenticated_user(include_password=False):
         return None
     if not user:
         return None
+    user = ensure_admin_flag(user)
     if not include_password:
         user = dict(user)
         user.pop("passwordHash", None)
@@ -378,6 +385,30 @@ def ensure_email_verified_flag(user):
         user["emailVerified"] = bool(user.get("emailVerified"))
     return user
 
+
+def ensure_admin_flag(user):
+    if not user:
+        return None
+    email = (user.get("email") or "").strip().lower()
+    should_be_admin = is_admin_email(email)
+    current_admin = bool(user.get("isAdmin"))
+    if should_be_admin != current_admin and user.get("_id"):
+        users.update_one({"_id": user["_id"]}, {"$set": {"isAdmin": should_be_admin}})
+        user["isAdmin"] = should_be_admin
+    return user
+
+
+def delete_user_account(user_doc):
+    if not user_doc or not user_doc.get("_id"):
+        return 0
+    user_id = user_doc["_id"]
+    user_id_str = str(user_id)
+    stations_result = stations.update_many({"ownerId": user_id_str}, {"$set": {"ownerId": None}})
+    sessions.delete_many({"user_id": user_id_str})
+    password_resets.delete_many({"user_id": user_id_str})
+    email_verifications.delete_many({"user_id": user_id_str})
+    users.delete_one({"_id": user_id})
+    return stations_result.modified_count if stations_result else 0
 
 
 imagesSet = UploadSet('images', IMAGES)
@@ -1936,7 +1967,8 @@ def register_user():
         "name": name,
         "passwordHash": generate_password_hash(password),
         "createdAt": datetime.utcnow(),
-        "emailVerified": False
+        "emailVerified": False,
+        "isAdmin": is_admin_email(email)
     }
     result = users.insert_one(user_doc)
     user_doc["_id"] = result.inserted_id
@@ -2012,6 +2044,7 @@ def login_user():
         })
         user["emailVerified"] = False
     user = ensure_email_verified_flag(user)
+    user = ensure_admin_flag(user)
     verification_pending = not user.get("emailVerified")
     sessions.delete_many({"user_id": str(user["_id"])})
     token = create_session_token(user["_id"])
@@ -2033,12 +2066,15 @@ def logout_user():
     return jsonify({"message": "Logged out"}), 200
 
 
-@app.route('/api/me', methods=['GET'])
-def get_current_user():
+@app.route('/api/me', methods=['GET', 'DELETE'])
+def handle_current_user():
     user = get_authenticated_user()
     if not user:
         return "Not authorized", 401
-    return jsonify(sanitize_user(user)), 200
+    if request.method == 'GET':
+        return jsonify(sanitize_user(user)), 200
+    orphaned = delete_user_account(user)
+    return jsonify({"message": "Account deleted.", "orphanedStations": orphaned}), 200
 
 
 @app.route('/api/reset-password', methods=['POST'])
@@ -2176,6 +2212,20 @@ def get_my_stations():
     return jsonify(owned_stations), 200
 
 
+@app.route('/api/admin/users', methods=['GET'])
+def admin_list_users():
+    require_admin_user()
+    user_docs = list(users.find({}))
+    response = []
+    for doc in user_docs:
+        ensure_admin_flag(doc)
+        sanitized = sanitize_user(doc)
+        sanitized["stationCount"] = stations.count_documents({"ownerId": str(doc["_id"])})
+        response.append(sanitized)
+    response.sort(key=lambda entry: entry.get("createdAt") or "", reverse=True)
+    return jsonify(response), 200
+
+
 @app.route('/api/admin/users/<user_id>/password', methods=['PUT'])
 def admin_set_user_password(user_id):
     require_admin_user()
@@ -2193,6 +2243,23 @@ def admin_set_user_password(user_id):
     users.update_one({"_id": target_user_id}, {'$set': {"passwordHash": generate_password_hash(new_password)}})
     sessions.delete_many({"user_id": str(target_user_id)})
     return jsonify({"message": "Password updated."}), 200
+
+
+@app.route('/api/admin/users/<user_id>', methods=['DELETE'])
+def admin_delete_user(user_id):
+    require_admin_user()
+    try:
+        target_user_id = ObjectId(user_id)
+    except Exception:
+        return jsonify({"message": "Invalid userId."}), 400
+    user_doc = users.find_one({"_id": target_user_id})
+    if not user_doc:
+        return jsonify({"message": "User not found."}), 404
+    orphaned = delete_user_account(user_doc)
+    return jsonify({
+        "message": "User deleted.",
+        "orphanedStations": orphaned
+    }), 200
 
 
 @app.route('/api/admin/stations/<station_id>/owner', methods=['PUT'])

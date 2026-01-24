@@ -53,9 +53,20 @@ const parseMailAddresses = (value) => (
     .filter((entry) => entry.length > 0)
 );
 
+const formatDateTime = (value) => {
+  if (!value) {
+    return '';
+  }
+  try {
+    return new Date(value).toLocaleString();
+  } catch (err) {
+    return value;
+  }
+};
+
 const OwnStations = ({ language: langKey }) => {
   const copy = language[langKey]?.ownStations || language.en.ownStations;
-  const { token, resetPassword, user, resendVerification: resendVerificationEmail } = useAuth();
+  const { token, resetPassword, user, resendVerification: resendVerificationEmail, logout } = useAuth();
   const isAdmin = Boolean(user?.isAdmin);
   const [stations, setStations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -75,9 +86,13 @@ const OwnStations = ({ language: langKey }) => {
   const [verificationStatus, setVerificationStatus] = useState(null);
   const [verificationError, setVerificationError] = useState(null);
   const [verificationLoading, setVerificationLoading] = useState(false);
-  const [adminPasswordForm, setAdminPasswordForm] = useState({ userId: '', newPassword: '' });
-  const [adminPasswordStatus, setAdminPasswordStatus] = useState(null);
-  const [adminPasswordError, setAdminPasswordError] = useState(null);
+  const [accountDeleteStatus, setAccountDeleteStatus] = useState(null);
+  const [accountDeleteError, setAccountDeleteError] = useState(null);
+  const [adminUsers, setAdminUsers] = useState([]);
+  const [adminUsersLoading, setAdminUsersLoading] = useState(false);
+  const [adminUsersError, setAdminUsersError] = useState(null);
+  const [adminUserStatus, setAdminUserStatus] = useState(null);
+  const [adminUserError, setAdminUserError] = useState(null);
   const userEmail = (user?.email || '').trim();
   const normalizedResendEmail = userEmail.toLowerCase();
   const isEmailVerified = Boolean(user?.emailVerified);
@@ -143,9 +158,36 @@ const OwnStations = ({ language: langKey }) => {
     }
   }, [token, copy.loadError, isAdmin]);
 
+  const fetchAdminUsers = useCallback(async () => {
+    if (!token || !isAdmin) {
+      setAdminUsers([]);
+      setAdminUsersError(null);
+      setAdminUsersLoading(false);
+      return;
+    }
+    setAdminUsersLoading(true);
+    setAdminUsersError(null);
+    try {
+      const response = await requests.adminListUsers(token);
+      setAdminUsers(response.data || []);
+    } catch (err) {
+      setAdminUsersError(copy.adminUsersLoadError);
+    } finally {
+      setAdminUsersLoading(false);
+    }
+  }, [token, isAdmin, copy.adminUsersLoadError]);
+
   useEffect(() => {
     fetchStations();
   }, [fetchStations]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchAdminUsers();
+    } else {
+      setAdminUsers([]);
+    }
+  }, [isAdmin, fetchAdminUsers]);
 
   const handleResendVerification = useCallback(async () => {
     if (!normalizedResendEmail) {
@@ -164,6 +206,71 @@ const OwnStations = ({ language: langKey }) => {
       setVerificationLoading(false);
     }
   }, [normalizedResendEmail, resendVerificationEmail, copy.resendVerificationError, copy.resendVerificationSuccess]);
+
+  const handleDeleteAccount = useCallback(async () => {
+    if (!token) {
+      return;
+    }
+    const confirmed = window.confirm(copy.accountDeleteConfirm);
+    if (!confirmed) {
+      return;
+    }
+    setAccountDeleteStatus(null);
+    setAccountDeleteError(null);
+    try {
+      await requests.deleteCurrentUser(token);
+      setAccountDeleteStatus(copy.accountDeleteSuccess);
+      if (typeof logout === 'function') {
+        await logout();
+      }
+    } catch (err) {
+      setAccountDeleteError(copy.accountDeleteError);
+    }
+  }, [token, copy.accountDeleteConfirm, copy.accountDeleteSuccess, copy.accountDeleteError, logout]);
+
+  const handleAdminDeleteUser = useCallback(async (targetUser) => {
+    if (!isAdmin || !token || !targetUser?.id) {
+      return;
+    }
+    const label = targetUser.email || targetUser.id;
+    const confirmed = window.confirm(copy.adminDeleteConfirm.replace('{email}', label));
+    if (!confirmed) {
+      return;
+    }
+    setAdminUserStatus(null);
+    setAdminUserError(null);
+    try {
+      await requests.adminDeleteUser(targetUser.id, token);
+      setAdminUserStatus(copy.adminDeleteSuccess.replace('{email}', label));
+      await fetchAdminUsers();
+    } catch (err) {
+      setAdminUserError(copy.adminDeleteError);
+    }
+  }, [isAdmin, token, copy.adminDeleteConfirm, copy.adminDeleteSuccess, copy.adminDeleteError, fetchAdminUsers]);
+
+  const handleAdminSetPassword = useCallback(async (targetUser) => {
+    if (!isAdmin || !token || !targetUser?.id) {
+      return;
+    }
+    const label = targetUser.email || targetUser.id;
+    const newPassword = window.prompt(copy.adminUserPasswordPrompt.replace('{email}', label));
+    if (newPassword === null) {
+      return;
+    }
+    const trimmedPassword = newPassword.trim();
+    if (trimmedPassword.length < 8) {
+      setAdminUserError(copy.adminPasswordValidationError);
+      return;
+    }
+    setAdminUserStatus(null);
+    setAdminUserError(null);
+    try {
+      await requests.adminSetUserPassword({ userId: targetUser.id, newPassword: trimmedPassword }, token);
+      setAdminUserStatus(copy.adminUserPasswordSuccess.replace('{email}', label));
+    } catch (err) {
+      setAdminUserError(copy.adminUserPasswordError);
+    }
+  }, [isAdmin, token, copy.adminUserPasswordPrompt, copy.adminPasswordValidationError, copy.adminUserPasswordSuccess, copy.adminUserPasswordError]);
 
   const updateDraftState = (stationId, updater) => {
     setStationDrafts((prev) => {
@@ -483,33 +590,6 @@ const OwnStations = ({ language: langKey }) => {
       fetchStations();
     } catch (err) {
       setClaimError(err.response?.data?.message || copy.claimError);
-    }
-  };
-
-  const handleAdminPasswordInput = (event) => {
-    const { name, value } = event.target;
-    setAdminPasswordForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleAdminPasswordSubmit = async (event) => {
-    event.preventDefault();
-    if (!isAdmin) {
-      return;
-    }
-    setAdminPasswordStatus(null);
-    setAdminPasswordError(null);
-    const trimmedId = adminPasswordForm.userId.trim();
-    const trimmedPassword = adminPasswordForm.newPassword.trim();
-    if (!trimmedId || trimmedPassword.length < 8) {
-      setAdminPasswordError(copy.adminPasswordValidationError);
-      return;
-    }
-    try {
-      await requests.adminSetUserPassword({ userId: trimmedId, newPassword: trimmedPassword }, token);
-      setAdminPasswordStatus(copy.adminPasswordSuccess);
-      setAdminPasswordForm({ userId: '', newPassword: '' });
-    } catch (err) {
-      setAdminPasswordError(err.response?.data?.message || copy.adminPasswordError);
     }
   };
 
@@ -842,45 +922,70 @@ const OwnStations = ({ language: langKey }) => {
       {isAdmin && (
         <Paper className="own-stations-card" elevation={3}>
           <Typography variant="h6" gutterBottom>
-            {copy.adminPasswordTitle}
+            {copy.adminUsersTitle}
           </Typography>
           <Typography variant="body2" color="textSecondary" gutterBottom>
-            {copy.adminPasswordHelper}
+            {copy.adminUsersHelper}
           </Typography>
-          {adminPasswordStatus && (
+          {adminUserStatus && (
             <Alert severity="success" sx={{ mb: 2 }}>
-              {adminPasswordStatus}
+              {adminUserStatus}
             </Alert>
           )}
-          {adminPasswordError && (
+          {adminUserError && (
             <Alert severity="error" sx={{ mb: 2 }}>
-              {adminPasswordError}
+              {adminUserError}
             </Alert>
           )}
-          <form className="password-form" onSubmit={handleAdminPasswordSubmit}>
-            <TextField
-              label={copy.adminPasswordUserId}
-              name="userId"
-              value={adminPasswordForm.userId}
-              onChange={handleAdminPasswordInput}
-              required
-              fullWidth
-              margin="normal"
-            />
-            <TextField
-              label={copy.adminPasswordNewPassword}
-              name="newPassword"
-              type="password"
-              value={adminPasswordForm.newPassword}
-              onChange={handleAdminPasswordInput}
-              required
-              fullWidth
-              margin="normal"
-            />
-            <Button type="submit" variant="contained" sx={{ mt: 2 }}>
-              {copy.adminPasswordSubmit}
-            </Button>
-          </form>
+          {adminUsersError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {adminUsersError}
+            </Alert>
+          )}
+          {adminUsersLoading ? (
+            <Typography variant="body2" color="textSecondary">
+              {copy.adminUsersLoading}
+            </Typography>
+          ) : adminUsers.length === 0 ? (
+            <Typography variant="body2" color="textSecondary">
+              {copy.adminUsersEmpty}
+            </Typography>
+          ) : (
+            <Box className="admin-user-list">
+              {adminUsers.map((account) => (
+                <Box key={account.id} className="admin-user-row">
+                  <div className="admin-user-meta">
+                    <Typography variant="subtitle2">{account.email || copy.adminUserNoEmail}</Typography>
+                    <Typography variant="body2" color="textSecondary">
+                      {account.name || copy.ownerNone}
+                    </Typography>
+                    <Typography variant="caption" color="textSecondary">
+                      {copy.adminUserCreatedAt.replace('{date}', formatDateTime(account.createdAt) || copy.adminUserCreatedUnknown)}
+                    </Typography>
+                    <Typography variant="caption" color="textSecondary">
+                      {copy.adminUserStationCount.replace('{count}', account.stationCount ?? 0)}
+                    </Typography>
+                  </div>
+                  <div className="admin-user-actions">
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => handleAdminSetPassword(account)}
+                    >
+                      {copy.adminPasswordSubmit}
+                    </Button>
+                    <Button
+                      size="small"
+                      color="error"
+                      onClick={() => handleAdminDeleteUser(account)}
+                    >
+                      {copy.adminDeleteUser}
+                    </Button>
+                  </div>
+                </Box>
+              ))}
+            </Box>
+          )}
         </Paper>
       )}
 
@@ -923,6 +1028,34 @@ const OwnStations = ({ language: langKey }) => {
             {copy.passwordAction}
           </Button>
         </form>
+      </Paper>
+
+      <Paper className="own-stations-card danger-zone" elevation={3}>
+        <Typography variant="h6" gutterBottom>
+          {copy.accountDeleteTitle}
+        </Typography>
+        <Typography variant="body2" color="textSecondary" gutterBottom>
+          {copy.accountDeleteDescription}
+        </Typography>
+        {accountDeleteStatus && (
+          <Alert severity="success" sx={{ mb: 2 }}>
+            {accountDeleteStatus}
+          </Alert>
+        )}
+        {accountDeleteError && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {accountDeleteError}
+          </Alert>
+        )}
+        <Button
+          variant="outlined"
+          color="error"
+          onClick={handleDeleteAccount}
+          disabled={!token}
+          sx={{ mt: 2 }}
+        >
+          {copy.accountDeleteAction}
+        </Button>
       </Paper>
     </Box>
   );
