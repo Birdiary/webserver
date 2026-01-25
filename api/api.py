@@ -1011,6 +1011,7 @@ def videoAnalysis(filename, movement_id, station_id, movement):
     count = {}
     if "count" in station: 
         count = station["count"]
+    newCount = dict(count)
 
 
     if len(birds) > 0:
@@ -1019,8 +1020,6 @@ def videoAnalysis(filename, movement_id, station_id, movement):
         #print(today)
         latinName=birds[0]['latinName']
         germanName=birds[0]["germanName"]
-
-        newCount = dict()
         
         if today in count:
             newCount[today] = count[today]
@@ -1273,61 +1272,80 @@ def saveFeed(body, feed_id, station_id):
 
 @enqueueable
 def saveValidation(validation, movement_id, station_id):
-    movement = db["movements_"+station_id].find({"mov_id": movement_id}, {'_id' : False})
-    movementList = list(movement)
-    movement = movementList[0]
-    newValidation=dict()
-    if "timestamp" not in validation:
-        validation["timestamp"] = str(datetime.now())
-    if "validation" in  movement:
-        validations = movement["validation"]["validations"]
-        latinName = validation["latinName"]
-        validations.append(validation)
-        summary = movement["validation"]["summary"]
-        found=False
-        for key in summary:
-            if key == latinName:
-                summary[latinName]["amount"] = summary[latinName]["amount"] + 1
-                found = True
-                break
-        if found == False:
-            summary[latinName] = {"latinName": latinName, "amount": 1}
-        newValidation["validations"] = validations
-        newValidation["summary"] = summary
-        db["movements_"+station_id].update_one({"mov_id": movement_id}, {'$set': {"validation" : newValidation} })
-    else:
-        latinName = validation["latinName"]
-        newValidation["validations"] = [validation]
-        newValidation["summary"] = {latinName: {"latinName": latinName, "amount": 1}}
-        statistics = db["statistics"].find({"station_id": station_id})
-        statistics = list(statistics)[0]
-        newStats= dict()
-        newStats["numberOfValidatedBirds"] = statistics["numberOfValidatedBirds"] + 1
-        if latinName in statistics["validatedBirds"]:
-                statistics["validatedBirds"][latinName]["sum"] = statistics["validatedBirds"][latinName]["sum"] +1
-                if len(statistics["validatedBirds"][latinName]["movements"]) < 20:
-                    statistics["validatedBirds"][latinName]["movements"].append({"mov_id": movement["mov_id"], "station_id" : station_id, "video": movement["video"], "start_date":movement["start_date"]})
-        else:
-            statistics["validatedBirds"][latinName]=  {"sum": 1}
-            statistics["validatedBirds"][latinName]["movements"] = [{"mov_id": movement["mov_id"], "station_id" : station_id, "video": movement["video"], "start_date":movement["start_date"]}]
-        newStats["validatedBirds"] = statistics["validatedBirds"]
-        newStats["maxValidatedBirds"] = [{"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0} , {"sum": 0}]
-        for species in newStats["validatedBirds"]:
-            if newStats["maxValidatedBirds"][0]["sum"] < newStats["validatedBirds"][species]["sum"]:
-                objectToInsert = dict()
-                objectToInsert = newStats["validatedBirds"][species]
-                objectToInsert["latinName"] = species
-                germanName = ""
-                try:
-                    germanName = birdJSON[species]
-                except:
-                    germanName = ""
-                objectToInsert["germanName"] = germanName
-                newStats["maxValidatedBirds"] = insertMax(newStats["maxValidatedBirds"], objectToInsert, "sum")
-        newStats["maxValidatedBirds"] = list(filter(lambda i: i['sum'] != 0, newStats["maxValidatedBirds"]))
+    movement = db["movements_" + station_id].find_one({"mov_id": movement_id}, {'_id': False})
+    if not movement:
+        print(f"validation skipped; movement {movement_id} for station {station_id} missing", flush=True)
+        return None
 
-        db["movements_"+station_id].update_one({"mov_id": movement_id}, {'$set': {"validation" : newValidation} })
-        db["statistics"].update_one({"station_id": station_id}, {'$set': newStats })
+    validation_payload = dict(validation)
+    latinName = validation_payload.get("latinName")
+    if not latinName:
+        print(f"validation skipped; latinName missing for movement {movement_id}", flush=True)
+        return None
+
+    validation_payload.setdefault("timestamp", str(datetime.now()))
+
+    existing_validation = movement.get("validation") or {}
+    validations = list(existing_validation.get("validations", []))
+    summary = dict(existing_validation.get("summary", {}))
+
+    validations.append(validation_payload)
+    summary_entry = summary.get(latinName)
+    if summary_entry:
+        summary_entry["amount"] = summary_entry.get("amount", 0) + 1
+    else:
+        summary[latinName] = {"latinName": latinName, "amount": 1}
+
+    newValidation = {"validations": validations, "summary": summary}
+    db["movements_" + station_id].update_one({"mov_id": movement_id}, {'$set': {"validation": newValidation}})
+
+    if existing_validation:
+        return newValidation
+
+    statistics = db["statistics"].find_one({"station_id": station_id}, {'_id': False})
+    if not statistics:
+        print(f"statistics missing for station {station_id}; validation stored without aggregates", flush=True)
+        return newValidation
+
+    validatedBirds = dict(statistics.get("validatedBirds") or {})
+    species_entry = validatedBirds.get(latinName)
+    movement_meta = {
+        "mov_id": movement.get("mov_id"),
+        "station_id": station_id,
+        "video": movement.get("video"),
+        "start_date": movement.get("start_date")
+    }
+
+    if species_entry:
+        species_entry["sum"] = species_entry.get("sum", 0) + 1
+        movements_log = species_entry.setdefault("movements", [])
+        if len(movements_log) < 20:
+            movements_log.append(movement_meta)
+    else:
+        validatedBirds[latinName] = {"sum": 1, "movements": [movement_meta]}
+
+    number_validated = statistics.get("numberOfValidatedBirds", 0) + 1
+
+    top_species = []
+    for species, data in validatedBirds.items():
+        entry_sum = data.get("sum", 0)
+        if entry_sum <= 0:
+            continue
+        top_species.append({
+            "latinName": species,
+            "germanName": birdJSON.get(species, ""),
+            "sum": entry_sum
+        })
+    top_species.sort(key=lambda item: item["sum"], reverse=True)
+    top_species = top_species[:5]
+
+    update_doc = {
+        "numberOfValidatedBirds": number_validated,
+        "validatedBirds": validatedBirds,
+        "maxValidatedBirds": top_species
+    }
+
+    db["statistics"].update_one({"station_id": station_id}, {'$set': update_doc})
 
     return newValidation
 
