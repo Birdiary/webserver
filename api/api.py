@@ -1185,33 +1185,31 @@ def saveEnvironment(body, env_id, station_id):
         environmentClass[name]= value
     
     environmentClass["env_id"] = env_id
-    environmentList = db["environments_" + station_id].find()
-    
-    month = environmentClass["date"]
-    month = month[0:7]
+    month = environmentClass["date"][:7]
 
+    collection = db["environments_" + station_id]
+    existing = collection.find_one({"month": month}, {"_id": 1})
 
-    listID =""
-    for listElement in environmentList:
-        if listElement["month"] == month:
-            listID = listElement["list_id"]
-            selectedList = listElement
-            break
-
-    if listID == "":
-        environmentMonth = dict()
-        environmentMonth["station_id"] = station_id
-        environmentMonth["month"] = month
-        environmentMonth["list_id"] = str(uuid.uuid4())
-        environmentMonth["measurements"] = []
-        environmentMonth["measurements"].insert(0,environmentClass)
-        #print(environmentMonth, flush=True)
-        db["environments_" + station_id].insert_one(environmentMonth)
-    else: 
-        measurements = selectedList["measurements"]
-        measurements = insert(measurements ,environmentClass)
-        #print(measurements, flush=True)
-        db["environments_"+ station_id].update_one({"list_id":listID}, {'$set': {"measurements":measurements}})
+    if not existing:
+        environmentMonth = {
+            "station_id": station_id,
+            "month": month,
+            "list_id": str(uuid.uuid4()),
+            "measurements": [environmentClass]
+        }
+        collection.insert_one(environmentMonth)
+    else:
+        collection.update_one(
+            {"_id": existing["_id"]},
+            {
+                "$push": {
+                    "measurements": {
+                        "$each": [environmentClass],
+                        "$position": 0
+                    }
+                }
+            }
+        )
     db["stations"].update_one({"station_id":station_id}, {'$set': {"lastEnvironment":environmentClass}})
     # Send Temperature and Humidity to openSenseMap if sensebox id is defined for the station
     # print(station.sensebox_id, flush=True)
@@ -1239,45 +1237,37 @@ def saveEnvironment(body, env_id, station_id):
 
 @enqueueable
 def saveFeed(body, feed_id, station_id):
-    #The purpose of the function is to save environment data for a particular station. The function takes in three arguments: body, env_id, and station_id.
-    #The body argument is a dictionary containing environment data that needs to be saved. The env_id argument is a unique identifier for the environment data. The station_id argument is the unique identifier for the station where the environment data is being saved.
-    
     feedClass = dict()
     for name,value in body.items():
         feedClass[name]= value
-    
+
     feedClass["feed_id"] = feed_id
+    month = feedClass["date"][:7]
 
-    feedList = db["feed_" + station_id].find()
+    collection = db["feed_" + station_id]
+    existing = collection.find_one({"month": month}, {"_id": 1})
 
-    month = feedClass["date"]
-    month = month[0:7]
-
-
-    listID =""
-    for listElement in feedList:
-        if listElement["month"] == month:
-            listID = listElement["list_id"]
-            selectedList = listElement
-            break
-
-    if listID == "":
-        feedMonth = dict()
-        feedMonth["station_id"] = station_id
-        feedMonth["month"] = month
-        feedMonth["list_id"] = str(uuid.uuid4())
-        feedMonth["measurements"] = []
-        feedMonth["measurements"].insert(0,feedClass)
-        #print(environmentMonth, flush=True)
-        db["feed_" + station_id].insert_one(feedMonth)
-    else: 
-        measurements = selectedList["measurements"]
-        measurements = insert(measurements ,feedClass)
-        #print(measurements, flush=True)
-        db["feed_"+ station_id].update_one({"list_id":listID}, {'$set': {"measurements":measurements}})
+    if not existing:
+        feedMonth = {
+            "station_id": station_id,
+            "month": month,
+            "list_id": str(uuid.uuid4()),
+            "measurements": [feedClass]
+        }
+        collection.insert_one(feedMonth)
+    else:
+        collection.update_one(
+            {"_id": existing["_id"]},
+            {
+                "$push": {
+                    "measurements": {
+                        "$each": [feedClass],
+                        "$position": 0
+                    }
+                }
+            }
+        )
     db["stations"].update_one({"station_id":station_id}, {'$set': {"lastFeedStatus":feedClass}})
-    # Send Temperature and Humidity to openSenseMap if sensebox id is defined for the station
-    # print(station.sensebox_id, flush=True)
     return(feed_id)
 
 
