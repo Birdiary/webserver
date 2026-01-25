@@ -84,6 +84,30 @@ services:
       - api
     privileged: true
 
+  worker4:
+    image: api
+    command: rq worker default --url redis://redis:6379
+    env_file:
+      - server.env
+    volumes:
+      - ./data/uploads:/usr/src/app/uploads
+    depends_on:
+      - redis
+      - api
+    privileged: true
+
+  worker5:
+    image: api
+    command: rq worker default --url redis://redis:6379
+    env_file:
+      - server.env
+    volumes:
+      - ./data/uploads:/usr/src/app/uploads
+    depends_on:
+      - redis
+      - api
+    privileged: true
+
   rq-dashboard:
     build: 
       context: ./rq-dashboard
