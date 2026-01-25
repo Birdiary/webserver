@@ -131,6 +131,7 @@ ADMIN_EMAILS = set(
 app = Flask(__name__)
 redis = Redis(host='redis', port=6379)
 q = Queue(connection=redis)
+q_priority = Queue("priority", connection=redis)
 q2 = Queue("image", connection=redis)
 q3 = Queue("statistics", connection=redis)
 app.config['SECRET_KEY'] = 'thisisasecret'
@@ -939,7 +940,7 @@ def calculateStatistics(reque):
     db["statistics"].replace_one({"station_id": "all"}, statisticsALL, True)
     if reque:
         print(reque)
-        q3.enqueue_in(timedelta(minutes=30), calculateStatistics, True)
+        q3.enqueue_in(timedelta(hours=24), calculateStatistics, True)
 
         
 @enqueueable
@@ -1721,7 +1722,7 @@ def add_movement(station_id: str):
     
     
     db["movements_"+station_id].insert_one(movementsClass)
-    job= q.enqueue(videoAnalysis, filename, mov_id, station_id, movementsClass)
+    job = q_priority.enqueue(videoAnalysis, filename, mov_id, station_id, movementsClass)
     station = stations.find_one({"station_id":station_id}, {'_id' : False} )
     if station["type"] in ["test", "exhibit"]:
         try: 
@@ -1780,7 +1781,7 @@ def add_movement_image(station_id: str):
     
     
     db["movements_"+station_id].insert_one(movementsClass)
-    job= q.enqueue(videoAnalysisImage, filenames, mov_id, station_id, movementsClass)
+    job = q_priority.enqueue(videoAnalysisImage, filenames, mov_id, station_id, movementsClass)
     station = stations.find_one({"station_id":station_id}, {'_id' : False} )
     if station["type"] in ["test", "exhibit"]:
         try: 
