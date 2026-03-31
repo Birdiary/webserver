@@ -74,6 +74,11 @@ try:
 except Exception:
     STATISTICS_RECALC_INTERVAL_MINUTES = 30
 
+try:
+    STATISTICS_JOB_TIMEOUT_SECONDS = max(int(os.getenv('STATISTICS_JOB_TIMEOUT_SECONDS', '600')), 180)
+except Exception:
+    STATISTICS_JOB_TIMEOUT_SECONDS = 600
+
 
 def insertMax(items, entry, key, limit=ENV_EXTREMES_LIMIT):
         if not entry or key not in entry:
@@ -983,10 +988,18 @@ def calculateStatistics(reque):
     db["statistics"].replace_one({"station_id": "all"}, statisticsALL, True)
     if reque:
         print(reque)
+        delay = timedelta(minutes=STATISTICS_RECALC_INTERVAL_MINUTES)
         q3.enqueue_in(
-            timedelta(minutes=STATISTICS_RECALC_INTERVAL_MINUTES),
+            delay,
             calculateStatistics,
-            True
+            True,
+            job_timeout=STATISTICS_JOB_TIMEOUT_SECONDS
+        )
+        q_priority.enqueue_in(
+            delay,
+            calculateStatistics,
+            True,
+            job_timeout=STATISTICS_JOB_TIMEOUT_SECONDS
         )
 
         
@@ -1994,7 +2007,8 @@ def getStatistics(station_id: str):
 @app.route('/api/statistics', methods=['GET'])
 def runStatistics():
     reque = request.args.get('reque')
-    job = q3.enqueue(calculateStatistics, reque)
+    job = q3.enqueue(calculateStatistics, reque, job_timeout=STATISTICS_JOB_TIMEOUT_SECONDS)
+    q_priority.enqueue(calculateStatistics, reque, job_timeout=STATISTICS_JOB_TIMEOUT_SECONDS)
     return "ok", 200
 
 
