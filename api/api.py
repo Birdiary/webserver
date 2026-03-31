@@ -995,13 +995,6 @@ def calculateStatistics(reque):
             True,
             job_timeout=STATISTICS_JOB_TIMEOUT_SECONDS
         )
-        q_priority.enqueue_in(
-            delay,
-            calculateStatistics,
-            True,
-            job_timeout=STATISTICS_JOB_TIMEOUT_SECONDS
-        )
-
         
 @enqueueable
 #The function first checks if the file extension is ".h264" and converts the file to ".mp4" format using MP4Box if so. 
@@ -2008,7 +2001,6 @@ def getStatistics(station_id: str):
 def runStatistics():
     reque = request.args.get('reque')
     job = q3.enqueue(calculateStatistics, reque, job_timeout=STATISTICS_JOB_TIMEOUT_SECONDS)
-    q_priority.enqueue(calculateStatistics, reque, job_timeout=STATISTICS_JOB_TIMEOUT_SECONDS)
     return "ok", 200
 
 
