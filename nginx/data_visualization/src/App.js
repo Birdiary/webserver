@@ -51,7 +51,7 @@ const Footer = () => {
     <div className="mui-container mui--text-center" id="footer">
       <div className="footer-content">
         <div className="footer-alert">
-          <strong>Nächstes Discord-Treffen 03.03.2026 · 19:00.</strong>
+          <strong>Regelmäßige Discord-Treffen <a href='https://pad.uni-muenster.de/DT2TUVfwRFqJHvKUWVLyPA?view'>Protokoll und nächster Termin</a> </strong>
         </div>
         <div id="links">
           <a id="link" href="/doc">API</a> |&nbsp;
