@@ -69,7 +69,6 @@ const createDraftFromStation = (station) => ({
   lng: station.location?.lng ?? '',
   mailAdresses: (station.mail?.adresses || []).join(', '),
   mailNotifications: Boolean(station.mail?.notifications),
-  sensebox_id: station.sensebox_id || '',
   type: station.type || 'observer',
   stationSoftware: normalizeSoftware(station.stationSoftware),
   advancedSettingsRaw: JSON.stringify(station.advancedSettings || {}, null, 2),
@@ -516,7 +515,6 @@ const OwnStations = ({ language: langKey }) => {
         adresses: parseMailAddresses(draft.mailAdresses),
         notifications: Boolean(draft.mailNotifications),
       },
-      sensebox_id: draft.sensebox_id,
       type: draft.type,
       stationSoftware,
       advancedSettings,
@@ -637,13 +635,10 @@ const OwnStations = ({ language: langKey }) => {
     }
     const currentForm = assignForms[stationId] || { userId: '', email: '' };
     const payload = {};
-    if (currentForm.userId?.trim()) {
-      payload.userId = currentForm.userId.trim();
-    }
     if (currentForm.email?.trim()) {
       payload.email = currentForm.email.trim();
     }
-    if (!payload.userId && !payload.email) {
+      if (!payload.email) {
       setAssignFeedback((prev) => ({
         ...prev,
         [stationId]: { error: copy.adminAssignMissingFields },
@@ -925,11 +920,6 @@ const OwnStations = ({ language: langKey }) => {
                         ))}
                       </Select>
                     </FormControl>
-                    <TextField
-                      label={copy.senseboxLabel}
-                      value={draft.sensebox_id}
-                      onChange={handleFieldChange(station.station_id, 'sensebox_id')}
-                    />
                     <FormControl fullWidth>
                       <InputLabel>{copy.softwareLabel}</InputLabel>
                       <Select
@@ -988,11 +978,6 @@ const OwnStations = ({ language: langKey }) => {
                   {copy.ownerLabel}: {ownerDisplay || copy.ownerNone}
                 </Typography>
                 <Box className="station-field-grid">
-                  <TextField
-                    label={copy.adminAssignUserId}
-                    value={assignForm.userId}
-                    onChange={handleAssignFieldChange(station.station_id, 'userId')}
-                  />
                   <TextField
                     label={copy.adminAssignEmail}
                     value={assignForm.email}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams } from 'react-router-dom';
 import requests from "../helpers/requests";
 import ReactPlayer from 'react-player'
@@ -30,6 +30,8 @@ import 'onsenui/css/onsen-css-components.css';
 import { GestureDetector } from 'react-onsenui';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import MovementCard from "../Statistics/MovementCard";
+import "./stations.css";
 
 const MOVEMENT_PAGE_SIZE = 30;
 
@@ -79,6 +81,35 @@ function StationView(props) {
   const [deleteFeedback, setDeleteFeedback] = useState({ open: false, message: '', severity: 'success' });
   const stationCopy = language[props.language]?.stations || language.en.stations;
   const canDeleteMovements = Boolean(user && data && (user.isAdmin || (data.ownerId && user.id === data.ownerId)));
+  const specialBirds = useMemo(() => {
+    if (!data || !data.statisticsSummary) {
+      return [];
+    }
+    const highlights = data.statisticsSummary.specialBirds;
+    if (!Array.isArray(highlights)) {
+      return [];
+    }
+    return highlights.filter((entry) => entry && Array.isArray(entry.movements) && entry.movements.length > 0);
+  }, [data]);
+
+  const specialBirdsUpdatedAt = useMemo(() => {
+    const timestamp = data?.statisticsSummary?.updatedAt;
+    if (!timestamp || typeof timestamp !== "string") {
+      return null;
+    }
+    return timestamp.split(".")[0];
+  }, [data]);
+
+  const specialHighlightsUpdatedText = useMemo(() => {
+    if (!specialBirdsUpdatedAt) {
+      return null;
+    }
+    const template = stationCopy.specialHighlightsUpdated || language.en.stations.specialHighlightsUpdated;
+    if (!template) {
+      return specialBirdsUpdatedAt;
+    }
+    return template.replace("{date}", specialBirdsUpdatedAt);
+  }, [specialBirdsUpdatedAt, stationCopy]);
 
   const showDeleteFeedback = (message, severity = 'success') => {
     setDeleteFeedback({ open: true, message, severity });
@@ -575,9 +606,48 @@ function StationView(props) {
                   {language[props.language]["stations"]["allMovementsLoaded"]}
                 </Typography>
               </Box>
+            ) : movementSource === 'search' ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, px: 2 }}>
+                <Typography variant="caption" color="textSecondary" align="center">
+                  {language[props.language]["stations"]["searchResultsLoaded"] || language.en.stations.searchResultsLoaded || 'Showing all matching movements for the current filters.'}
+                </Typography>
+              </Box>
             ) : null}
           </div>
           : <p>{language[props.language]["stations"]["noData1"]}</p>}
+        {specialBirds.length > 0 ? (
+          <div className="station-special-birds">
+            <div className="station-special-birds__header">
+              <h3>{stationCopy.specialHighlightsTitle || language.en.stations.specialHighlightsTitle}</h3>
+              {specialHighlightsUpdatedText ? (
+                <span className="station-special-birds__timestamp">{specialHighlightsUpdatedText}</span>
+              ) : null}
+            </div>
+            <p className="station-special-birds__description">
+              {stationCopy.specialHighlightsDescription || language.en.stations.specialHighlightsDescription}
+            </p>
+            <Grid container spacing={2}>
+              {specialBirds.map((bird, index) => (
+                <Grid item lg={3} md={4} sm={6} xs={12} key={`station-special-${bird.latinName || index}`}>
+                  <div className="station-special-birds__card">
+                    <h5>
+                      {bird.germanName ? bird.germanName : bird.latinName}
+                      {bird.germanName && bird.latinName ? ` (${bird.latinName})` : ""}
+                    </h5>
+                    <MovementCard language={props.language} movement={bird.movements} />
+                  </div>
+                </Grid>
+              ))}
+            </Grid>
+          </div>
+        ) : data?.statisticsSummary ? (
+          <div className="station-special-birds station-special-birds--empty">
+            <h3>{stationCopy.specialHighlightsTitle || language.en.stations.specialHighlightsTitle}</h3>
+            <p className="station-special-birds__description">
+              {stationCopy.specialHighlightsEmpty || language.en.stations.specialHighlightsEmpty}
+            </p>
+          </div>
+        ) : null}
           {
             data.lastFeedStatus? <span> {language[props.language]["map"]["lastFeedStatus"]}
             {data.lastFeedStatus.silolevel+ " %" + " am " + data.lastFeedStatus.date.split(".")[0] }<br/> </span>: ""

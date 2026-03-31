@@ -65,37 +65,34 @@ sentry_sdk.init(
     traces_sampler=traces_sampler
 )
 
-def insertMax(list, n, key):
- 
-    index = len(list)
-    # Searching for the position
-    for i in range(len(list)):
-      if list[i][key] > n[key]:
-        index = i
-        break
- 
-    # Inserting n in the list
-    if index == len(list):
-      list = list[:index] + [n]
-    else:
-      list = list[:index] + [n] + list[index:]
-    return list[1:6]
+MAX_MOVEMENT_REFERENCES = int(os.getenv('STATISTICS_MOVEMENT_LIMIT', '20'))
+MAX_SPECIAL_BIRD_REFERENCES = int(os.getenv('STATISTICS_SPECIAL_BIRD_LIMIT', '20'))
+MAX_VALIDATED_REFERENCES = int(os.getenv('STATISTICS_VALIDATED_LIMIT', '20'))
+ENV_EXTREMES_LIMIT = int(os.getenv('STATISTICS_ENVIRONMENT_LIMIT', '5'))
+try:
+    STATISTICS_RECALC_INTERVAL_MINUTES = max(int(os.getenv('STATISTICS_RECALC_INTERVAL_MINUTES', '30')), 5)
+except Exception:
+    STATISTICS_RECALC_INTERVAL_MINUTES = 30
 
-def insertMin(list, n, key):
- 
-    index = len(list)
-    # Searching for the position
-    for i in range(len(list)):
-      if list[i][key] < n[key]:
-        index = i
-        break
- 
-    # Inserting n in the list
-    if index == len(list):
-      list = list[:index] + [n]
-    else:
-      list = list[:index] + [n] + list[index:]
-    return list[1:6]
+
+def insertMax(items, entry, key, limit=ENV_EXTREMES_LIMIT):
+        if not entry or key not in entry:
+                return items
+        existing = items or []
+        filtered = [candidate for candidate in existing if key in candidate]
+        filtered.append(entry)
+        filtered.sort(key=lambda candidate: candidate.get(key, float('-inf')))
+        return filtered[-limit:]
+
+
+def insertMin(items, entry, key, limit=ENV_EXTREMES_LIMIT):
+        if not entry or key not in entry:
+                return items
+        existing = items or []
+        filtered = [candidate for candidate in existing if key in candidate]
+        filtered.append(entry)
+        filtered.sort(key=lambda candidate: candidate.get(key, float('inf')))
+        return filtered[:limit]
 
 birdJSON = {}
     
@@ -445,6 +442,35 @@ def insert(list, n):
     else:
       list = list[:index] + [n] + list[index:]
     return list
+
+
+def append_recent(entries, item, limit):
+    if not item:
+        return entries or []
+    target = entries[:] if entries else []
+    target.insert(0, item)
+    if len(target) > limit:
+        del target[limit:]
+    return target
+
+
+def build_movement_reference(movement, station_id, station_name=None, include_score=False):
+    reference = {
+        "mov_id": movement.get("mov_id"),
+        "station_id": station_id,
+        "video": movement.get("video"),
+        "start_date": movement.get("start_date", "")
+    }
+    if include_score:
+        detections = movement.get("detections")
+        score = None
+        if detections and len(detections) > 0:
+            score = detections[0].get("score")
+        if score is not None:
+            reference["score"] = score
+    if station_name:
+        reference["station_name"] = station_name
+    return reference
  
 
 def enqueueable(func):
@@ -616,10 +642,10 @@ def calculateStatistics(reque):
     statisticsALL["numberOfMovements"] = 0
     statisticsALL["perDay"] = dict()
     statisticsALL["maxDay"] = [{"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0}]
-    statisticsALL["maxTemp"] = [{"temperature": -20}, {"temperature": -20},{"temperature": -20},{"temperature": -20},{"temperature": -20}]
-    statisticsALL["minTemp"] = [{"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}]
-    statisticsALL["maxHum"] = [{"humidity": 0},{"humidity": 0},{"humidity": 0},{"humidity": 0},{"humidity": 0}]
-    statisticsALL["minHum"] = [{"humidity": 100},{"humidity": 100},{"humidity": 100},{"humidity": 100},{"humidity": 100}]
+    statisticsALL["maxTemp"] = []
+    statisticsALL["minTemp"] = []
+    statisticsALL["maxHum"] = []
+    statisticsALL["minHum"] = []
     statisticsALL["specialBirds"]  = dict()
     statisticsALL["sumEnvironment"] = 0
     statisticsALL["sumTemperature"] = 0
@@ -644,10 +670,10 @@ def calculateStatistics(reque):
         statisticsALL["numberOfMovements"] = statisticsALL["numberOfMovements"]+ len(station["measurements"]["movements"])
         statistics["perDay"] = {}
         statistics["maxDay"] = [{"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0}]
-        statistics["maxTemp"] = [{"temperature": -20}, {"temperature": -20},{"temperature": -20},{"temperature": -20},{"temperature": -20}]
-        statistics["minTemp"] = [{"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}, {"temperature": 50}]
-        statistics["maxHum"] = [{"humidity": 0},{"humidity": 0},{"humidity": 0},{"humidity": 0},{"humidity": 0}]
-        statistics["minHum"] = [{"humidity": 100},{"humidity": 100},{"humidity": 100},{"humidity": 100},{"humidity": 100}]
+        statistics["maxTemp"] = []
+        statistics["minTemp"] = []
+        statistics["maxHum"] = []
+        statistics["minHum"] = []
         statistics["specialBirds"]  = {}
         statistics["sumEnvironment"] = 0
         statistics["sumTemperature"] = 0
@@ -678,28 +704,33 @@ def calculateStatistics(reque):
                     if movement["validation"]["summary"][key]["amount"] > max["amount"]:
                         max = movement["validation"]["summary"][key]
                 if max["latinName"] != 'None':
-                    if max["latinName"] in statistics["validatedBirds"]:
-                        statistics["validatedBirds"][max["latinName"]]["sum"] = statistics["validatedBirds"][max["latinName"]]["sum"] +1
-                        if len(statistics["validatedBirds"][max["latinName"]]["movements"]) < 20:
-                            statistics["validatedBirds"][max["latinName"]]["movements"].append({"mov_id": movement["mov_id"], "station_id" : station_id,"video": movement["video"], "start_date":movement["start_date"]})
-                    else:
-                        statistics["validatedBirds"][max["latinName"]] = {"sum" :1}
-                        statistics["validatedBirds"][max["latinName"]]["movements"] = [{"mov_id": movement["mov_id"], "station_id" : station_id, "video": movement["video"], "start_date":movement["start_date"]}]
-                    if max["latinName"] in statisticsALL["validatedBirds"]:
-                        statisticsALL["validatedBirds"][max["latinName"]]["sum"] = statisticsALL["validatedBirds"][max["latinName"]]["sum"] +1
-                        if len(statisticsALL["validatedBirds"][max["latinName"]]["movements"]) < 20:
-                            statisticsALL["validatedBirds"][max["latinName"]]["movements"].append({"mov_id": movement["mov_id"], "station_id" : station_id, "station_name" : station["name"], "video": movement["video"], "start_date":movement["start_date"]})
-                    else:
-                        statisticsALL["validatedBirds"][max["latinName"]]= {"sum" :1} 
-                        statisticsALL["validatedBirds"][max["latinName"]]["movements"] = [{"mov_id": movement["mov_id"], "station_id" : station_id, "station_name" : station["name"],"video": movement["video"], "start_date":movement["start_date"]}]
+                    latin_name = max["latinName"]
+                    station_validation_ref = build_movement_reference(movement, station_id)
+                    global_validation_ref = build_movement_reference(movement, station_id, station.get("name"))
+
+                    station_validation_entry = statistics["validatedBirds"].setdefault(latin_name, {"sum": 0, "movements": []})
+                    station_validation_entry["sum"] = station_validation_entry["sum"] + 1
+                    station_validation_entry["movements"] = append_recent(
+                        station_validation_entry.get("movements"),
+                        station_validation_ref,
+                        MAX_VALIDATED_REFERENCES
+                    )
+
+                    global_validation_entry = statisticsALL["validatedBirds"].setdefault(latin_name, {"sum": 0, "movements": []})
+                    global_validation_entry["sum"] = global_validation_entry["sum"] + 1
+                    global_validation_entry["movements"] = append_recent(
+                        global_validation_entry.get("movements"),
+                        global_validation_ref,
+                        MAX_VALIDATED_REFERENCES
+                    )
 
             if detection == True:   
                 statistics["numberOfDetections"] = statistics["numberOfDetections"] + 1         
                 statisticsALL["numberOfDetections"] = statisticsALL["numberOfDetections"] + 1                 
                 latinName = movement["detections"][0]["latinName"]
                 germanName = movement["detections"][0]["germanName"]
-                existName =False
                 day = movement["start_date"].split()[0]
+                detection_score = movement["detections"][0].get("score", 0)
 
                 if day in statistics["perDay"]:
                     statistics["perDay"][day]["sum"] = statistics["perDay"][day]["sum"] +1
@@ -721,6 +752,20 @@ def calculateStatistics(reque):
                     statisticsALL["perDay"][day] = {latinName : {"latinName": latinName, "germanName" : germanName, "amount": 1, "movements":[]}}
                     statisticsALL["perDay"][day]["sum"] = 1
 
+                station_day_entry = statistics["perDay"][day][latinName]
+                station_day_entry["movements"] = append_recent(
+                    station_day_entry.get("movements"),
+                    build_movement_reference(movement, station_id, include_score=True),
+                    MAX_MOVEMENT_REFERENCES
+                )
+
+                global_day_entry = statisticsALL["perDay"][day][latinName]
+                global_day_entry["movements"] = append_recent(
+                    global_day_entry.get("movements"),
+                    build_movement_reference(movement, station_id, station.get("name"), include_score=True),
+                    MAX_MOVEMENT_REFERENCES
+                )
+
                 if latinName in statistics["all"]:
                     statistics["all"][latinName]["amount"] = statistics["all"][latinName]["amount"] +1
                 else:
@@ -731,96 +776,94 @@ def calculateStatistics(reque):
                 else:
                     statisticsALL["all"][latinName] = {"latinName": latinName, "germanName" : germanName, "amount": 1, "movements":[]}
 
-                if latinName in birdsOfInterest and movement["detections"][0]["score"] > 0.8:
-                    if latinName in statistics["specialBirds"]:
-                        if len(statistics["specialBirds"][latinName]["movements"]) < 20:
-                            statistics["specialBirds"][latinName]["movements"].append({"mov_id": movement["mov_id"], "station_id" : station_id,"score": movement["detections"][0]["score"], "video": movement["video"], "start_date":movement["start_date"]})
-                        elif len(statistics["specialBirds"][latinName]["movements"]) < 40 and movement["detections"][0]["score"] > 0.85:
-                            statistics["specialBirds"][latinName]["movements"].append({"mov_id": movement["mov_id"], "station_id" : station_id,"score": movement["detections"][0]["score"], "video": movement["video"], "start_date":movement["start_date"]})
-                    else:
-                        statistics["specialBirds"][latinName] = {"latinName": latinName, "germanName" : germanName, "movements":[{"mov_id": movement["mov_id"], "station_id" : station_id,"score": movement["detections"][0]["score"], "video": movement["video"], "start_date":movement["start_date"]}]} 
+                station_species_entry = statistics["all"][latinName]
+                station_species_entry["movements"] = append_recent(
+                    station_species_entry.get("movements"),
+                    build_movement_reference(movement, station_id, include_score=True),
+                    MAX_MOVEMENT_REFERENCES
+                )
 
-                if latinName in birdsOfInterest and movement["detections"][0]["score"] > 0.8:
-                    if latinName in statisticsALL["specialBirds"]:
-                        if len(statisticsALL["specialBirds"][latinName]["movements"]) < 20:
-                            movement["station_name"] = station["name"]
-                            statisticsALL["specialBirds"][latinName]["movements"].append(movement)
-                        elif len(statisticsALL["specialBirds"][latinName]["movements"]) < 40 and movement["detections"][0]["score"] > 0.85:
-                            movement["station_name"] = station["name"]
-                            statisticsALL["specialBirds"][latinName]["movements"].append(movement)
-                    else:
-                        movement["station_name"] = station["name"]
-                        statisticsALL["specialBirds"][latinName] = {"latinName": latinName, "germanName" : germanName, "movements":[movement]} 
+                global_species_entry = statisticsALL["all"][latinName]
+                global_species_entry["movements"] = append_recent(
+                    global_species_entry.get("movements"),
+                    build_movement_reference(movement, station_id, station.get("name"), include_score=True),
+                    MAX_MOVEMENT_REFERENCES
+                )
 
-                if len(statistics["perDay"][day][latinName]["movements"]) < 20:
-                    statistics["perDay"][day][latinName]["movements"].append({"mov_id": movement["mov_id"], "station_id" : station_id, "score": movement["detections"][0]["score"],"video": movement["video"], "start_date":movement["start_date"]})
-                elif len(statistics["perDay"][day][latinName]["movements"]) < 40 and movement["detections"][0]["score"] > 0.85:
-                    statistics["perDay"][day][latinName]["movements"].append({"mov_id": movement["mov_id"], "station_id" : station_id, "score": movement["detections"][0]["score"],"video": movement["video"], "start_date":movement["start_date"]})
-                if len(statistics["all"][latinName]["movements"]) < 20:
-                    statistics["all"][latinName]["movements"].append({"mov_id": movement["mov_id"], "station_id" : station_id, "score": movement["detections"][0]["score"],"video": movement["video"], "start_date":movement["start_date"]})
-                elif len(statistics["all"][latinName]["movements"]) < 40 and movement["detections"][0]["score"] > 0.85:
-                    statistics["all"][latinName]["movements"].append({"mov_id": movement["mov_id"], "station_id" : station_id, "score": movement["detections"][0]["score"],"video": movement["video"], "start_date":movement["start_date"]})
+                if latinName in birdsOfInterest and detection_score > 0.8:
+                    station_special_entry = statistics["specialBirds"].setdefault(
+                        latinName,
+                        {"latinName": latinName, "germanName": germanName, "movements": []}
+                    )
+                    station_special_entry["movements"] = append_recent(
+                        station_special_entry.get("movements"),
+                        build_movement_reference(movement, station_id, include_score=True),
+                        MAX_SPECIAL_BIRD_REFERENCES
+                    )
 
-                if len(statisticsALL["perDay"][day][latinName]["movements"]) < 20:
-                    statisticsALL["perDay"][day][latinName]["movements"].append({"mov_id": movement["mov_id"],"station_id":station_id, "station_name" : station["name"], "score": movement["detections"][0]["score"],"video": movement["video"], "start_date":movement["start_date"]})
-                elif len(statisticsALL["perDay"][day][latinName]["movements"]) < 40 and movement["detections"][0]["score"] > 0.85:
-                    statisticsALL["perDay"][day][latinName]["movements"].append({"mov_id": movement["mov_id"], "station_id":station_id, "station_name" : station["name"],"score": movement["detections"][0]["score"],"video": movement["video"], "start_date":movement["start_date"]})
-                if len(statisticsALL["all"][latinName]["movements"]) < 20:
-                    statisticsALL["all"][latinName]["movements"].append({"mov_id": movement["mov_id"],"station_id":station_id, "station_name" : station["name"], "score": movement["detections"][0]["score"],"video": movement["video"], "start_date":movement["start_date"]})
-                elif len(statisticsALL["all"][latinName]["movements"]) < 40 and movement["detections"][0]["score"] > 0.85:
-                    statisticsALL["all"][latinName]["movements"].append({"mov_id": movement["mov_id"],"station_id":station_id, "station_name" : station["name"], "score": movement["detections"][0]["score"], "video": movement["video"], "start_date":movement["start_date"]})
+                    global_special_entry = statisticsALL["specialBirds"].setdefault(
+                        latinName,
+                        {"latinName": latinName, "germanName": germanName, "movements": []}
+                    )
+                    global_special_entry["movements"] = append_recent(
+                        global_special_entry.get("movements"),
+                        build_movement_reference(movement, station_id, station.get("name"), include_score=True),
+                        MAX_SPECIAL_BIRD_REFERENCES
+                    )
         
         for env in station["measurements"]["environment"]:
-                
-                if float(env["temperature"]) > -20 and float(env["temperature"]) < 60 :
-                    statistics["sumTemperature"] = statistics["sumTemperature"] + float(env["temperature"])
-                    statisticsALL["sumTemperature"] = statisticsALL["sumTemperature"] + float(env["temperature"])
-                if float(env["humidity"]) > -1 and float(env["humidity"]) < 101 :
-                    
-                    statistics["sumEnvironment"] = statistics["sumEnvironment"] + 1 
-                    statistics["sumHumidity"] = statistics["sumHumidity"] + float(env["humidity"])
-                    statisticsALL["sumEnvironment"] = statisticsALL["sumEnvironment"] + 1 
-                    statisticsALL["sumHumidity"] = statisticsALL["sumHumidity"] + float(env["humidity"])
-                if float(env["temperature"]) > statistics["maxTemp"][0]["temperature"] and float(env["temperature"]) < 60:
-                    objectToInsert = {}
-                    objectToInsert["temperature"] = float(env["temperature"])
-                    objectToInsert["date"] = env["date"]
-                    statistics["maxTemp"]= insertMax(statistics["maxTemp"], objectToInsert, "temperature")
-                    if float(env["temperature"]) > statisticsALL["maxTemp"][0]["temperature"]:
-                        objectToInsertALL = objectToInsert.copy()
-                        objectToInsertALL["station_id"] =station_id
-                        objectToInsertALL["station_name"] = station["name"]
-                        statisticsALL["maxTemp"]= insertMax(statisticsALL["maxTemp"], objectToInsertALL, "temperature")
-                if float(env["temperature"]) < statistics["minTemp"][0]["temperature"] and float(env["temperature"]) > -30:
-                    objectToInsert = {}
-                    objectToInsert["temperature"] = float(env["temperature"])
-                    objectToInsert["date"] = env["date"]
-                    statistics["minTemp"] = insertMin(statistics["minTemp"], objectToInsert, "temperature")
-                    if float(env["temperature"]) < statisticsALL["minTemp"][0]["temperature"]:
-                        objectToInsertALL = objectToInsert.copy()
-                        objectToInsertALL["station_id"] =station_id
-                        objectToInsertALL["station_name"] = station["name"]
-                        statisticsALL["minTemp"] = insertMin(statisticsALL["minTemp"], objectToInsertALL, "temperature")
-                if float(env["humidity"]) > statistics["maxHum"][0]["humidity"] and float(env["humidity"]) < 100.1:
-                    objectToInsert = {}
-                    objectToInsert["humidity"] = float(env["humidity"])
-                    objectToInsert["date"] = env["date"]
-                    statistics["maxHum"] = insertMax(statistics["maxHum"], objectToInsert, "humidity")
-                    if float(env["humidity"]) > statisticsALL["maxHum"][0]["humidity"]:
-                        objectToInsertALL = objectToInsert.copy()
-                        objectToInsertALL["station_id"] =station_id
-                        objectToInsertALL["station_name"] = station["name"]
-                        statisticsALL["maxHum"] = insertMax(statisticsALL["maxHum"], objectToInsertALL, "humidity")
-                if float(env["humidity"]) < statistics["minHum"][0]["humidity"] and float(env["humidity"]) > -0.1:
-                    objectToInsert = {}
-                    objectToInsert["humidity"] = float(env["humidity"])
-                    objectToInsert["date"] = env["date"]
-                    statistics["minHum"] =  insertMin(statistics["minHum"], objectToInsert, "humidity")
-                    if float(env["humidity"]) < statisticsALL["minHum"][0]["humidity"]:
-                        objectToInsertALL = objectToInsert.copy()
-                        objectToInsertALL["station_id"] =station_id
-                        objectToInsertALL["station_name"] = station["name"]
-                        statisticsALL["minHum"] =  insertMin(statisticsALL["minHum"], objectToInsertALL, "humidity")
+            temperature = None
+            humidity = None
+            measurement_date = env.get("date", "")
+
+            try:
+                temperature = float(env.get("temperature", 0))
+            except Exception:
+                temperature = None
+
+            try:
+                humidity = float(env.get("humidity", 0))
+            except Exception:
+                humidity = None
+
+            if temperature is not None and -20 < temperature < 60:
+                statistics["sumTemperature"] = statistics["sumTemperature"] + temperature
+                statisticsALL["sumTemperature"] = statisticsALL["sumTemperature"] + temperature
+
+            if humidity is not None and -1 < humidity < 101:
+                statistics["sumEnvironment"] = statistics["sumEnvironment"] + 1 
+                statistics["sumHumidity"] = statistics["sumHumidity"] + humidity
+                statisticsALL["sumEnvironment"] = statisticsALL["sumEnvironment"] + 1 
+                statisticsALL["sumHumidity"] = statisticsALL["sumHumidity"] + humidity
+
+            if temperature is not None and -20 < temperature < 60:
+                station_temp_entry = {"temperature": temperature, "date": measurement_date}
+                statistics["maxTemp"] = insertMax(statistics["maxTemp"], station_temp_entry.copy(), "temperature")
+                statistics["minTemp"] = insertMin(statistics["minTemp"], station_temp_entry.copy(), "temperature")
+
+                global_temp_entry = station_temp_entry.copy()
+                global_temp_entry["station_id"] = station_id
+                global_temp_entry["station_name"] = station["name"]
+                statisticsALL["maxTemp"] = insertMax(statisticsALL["maxTemp"], global_temp_entry.copy(), "temperature")
+                statisticsALL["minTemp"] = insertMin(statisticsALL["minTemp"], global_temp_entry.copy(), "temperature")
+            elif temperature is not None and -30 < temperature < 60:
+                station_temp_entry = {"temperature": temperature, "date": measurement_date}
+                statistics["minTemp"] = insertMin(statistics["minTemp"], station_temp_entry.copy(), "temperature")
+                global_temp_entry = station_temp_entry.copy()
+                global_temp_entry["station_id"] = station_id
+                global_temp_entry["station_name"] = station["name"]
+                statisticsALL["minTemp"] = insertMin(statisticsALL["minTemp"], global_temp_entry.copy(), "temperature")
+
+            if humidity is not None and -0.1 < humidity < 100.1:
+                station_hum_entry = {"humidity": humidity, "date": measurement_date}
+                statistics["maxHum"] = insertMax(statistics["maxHum"], station_hum_entry.copy(), "humidity")
+                statistics["minHum"] = insertMin(statistics["minHum"], station_hum_entry.copy(), "humidity")
+
+                global_hum_entry = station_hum_entry.copy()
+                global_hum_entry["station_id"] = station_id
+                global_hum_entry["station_name"] = station["name"]
+                statisticsALL["maxHum"] = insertMax(statisticsALL["maxHum"], global_hum_entry.copy(), "humidity")
+                statisticsALL["minHum"] = insertMin(statisticsALL["minHum"], global_hum_entry.copy(), "humidity")
 
         for day in statistics["perDay"]:
                 if statistics["maxDay"][0]["sum"] < statistics["perDay"][day]["sum"]:
@@ -940,7 +983,11 @@ def calculateStatistics(reque):
     db["statistics"].replace_one({"station_id": "all"}, statisticsALL, True)
     if reque:
         print(reque)
-        q3.enqueue_in(timedelta(hours=24), calculateStatistics, True)
+        q3.enqueue_in(
+            timedelta(minutes=STATISTICS_RECALC_INTERVAL_MINUTES),
+            calculateStatistics,
+            True
+        )
 
         
 @enqueueable
@@ -965,7 +1012,11 @@ def videoAnalysis(filename, movement_id, station_id, movement):
 
     cap = cv2.VideoCapture('uploads/disk/videos/' + filename)
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    station = stations.find_one({"station_id":station_id})
+    station_doc = stations.find_one({"station_id":station_id})
+    station = station_doc or {}
+    station_exists = station_doc is not None
+    if not station_exists:
+        print(f"videoAnalysis: station {station_id} not found")
     #print(total_frames)
     result=[]
     for fno in range(0, total_frames, 10):
@@ -980,11 +1031,7 @@ def videoAnalysis(filename, movement_id, station_id, movement):
                 if result[i][key] > output[key]:
                     output[key]=result[i][key]
             elif key!= "None":
-                threshold = 0.3
-                try:
-                    threshold = station["advancedSettings"]["detectionThreshold"]
-                except: 
-                    threshold = 0.3
+                threshold = station.get("advancedSettings", {}).get("detectionThreshold", 0.3)
                 if result[i][key] > threshold:
                     output[key]=result[i][key]
     #print(output)
@@ -1006,11 +1053,7 @@ def videoAnalysis(filename, movement_id, station_id, movement):
     newMovement["detections"] = birds
     newMovement["video"] = str(host)+ "/api/uploads/videos/" + filename
 
-
-    station = stations.find_one({"station_id":station_id})
-    count = {}
-    if "count" in station: 
-        count = station["count"]
+    count = station.get("count", {})
     newCount = dict(count)
 
 
@@ -1038,7 +1081,7 @@ def videoAnalysis(filename, movement_id, station_id, movement):
         else:
             newCount[today] = {"sum": 1, "birds": [{"latinName": latinName, "germanName" : germanName, "amount": 1}]}
         try:
-            if station["mail"]["notifcation"]:
+            if station.get("mail", {}).get("notifcation"):
                     print(send_email)
                     #send_email(station["mail"]["adresses"][0], filename, str(host)+ "/api/uploads/videos/" + filename, birds, pwd, str(host) +"/view/station/" +station_id )
         except:
@@ -1046,7 +1089,10 @@ def videoAnalysis(filename, movement_id, station_id, movement):
 
     db["movements_"+station_id].update_one({"mov_id": movement_id}, {'$set': newMovement})
     completeMovement = db["movements_"+station_id].find_one({"mov_id": movement_id}, {'_id' : False})
-    stations.update_one({"station_id":station_id}, {'$set': {"count":newCount, "lastMovement" : completeMovement}})
+    if station_exists:
+        stations.update_one({"station_id":station_id}, {'$set': {"count":newCount, "lastMovement" : completeMovement}})
+    else:
+        print(f"videoAnalysis: skipping station update for {station_id} (not found)")
 
     return birds
 
@@ -1545,6 +1591,10 @@ def station(station_id: str):
         station = stations.find_one({"station_id":station_id}, {'_id' : False} )
         if station is None:
             return "not found", 404
+        station_statistics_doc = db["statistics"].find_one(
+            {"station_id": station_id},
+            {'_id': False, 'specialBirds': True, 'createdAt': True}
+        )
         station_key = ensure_station_key(station)
         auth_user = get_authenticated_user()
         has_api_access = API_KEY == apikey or station_key == apikey
@@ -1585,6 +1635,11 @@ def station(station_id: str):
             response_station["movementsMeta"] = movements_meta
         response_station["measurements"] = dict()
         response_station["measurements"]["movements"] = movements
+        if station_statistics_doc:
+            response_station["statisticsSummary"] = {
+                "specialBirds": station_statistics_doc.get("specialBirds") or [],
+                "updatedAt": station_statistics_doc.get("createdAt")
+            }
         envWanted = request.args.get('environment')
         if envWanted:
             environment= db["environments_"+station_id].find({}, {'_id' : False}).sort("month",-1)
@@ -1794,7 +1849,7 @@ def add_movement_image(station_id: str):
     if station["type"] in ["test", "exhibit"]:
         try: 
             deleteMinutes = station["advancedSettings"]["deleteMinutes"]
-            job = q.enqueue_in(timedelta(minutes=deleteMinutes), deleteMovement, mov_id, station_id)
+            job = q_priority.enqueue_in(timedelta(minutes=deleteMinutes), deleteMovement, mov_id, station_id)
         except:
             print("No deleteMinutes given")
 
@@ -1926,7 +1981,7 @@ def addValidation(station_id: str, movement_id: str):
     movementList = list(movement)
     if len(movementList) == 0:
         return "Not Found", 404
-    job=q.enqueue(saveValidation, validation, movement_id, station_id)
+    job=q_priority.enqueue(saveValidation, validation, movement_id, station_id)
     return "ok", 200
 
 @app.route('/api/statistics/<station_id>', methods=['GET'])

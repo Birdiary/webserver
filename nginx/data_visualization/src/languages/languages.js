@@ -9,7 +9,12 @@ const language = {
             statistics: "Statistics",
             ownStations: "My Stations",
             login: "Log in",
-            logout: "Log out"
+            logout: "Log out",
+            searchLabel: "Find a station",
+            searchPlaceholder: "Search stations...",
+            searchNoResults: "No stations match your search.",
+            searchLoading: "Loading stations...",
+            searchError: "We couldn't load the stations."
         },
 
         map: {
@@ -274,7 +279,12 @@ const language = {
             deleteMovementConfirm: "Delete this movement? The video and audio will be removed.",
             deleteMovementSuccess: "Movement deleted.",
             deleteMovementError: "Unable to delete the movement.",
-            deleteMovementLoginRequired: "Please sign in to delete recordings from your station."
+            deleteMovementLoginRequired: "Please sign in to delete recordings from your station.",
+            searchResultsLoaded: "Showing all movements that match your filters.",
+            specialHighlightsTitle: "Highlights from your statistics",
+            specialHighlightsDescription: "These curated recordings come from the special-bird list in the statistics and can reach beyond the latest 30 uploads.",
+            specialHighlightsEmpty: "No highlight recordings stored yet. Run the statistics job or wait for the next update.",
+            specialHighlightsUpdated: "Updated at {date}"
         },
 
         table: {
@@ -340,6 +350,11 @@ const language = {
             infoValidation: "This statistic shows how many times a particular species has been validated. Therefore, it does not indicate how many times the bird was at the station. The number of validations also includes validations if no bird was detected on the video, but these are not shown in the view below. Feel free to try improving the stats directly by validating videos from your station. ",
             infoSpecialBirds: "Here we show you species that have actually been detected at one of our stations before. Only detections are taken where the probability of the species, output from the Ki, are above 85%. The validations are not included.",            showMore: "Zeige mehr Statistiken",
             show: "Show statistics",
+            searchTitle: "Search all recorded birds",
+            searchPlaceholder: "Type a German or Latin name",
+            searchHelper: "Enter at least two characters to start searching.",
+            searchNoResults: "No birds match your search yet.",
+            searchResultCount: "{count} species match your search.",
             maxSpecies2: " videos were captured. Of these, on",
             maxSpecies3: " a bird detected.",
             the: "The ",
@@ -354,6 +369,8 @@ const language = {
             maxDay2: " days with the most Birds:",
             maxDay3: "Most bird on this day ",
             env2: "measurements were taken",
+            envRecentTitle: "Latest five extreme measurements",
+            envNoData: "No valid measurements yet.",
             maxTemp: "The highest temperature measured was: ",
             minTemp: "The lowest temperature measured was: ",
             maxHum: "The highest humidity measured was: ",
@@ -381,7 +398,10 @@ const language = {
         movementCard:{
             capturedOn: "Bird captured on:  ",
             propability: "Propability: ",
-            goMov: "Go to Movement"
+            goMov: "Go to Movement",
+            clipIndicator: "Recording {current}/{total}",
+            previous: "Previous recording",
+            next: "Next recording"
         }
 
     },
@@ -395,7 +415,12 @@ const language = {
             statistics: "Statistiken",
             ownStations: "Meine Stationen",
             login: "Anmelden",
-            logout: "Abmelden"
+            logout: "Abmelden",
+            searchLabel: "Station finden",
+            searchPlaceholder: "Stationen durchsuchen...",
+            searchNoResults: "Keine Station passt zu deiner Suche.",
+            searchLoading: "Stationen werden geladen...",
+            searchError: "Stationen konnten nicht geladen werden."
         },
 
         map: {
@@ -661,7 +686,12 @@ const language = {
             deleteMovementConfirm: "Diese Aufnahme löschen? Video und Audio werden entfernt.",
             deleteMovementSuccess: "Aufnahme gelöscht.",
             deleteMovementError: "Aufnahme konnte nicht gelöscht werden.",
-            deleteMovementLoginRequired: "Bitte melde dich an, um Aufnahmen deiner Station zu löschen."
+            deleteMovementLoginRequired: "Bitte melde dich an, um Aufnahmen deiner Station zu löschen.",
+            searchResultsLoaded: "Alle passenden Aufnahmen werden angezeigt.",
+            specialHighlightsTitle: "Highlights aus deinen Statistiken",
+            specialHighlightsDescription: "Diese kuratierten Aufnahmen stammen aus der Liste besonderer Vögel in den Statistiken und gehen über die letzten 30 Aufnahmen hinaus.",
+            specialHighlightsEmpty: "Noch keine Highlight-Aufnahmen gespeichert. Starte die Statistik-Berechnung oder warte auf das nächste Update.",
+            specialHighlightsUpdated: "Aktualisiert am {date}"
         },
         table: {
             noBird: "Es wurde kein Vogel auf dem Video erkannt",
@@ -727,6 +757,11 @@ const language = {
             infoSpecialBirds: "Hier zeigen wir dir Arten, die schon einmal an einer unserer Station tatsächlich erkannt wurden. Es werden nur Erkennungen berücksichtigt, bei denen das Bilderkennungsmodell die Vorhersage mit einer Wahrscheinlichkeit von 85% oder höher ausgibt. Die Validierungen fließen nicht mit ein.",
             showMore: "Zeige mehr Statistiken",
             show: "Zeige Statistiken",
+            searchTitle: "Alle aufgezeichneten Vögel durchsuchen",
+            searchPlaceholder: "Deutschen oder lateinischen Namen eingeben",
+            searchHelper: "Bitte mindestens zwei Zeichen eingeben, um zu suchen.",
+            searchNoResults: "Keine Vögel passen zu deiner Suche.",
+            searchResultCount: "{count} Arten passen zu deiner Suche.",
             maxSpecies2: " Videos aufgenommen. Davon wurde auf ",
             maxSpecies3: " ein Vogel erkannt.",
             the: "Die ",
@@ -741,6 +776,8 @@ const language = {
             maxDay2: "Tage mit den meisten Vögel:",
             maxDay3: "Meister Vogel an dem Tag  ",
             env2: "Messungen durchgeführt",
+            envRecentTitle: "Die letzten fünf Extremwerte",
+            envNoData: "Es liegen noch keine gültigen Messungen vor.",
             maxTemp: "Die höchste gemessene Temperatur war: ",
             minTemp: "Die niedrigste gemessene Temperatur war: ",
             maxHum: "Die höchste gemessene Luftfeuchtigkeit war: ",
@@ -768,7 +805,10 @@ const language = {
         movementCard:{
             capturedOn: "Vogel aufgenommen am:  ",
             propability: "Wahrscheinlichkeit: ",
-            goMov: "Gehe zum Movement"
+            goMov: "Zur Aufnahme",
+            clipIndicator: "Aufnahme {current}/{total}",
+            previous: "Vorherige Aufnahme",
+            next: "Nächste Aufnahme"
         }
     }
 };

@@ -1,10 +1,11 @@
 import React, { Component } from 'react'
 import { AppBar, Toolbar, Typography, Button, Container, Box, IconButton, Menu, MenuItem } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import { useNavigate, Link } from 'react-router-dom'; 
+import { Link } from 'react-router-dom'; 
 import language from '../languages/languages';
 import { useAuth } from '../context/AuthContext';
 import "./Navbar.css";
+import StationSearch from './StationSearch';
 //import { ReactComponent as SnowEnable} from '../helpers/icons/snow-enable.svg'
 //import { ReactComponent as SnowDisable } from '../helpers/icons/snow-disable.svg'
 
@@ -79,14 +80,17 @@ function Header(props){
                 display: { xs: 'block', md: 'none' },
               }}
             >
+                <Box sx={{ px: 2, pt: 1, pb: 2 }}>
+                  <StationSearch languageKey={props.language} fullWidth />
+                </Box>
                 <MenuItem key={"home"} onClick={handleCloseNavMenu} component={Link} to="/view" >
                   <Typography textAlign="center">{navCopy["overview"]}</Typography>
                 </MenuItem>
                 <MenuItem key={"en"} onClick={() => {props.changeLang("en"); handleCloseNavMenu()}}>
-                  <Typography textAlign="center" className={props.language == "en" ? 'bold' : null}>English</Typography>
+                  <Typography textAlign="center" className={props.language == "en" ? 'bold' : null}>EN</Typography>
                 </MenuItem>
                 <MenuItem key={"de"} onClick={() => {props.changeLang("de"); handleCloseNavMenu()}}>
-                  <Typography textAlign="center" className={props.language == "de" ? 'bold' : null}>Deutsch</Typography>
+                  <Typography textAlign="center" className={props.language == "de" ? 'bold' : null}>DE</Typography>
                 </MenuItem>
                 <MenuItem key={"create"} onClick={handleCloseNavMenu} component={Link} to="/view/createstation" >
                   <Typography textAlign="center">{navCopy["create"]}</Typography>
@@ -130,12 +134,20 @@ function Header(props){
           >
             Birdiary
           </Typography>
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, maxWidth: 380, mx: 2 }}>
+            <StationSearch languageKey={props.language} />
+          </Box>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex', lg:"flex" } }} >
           <Typography variant="h4" color="inherit" style={{ flex: 1 }}>
             <Button style={{ fontWeight : "bold"}} color="inherit" component={Link} to="/view" >{navCopy["overview"]}</Button>
           </Typography>
-          <Button color="inherit" onClick={() => props.changeLang("en")} className={props.language == "en" ? 'bold' : null}>English</Button>
-          <Button color="inherit" onClick={() => props.changeLang("de")} className={props.language == "de" ? 'bold' : null}>Deutsch</Button>
+          <Button
+            color="inherit"
+            onClick={() => props.changeLang(props.language === "en" ? "de" : "en")}
+            sx={{ minWidth: 0, px: 1.75, mx: 0.75 }}
+          >
+            {props.language === "en" ? "DE" : "EN"}
+          </Button>
           <Button rel="noopener" color="inherit" component={Link} to="/view/createstation">
             {navCopy["create"]}</Button>
           <Button rel="noopener" color="inherit" component={Link} to="/view/statistics">
