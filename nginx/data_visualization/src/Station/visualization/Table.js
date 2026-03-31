@@ -11,86 +11,136 @@ import language from '../../languages/languages';
 import VerifiedIcon from '@mui/icons-material/Verified';
 
 
-
 export default function BasicTable(props) {
-  const [rows, setRows] = React.useState([])
-  const [validated, setValidated] = React.useState("")
-  const [validatedInList, setValidatedInList] =React.useState(true)
-
-
-  React.useEffect(() => {
-    var birdList = props.birds
-    let rows2 = []
-    setRows(rows2)
-    for (let i = 0; i < birdList.length && i < 3; i++) {
-      rows2.push({ name: birdList[i].latinName, prop: (birdList[i].score * 100).toFixed(2), germanName: birdList[i].germanName })
-      setRows(rows2)
-    }
-
-  }, [props.birds])
+  const [rows, setRows] = React.useState([]);
+  const [validated, setValidated] = React.useState(null);
+  const [validatedInList, setValidatedInList] = React.useState(true);
+  const lang = language[props.language] || language.en;
+  const tableCopy = lang.table || language.en.table;
+  const stationCopy = lang.stations || language.en.stations;
 
   React.useEffect(() => {
+    const birdList = Array.isArray(props.birds) ? props.birds : [];
+    const limited = [];
+    for (let i = 0; i < birdList.length && i < 3; i += 1) {
+      const entry = birdList[i];
+      if (!entry || typeof entry.score !== 'number') {
+        continue;
+      }
+      limited.push({
+        name: entry.latinName || '',
+        latinName: entry.latinName || '',
+        prop: (entry.score * 100).toFixed(2),
+        germanName: entry.germanName || ''
+      });
+    }
+    setRows(limited);
+  }, [props.birds]);
 
-    if (props.validation) {
-      let max = { "amount": 0 }
-      for (let key in props.validation["summary"]) {
-        if (props.validation["summary"][key]["amount"] > max["amount"]) {
-          max = props.validation["summary"][key]
-        }
-      }
-      setValidated(max)
-      var birdList = props.birds
-      let inList = false
-      for (let i = 0; i < birdList.length && i < 3; i++) {
-        if(max.latinName == birdList[i].latinName){
-          inList = true
-        }
-      }
-      setValidatedInList(inList)
+  React.useEffect(() => {
+    const summary = props.validation && props.validation.summary;
+    if (!summary || typeof summary !== 'object') {
+      setValidated(null);
+      setValidatedInList(true);
+      return;
     }
 
-  }, [props.validation])
+    let max = null;
+    for (const key in summary) {
+      if (!Object.prototype.hasOwnProperty.call(summary, key)) {
+        continue;
+      }
+      const entry = summary[key];
+      if (!entry) {
+        continue;
+      }
+      if (!max || (entry.amount || 0) > (max.amount || 0)) {
+        max = entry;
+      }
+    }
 
+    if (!max) {
+      setValidated(null);
+      setValidatedInList(true);
+      return;
+    }
+
+    setValidated(max);
+    const birdList = Array.isArray(props.birds) ? props.birds : [];
+    const inList = birdList.slice(0, 3).some((bird) => bird && bird.latinName === max.latinName);
+    setValidatedInList(inList);
+  }, [props.validation, props.birds]);
+
+  const renderTable = () => {
+    if (rows.length === 0 && props.finished === 'pending') {
+      return (
+        <div>
+          <p>
+            {stationCopy.wait1} {stationCopy.wait2}
+          </p>
+          <Button
+            variant="contained"
+            onClick={() => props.getStation && props.getStation()}
+            style={{ float: 'right', margin: '15px' }}
+          >
+            Refresh
+          </Button>
+        </div>
+      );
+    }
+
+    if (rows.length === 0) {
+      return <p>{tableCopy.noBird}</p>;
+    }
+
+    return (
+      <TableContainer component={Paper}>
+        <Table aria-label="simple table" style={{ maxWidth: '100%', tableLayout: 'fixed' }}>
+          <TableHead>
+            <TableRow>
+              <TableCell>{tableCopy.species}</TableCell>
+              <TableCell>{tableCopy.name}</TableCell>
+              <TableCell align="right">{tableCopy.propability}</TableCell>
+              <TableCell>{tableCopy.validation}</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {rows.map((row, index) => (
+              <TableRow key={row.latinName || row.name || index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                <TableCell component="th" scope="row">
+                  <span style={{ display: 'flex' }}>
+                    {row.name} {validated && row.latinName === validated.latinName ? <VerifiedIcon color="success" /> : null}
+                  </span>
+                </TableCell>
+                {row.germanName ? (
+                  <TableCell>
+                    <a href={`https://www.nabu.de/tiere-und-pflanzen/voegel/portraets/${row.germanName}`} target="_blank" rel="noreferrer">
+                      {row.germanName}
+                    </a>
+                  </TableCell>
+                ) : (
+                  <TableCell />
+                )}
+                <TableCell align="right">{row.prop}</TableCell>
+                <TableCell padding="checkbox">
+                  <Checkbox checked={row.name === props.bird} onChange={() => props.setBird && props.setBird(row.name)} />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    );
+  };
 
   return (
     <div>
-      {rows.length == 0 && props.finished == "pending" ? < div><p> {language[props.language]["stations"]["wait1"]} {language[props.language]["stations"]["wait2"]} </p> <Button variant="contained" onClick={() => { props.getStation() }} style={{ float: "right", margin: "15px" }}>Refresh</Button></div>
-        :
-        rows.length == 0 ? <p> {language[props.language]["table"]["noBird"]} </p> :
-          <TableContainer component={Paper}>
-            <Table aria-label="simple table" style={{ maxWidth: "100%", "table-layout": 'fixed' }} >
-              <TableHead>
-                <TableRow>
-                  <TableCell>{language[props.language]["table"]["species"]}</TableCell>
-                  <TableCell>{language[props.language]["table"]["name"]}</TableCell>
-                  <TableCell align="right">{language[props.language]["table"]["propability"]}</TableCell>
-                  <TableCell>{language[props.language]["table"]["validation"]}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {rows.map((row) => (
-                  <TableRow
-                    key={row.latinName}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                  >
-                    <TableCell component="th" scope="row">
-                      <span style={{display: "flex"}}>{row.name} {row.name == validated.latinName ? <VerifiedIcon color="success" />: ""} </span>
-                    </TableCell>
-                    {row.germanName == "" ? <TableCell>  </TableCell> : <TableCell><a href={"https://www.nabu.de/tiere-und-pflanzen/voegel/portraets/" + row.germanName} target="_blank">{row.germanName} </a> </TableCell>}
-                    <TableCell align="right">{row.prop}</TableCell>
-                    <TableCell padding="checkbox">
-                      <Checkbox checked={row.name === props.bird} onChange={() => props.setBird(row.name)} />
-                    </TableCell>
-
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          }
-    {
-      !validatedInList ? <span>Validierter Vogel: {validated.germanName && validated.germanName!= ""? validated.germanName : validated.latinName}</span> : ""
-    }
+      {renderTable()}
+      {!validatedInList && validated ? (
+        <span>
+          Validierter Vogel: {validated.germanName && validated.germanName !== '' ? validated.germanName : validated.latinName}
+        </span>
+      ) : null}
     </div>
   );
 }
