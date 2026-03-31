@@ -81,6 +81,12 @@ function StationView(props) {
   const [deleteFeedback, setDeleteFeedback] = useState({ open: false, message: '', severity: 'success' });
   const stationCopy = language[props.language]?.stations || language.en.stations;
   const canDeleteMovements = Boolean(user && data && (user.isAdmin || (data.ownerId && user.id === data.ownerId)));
+  const getWeightDisplay = (weightValue) => {
+    if (typeof weightValue === "number" && Number.isFinite(weightValue)) {
+      return `${weightValue.toFixed(0)} gramm`;
+    }
+    return stationCopy.weightUnavailable || language.en.stations.weightUnavailable || "";
+  };
   const specialBirds = useMemo(() => {
     if (!data || !data.statisticsSummary) {
       return [];
@@ -562,7 +568,7 @@ function StationView(props) {
                       <h4>{language[props.language]["stations"]["audio"]}</h4>
                       <ReactAudioPlayer src={movement.audio} controls />
                       <h4>{language[props.language]["stations"]["weight"]}</h4>
-                      <p> {movement.weight.toFixed(0) + " gramm"} </p>
+                      <p>{getWeightDisplay(movement.weight)}</p>
                       <IconButton color="primary" aria-label="upload picture" component="span" onClick={() => { handleClickOpen("species") }} style={{ float: "right" }}>
                         <InfoOutlinedIcon />
                       </IconButton>

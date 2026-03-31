@@ -20,6 +20,13 @@ function Movement(props) {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [counter, setCounter] = useState(5);
   const navigate = useNavigate();
+  const stationCopy = language[props.language]?.stations || language.en.stations;
+  const getWeightDisplay = (weightValue) => {
+    if (typeof weightValue === "number" && Number.isFinite(weightValue)) {
+      return `${weightValue.toFixed(0)} gramm`;
+    }
+    return stationCopy.weightUnavailable || language.en.stations.weightUnavailable || "";
+  };
 
   useEffect(() => {
     counter > 0 && setTimeout(() => changeCounter(counter - 1), 1000);
@@ -111,7 +118,7 @@ function Movement(props) {
                       <h4>{language[props.language]["stations"]["audio"]}</h4>
                       <ReactAudioPlayer src={data.audio} controls />
                       <h4>{language[props.language]["stations"]["weight"]}</h4>
-                      <p> {data.weight.toFixed(0) + " gramm"} </p>
+                      <p>{getWeightDisplay(data.weight)}</p>
                       <h4>{language[props.language]["stations"]["species"]}</h4>
                       <BasicTable birds={data.detections} finished={data.video} getStation={event => getSingleMovement(event)} language={props.language} setBird={setBird} bird={bird} validation={data.validation}></BasicTable>
                      <br></br> 

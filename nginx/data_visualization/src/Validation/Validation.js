@@ -14,6 +14,13 @@ function Validation(props) {
   const [data, setData] = useState("");
   const [bird, setBird] = useState("");
   const [open, setOpen] = useState(false);
+  const stationCopy = language[props.language]?.stations || language.en.stations;
+  const getWeightDisplay = (weightValue) => {
+    if (typeof weightValue === "number" && Number.isFinite(weightValue)) {
+      return `${weightValue.toFixed(0)} gramm`;
+    }
+    return stationCopy.weightUnavailable || language.en.stations.weightUnavailable || "";
+  };
 
 
   useEffect(() => {
@@ -79,7 +86,7 @@ function Validation(props) {
                       <h4>{language[props.language]["stations"]["audio"]}</h4>
                       <ReactAudioPlayer src={data.audio} controls />
                       <h4>{language[props.language]["stations"]["weight"]}</h4>
-                      <p> {data.weight.toFixed(0) + " gramm"} </p>
+                      <p>{getWeightDisplay(data.weight)}</p>
                       <h4>{language[props.language]["stations"]["species"]}</h4>
                       <BasicTable birds={data.detections} finished={data.video} getStation={event => getMovement(event)} language={props.language} setBird={setBird} bird={bird}></BasicTable>
                      <br></br> 

@@ -459,6 +459,21 @@ def append_recent(entries, item, limit):
     return target
 
 
+def append_recent_unique_station(entries, item, limit):
+    """Ensure global highlight lists show movements from distinct stations."""
+    if not item:
+        return entries or []
+    station_id = item.get("station_id")
+    if not station_id:
+        return append_recent(entries, item, limit)
+    target = entries[:] if entries else []
+    target = [entry for entry in target if entry.get("station_id") != station_id]
+    target.insert(0, item)
+    if len(target) > limit:
+        del target[limit:]
+    return target
+
+
 def build_movement_reference(movement, station_id, station_name=None, include_score=False):
     reference = {
         "mov_id": movement.get("mov_id"),
@@ -723,7 +738,7 @@ def calculateStatistics(reque):
 
                     global_validation_entry = statisticsALL["validatedBirds"].setdefault(latin_name, {"sum": 0, "movements": []})
                     global_validation_entry["sum"] = global_validation_entry["sum"] + 1
-                    global_validation_entry["movements"] = append_recent(
+                    global_validation_entry["movements"] = append_recent_unique_station(
                         global_validation_entry.get("movements"),
                         global_validation_ref,
                         MAX_VALIDATED_REFERENCES
@@ -765,7 +780,7 @@ def calculateStatistics(reque):
                 )
 
                 global_day_entry = statisticsALL["perDay"][day][latinName]
-                global_day_entry["movements"] = append_recent(
+                global_day_entry["movements"] = append_recent_unique_station(
                     global_day_entry.get("movements"),
                     build_movement_reference(movement, station_id, station.get("name"), include_score=True),
                     MAX_MOVEMENT_REFERENCES
@@ -789,7 +804,7 @@ def calculateStatistics(reque):
                 )
 
                 global_species_entry = statisticsALL["all"][latinName]
-                global_species_entry["movements"] = append_recent(
+                global_species_entry["movements"] = append_recent_unique_station(
                     global_species_entry.get("movements"),
                     build_movement_reference(movement, station_id, station.get("name"), include_score=True),
                     MAX_MOVEMENT_REFERENCES
@@ -810,7 +825,7 @@ def calculateStatistics(reque):
                         latinName,
                         {"latinName": latinName, "germanName": germanName, "movements": []}
                     )
-                    global_special_entry["movements"] = append_recent(
+                    global_special_entry["movements"] = append_recent_unique_station(
                         global_special_entry.get("movements"),
                         build_movement_reference(movement, station_id, station.get("name"), include_score=True),
                         MAX_SPECIAL_BIRD_REFERENCES
