@@ -153,7 +153,7 @@ class OwnMap extends React.Component {
               if (marker.lastMovement) {
                 movement = true
                 let detections = marker.lastMovement.detections
-                if (detections.length > 0) {
+                if (detections && detections.length > 0) {
                   if (detections[0].germanName) {
                     birdName = detections[0].germanName
                   }
