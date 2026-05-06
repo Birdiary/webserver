@@ -72,14 +72,19 @@ MAX_SPECIAL_BIRD_REFERENCES = int(os.getenv('STATISTICS_SPECIAL_BIRD_LIMIT', '20
 MAX_VALIDATED_REFERENCES = int(os.getenv('STATISTICS_VALIDATED_LIMIT', '20'))
 ENV_EXTREMES_LIMIT = int(os.getenv('STATISTICS_ENVIRONMENT_LIMIT', '5'))
 try:
-    STATISTICS_RECALC_INTERVAL_MINUTES = max(int(os.getenv('STATISTICS_RECALC_INTERVAL_MINUTES', '30')), 5)
+    RANGE_STATS_REFRESH_MATCH_LIMIT = max(int(os.getenv('RANGE_STATS_REFRESH_MATCH_LIMIT', '200')), 10)
 except Exception:
-    STATISTICS_RECALC_INTERVAL_MINUTES = 30
+    RANGE_STATS_REFRESH_MATCH_LIMIT = 200
 
 try:
     STATISTICS_JOB_TIMEOUT_SECONDS = max(int(os.getenv('STATISTICS_JOB_TIMEOUT_SECONDS', '1200')), 180)
 except Exception:
     STATISTICS_JOB_TIMEOUT_SECONDS = 600
+
+try:
+    STATISTICS_NIGHTLY_HOUR = max(0, min(23, int(os.getenv('STATISTICS_NIGHTLY_HOUR', '3'))))
+except Exception:
+    STATISTICS_NIGHTLY_HOUR = 3
 
 try:
     RANGE_STATS_CACHE_MINUTES = max(int(os.getenv('RANGE_STATS_CACHE_MINUTES', '30')), 5)
@@ -159,6 +164,32 @@ q = Queue(connection=redis)
 q_priority = Queue("priority", connection=redis)
 q2 = Queue("image", connection=redis)
 q3 = Queue("statistics", connection=redis)
+
+NIGHTLY_STATS_JOB_ID = "nightly_statistics_rebuild"
+
+def seed_nightly_statistics():
+    """Schedule the next nightly full statistics rebuild if not already queued/scheduled."""
+    try:
+        from rq.job import Job
+        try:
+            existing = Job.fetch(NIGHTLY_STATS_JOB_ID, connection=redis)
+            if existing.get_status() in ("queued", "scheduled", "started", "deferred"):
+                return  # already scheduled
+        except Exception:
+            pass  # job does not exist yet
+
+        now = datetime.utcnow()
+        next_run = now.replace(hour=STATISTICS_NIGHTLY_HOUR, minute=0, second=0, microsecond=0)
+        if next_run <= now:
+            next_run += timedelta(days=1)
+
+        q3.enqueue_at(next_run, calculateStatistics,
+                      job_id=NIGHTLY_STATS_JOB_ID,
+                      job_timeout=STATISTICS_JOB_TIMEOUT_SECONDS)
+        print(f"[nightly] Statistics rebuild scheduled for {next_run.isoformat()} UTC (hour={STATISTICS_NIGHTLY_HOUR})")
+    except Exception as e:
+        print(f"[nightly] Failed to seed nightly statistics: {e}")
+
 app.config['SECRET_KEY'] = 'thisisasecret'
 app.config['JSON_SORT_KEYS'] = False
 app.config['UPLOADED_IMAGES_DEST'] = 'uploads/disk/images'
@@ -227,6 +258,18 @@ def sanitize_user(user):
         "isAdmin": is_admin_user(user),
         "createdAt": created_at_value
     }
+
+
+def to_json_safe(value):
+    if isinstance(value, ObjectId):
+        return str(value)
+    if isinstance(value, datetime):
+        return value.isoformat()
+    if isinstance(value, list):
+        return [to_json_safe(item) for item in value]
+    if isinstance(value, dict):
+        return {key: to_json_safe(item) for key, item in value.items()}
+    return value
 
 
 def create_session_token(user_id):
@@ -555,6 +598,36 @@ def parse_datetime_value(value):
     return None
 
 
+def parse_bool_value(value, default=False):
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    normalized = str(value).strip().lower()
+    if normalized in ("1", "true", "yes", "on"):
+        return True
+    if normalized in ("0", "false", "no", "off"):
+        return False
+    return default
+
+
+def serialize_datetime_value(value):
+    parsed = parse_datetime_value(value)
+    if parsed:
+        return parsed.isoformat()
+    return value
+
+
+def extract_day(value):
+    parsed = parse_datetime_value(value)
+    if parsed:
+        return parsed.strftime('%Y-%m-%d')
+    candidate = str(value or '').strip()
+    if len(candidate) >= 10:
+        return candidate[:10]
+    return None
+
+
 def create_statistics_payload(station_id, name):
     payload = dict()
     payload["station_id"] = station_id
@@ -613,18 +686,6 @@ def _is_job_active(job_id):
 
 
 def enqueue_statistics_range_refresh(station_id, from_date, to_date):
-    if is_prewarm_range(station_id, from_date, to_date):
-        job_id = "stats_calculate_all"
-        if _is_job_active(job_id):
-            return
-        q3.enqueue(
-            calculateStatistics,
-            False,
-            job_id=job_id,
-            job_timeout=STATISTICS_JOB_TIMEOUT_SECONDS
-        )
-        return
-
     job_id = f"stats_range_{station_id}_{from_date}_{to_date}"
     if _is_job_active(job_id):
         return
@@ -638,7 +699,7 @@ def enqueue_statistics_range_refresh(station_id, from_date, to_date):
     )
 
 
-def build_statistics_range_response(station_id, from_date, to_date, cached=None, cache_status="pending", message=None, refresh_queued=False):
+def build_statistics_range_response(station_id, from_date, to_date, cached=None, cache_status="pending", message=None):
     if cached:
         payload = dict(cached)
     else:
@@ -649,16 +710,82 @@ def build_statistics_range_response(station_id, from_date, to_date, cached=None,
             "lastSync": None,
             "cacheStatus": cache_status,
             "message": message,
-            "refreshQueued": refresh_queued,
         }
         return payload
 
     payload["lastSync"] = payload.get("createdAt")
+    payload["lastSync"] = serialize_datetime_value(payload.get("lastSync"))
+    payload["createdAt"] = serialize_datetime_value(payload.get("createdAt"))
     payload["cacheStatus"] = cache_status
-    payload["refreshQueued"] = refresh_queued
     if message:
         payload["message"] = message
     return payload
+
+
+def enqueue_matching_range_cache_refreshes(station_id, event_date):
+    event_day = extract_day(event_date)
+    if not event_day:
+        return 0
+
+    try:
+        matching_ranges = statistics_range.find(
+            {
+                "station_id": {"$in": [station_id, "all"]},
+                "from": {"$lte": event_day},
+                "to": {"$gte": event_day}
+            },
+            {'_id': False, 'station_id': True, 'from': True, 'to': True}
+        ).limit(RANGE_STATS_REFRESH_MATCH_LIMIT)
+    except Exception:
+        return 0
+
+    queued = 0
+    for entry in matching_ranges:
+        sid = entry.get("station_id")
+        from_date = entry.get("from")
+        to_date = entry.get("to")
+        if not sid or not from_date or not to_date:
+            continue
+        enqueue_statistics_range_refresh(sid, from_date, to_date)
+        queued = queued + 1
+    return queued
+
+
+def apply_daytime_statistics_delta(station_id, movement_delta=0, detection_delta=0, validated_delta=0):
+    increments = {}
+    if movement_delta:
+        increments["numberOfMovements"] = movement_delta
+    if detection_delta:
+        increments["numberOfDetections"] = detection_delta
+    if validated_delta:
+        increments["numberOfValidatedBirds"] = validated_delta
+
+    if not increments:
+        return
+
+    now = datetime.utcnow()
+    for sid in (station_id, "all"):
+        update_doc = {"$set": {"createdAt": now}}
+        if increments:
+            update_doc["$inc"] = dict(increments)
+        db["statistics"].update_one({"station_id": sid}, update_doc)
+
+
+def apply_daytime_movement_statistics(station_id, movement_id, movement_date, has_detection):
+    movement_collection = db["movements_" + station_id]
+    marker = movement_collection.update_one(
+        {"mov_id": movement_id, "statisticsCoreApplied": {"$ne": True}},
+        {'$set': {"statisticsCoreApplied": True}}
+    )
+    if marker.modified_count == 0:
+        return
+
+    apply_daytime_statistics_delta(
+        station_id,
+        movement_delta=1,
+        detection_delta=1 if has_detection else 0
+    )
+    enqueue_matching_range_cache_refreshes(station_id, movement_date)
 
 
 def finalize_statistics_payload(statistics):
@@ -727,10 +854,7 @@ def enqueueable(func):
 
 @enqueueable
 def refreshStatisticsAndRangeCache(station_id, from_date, to_date):
-    calculateStatistics(False)
-    if not is_prewarm_range(station_id, from_date, to_date):
-        return computeStatisticsRange(station_id, from_date, to_date)
-    return get_statistics_range_cache_entry(station_id, from_date, to_date)
+    return computeStatisticsRange(station_id, from_date, to_date)
 
 @enqueueable
 def deleteImage(id):
@@ -871,7 +995,8 @@ def modify_image(id, credentials, rotation, time, i):
         return
 
 @enqueueable
-def calculateStatistics(reque):
+def calculateStatistics():
+
     stationsList = list(stations.find(
         {"type": {"$nin": ["test", "exhibit"]}},
         {
@@ -1252,21 +1377,14 @@ def calculateStatistics(reque):
     statisticsALL["activeStations_total"] = len(stationsList)
     # --- End active station counts ---
 
-    statisticsALL["createdAt"] = str(datetime.now())
+    statisticsALL["createdAt"] = datetime.utcnow()
     db["statistics"].replace_one({"station_id": "all"}, statisticsALL, True)
     # Rebuild pre-warmed range caches in the same statistics job
     for _pw_sid, _pw_from, _pw_to in PREWARM_RANGES:
         computeStatisticsRange(_pw_sid, _pw_from, _pw_to)
-    if reque:
-        print(reque)
-        delay = timedelta(minutes=STATISTICS_RECALC_INTERVAL_MINUTES)
-        q3.enqueue_in(
-            delay,
-            calculateStatistics,
-            True,
-            job_timeout=STATISTICS_JOB_TIMEOUT_SECONDS
-        )
-        
+    # Re-schedule the next nightly run
+    seed_nightly_statistics()
+
 @enqueueable
 #The function first checks if the file extension is ".h264" and converts the file to ".mp4" format using MP4Box if so. 
 # It then reads the video using OpenCV, extracts frames from the video, and calls a classify function to classify the image and detect any birds present in it. 
@@ -1370,6 +1488,9 @@ def videoAnalysis(filename, movement_id, station_id, movement):
         stations.update_one({"station_id":station_id}, {'$set': {"count":newCount, "lastMovement" : completeMovement}})
     else:
         print(f"videoAnalysis: skipping station update for {station_id} (not found)")
+
+    has_detection = len(birds) > 0 and birds[0].get("latinName") != "None"
+    apply_daytime_movement_statistics(station_id, movement_id, movement.get("start_date"), has_detection)
 
     return birds
 
@@ -1494,6 +1615,9 @@ def videoAnalysisImage(filenames, movement_id, station_id, movement):
     completeMovement = db["movements_"+station_id].find_one({"mov_id": movement_id}, {'_id' : False})
     stations.update_one({"station_id":station_id}, {'$set': {"count":count, "lastMovement" : completeMovement}})
 
+    has_detection = len(birds) > 0 and birds[0].get("latinName") != "None"
+    apply_daytime_movement_statistics(station_id, movement_id, movement.get("start_date"), has_detection)
+
     return birds
 
 
@@ -1555,6 +1679,8 @@ def saveEnvironment(body, env_id, station_id):
     except:
         print('Station has no sensebox_id')
 
+    enqueue_matching_range_cache_refreshes(station_id, environmentClass.get("date"))
+
     return(env_id)
 
 @enqueueable
@@ -1567,7 +1693,6 @@ def saveFeed(body, feed_id, station_id):
     month = feedClass["date"][:7]
 
     collection = db["feed_" + station_id]
-    collection.create_index([("month", -1)])
     existing = collection.find_one({"month": month}, {"_id": 1})
 
     if not existing:
@@ -1591,6 +1716,7 @@ def saveFeed(body, feed_id, station_id):
             }
         )
     db["stations"].update_one({"station_id":station_id}, {'$set': {"lastFeedStatus":feedClass}})
+    enqueue_matching_range_cache_refreshes(station_id, feedClass.get("date"))
     return(feed_id)
 
 
@@ -1670,6 +1796,9 @@ def saveValidation(validation, movement_id, station_id):
     }
 
     db["statistics"].update_one({"station_id": station_id}, {'$set': update_doc})
+
+    apply_daytime_statistics_delta(station_id, validated_delta=1)
+    enqueue_matching_range_cache_refreshes(station_id, movement.get("start_date"))
 
     return newValidation
 
@@ -1844,8 +1973,19 @@ def add_station():
         feedCollection.create_index( [( "month", -1 )] )
 
         return {"id": id, "key": key}, 201
-    station = list(stations.find({ "type": {  "$ne": "test" } }, {'_id' : False, "mail":False, "count":False, "key":False} ))
-    return  jsonify(station), 200
+    station = list(stations.find(
+        {"type": {"$ne": "test"}},
+        {
+            '_id': False,
+            'mail': False,
+            'count': False,
+            'key': False,
+            'lastMovement._id': False,
+            'lastEnvironment._id': False,
+            'lastFeedStatus._id': False
+        }
+    ))
+    return  jsonify(to_json_safe(station)), 200
 
 
 @app.route('/api/station/<station_id>', methods=['GET', 'PUT', 'DELETE'])
@@ -2510,7 +2650,7 @@ def computeStatisticsRange(station_id: str, from_date: str, to_date: str):
     statistics["to"] = to_date
     statistics["activeStations"] = len(active_station_ids)
     statistics = finalize_statistics_payload(statistics)
-    statistics["createdAt"] = str(datetime.now())
+    statistics["createdAt"] = datetime.utcnow()
     statistics_range.replace_one(
         {"station_id": station_id, "from": from_date, "to": to_date},
         statistics,
@@ -2551,16 +2691,14 @@ def getStatisticsRange(station_id: str):
                 to_date,
                 cached=cached,
                 cache_status="refreshing",
-                message="Complete statistics refresh queued. Range cache will be updated afterwards.",
-                refresh_queued=True
+                message="Range cache refresh queued."
             ))
         return jsonify(build_statistics_range_response(
             station_id,
             from_date,
             to_date,
             cache_status="pending",
-            message="No data yet. Complete statistics are being recalculated and the range cache will be generated afterwards.",
-            refresh_queued=True
+            message="No cached data yet. Range cache refresh queued."
         )), 202
 
     if cached:
@@ -2580,8 +2718,7 @@ def getStatisticsRange(station_id: str):
             to_date,
             cached=cached,
             cache_status="stale",
-            message="Showing cached range statistics while a complete statistics refresh is running.",
-            refresh_queued=True
+            message="Showing cached range statistics while a refresh is running."
         ))
 
     enqueue_statistics_range_refresh(station_id, from_date, to_date)
@@ -2590,8 +2727,7 @@ def getStatisticsRange(station_id: str):
         from_date,
         to_date,
         cache_status="pending",
-        message="No data yet. Complete statistics are being recalculated and the range cache will be generated afterwards.",
-        refresh_queued=True
+        message="No cached data yet. Range cache refresh queued."
     )), 202
 
 
@@ -2621,8 +2757,7 @@ def refreshStatisticsRange(station_id: str):
         to_date,
         cached=cached,
         cache_status="refreshing" if cached else "pending",
-        message="Complete statistics refresh queued. Range cache will be updated afterwards.",
-        refresh_queued=True
+        message="Range cache refresh queued."
     )
     return jsonify(response_payload), 202
 
@@ -2630,9 +2765,16 @@ def refreshStatisticsRange(station_id: str):
 
 @app.route('/api/statistics', methods=['GET'])
 def runStatistics():
-    reque = request.args.get('reque')
-    job = q3.enqueue(calculateStatistics, reque, job_timeout=STATISTICS_JOB_TIMEOUT_SECONDS)
-    return "ok", 200
+    force = parse_bool_value(request.args.get('force'), default=False)
+    job_id = "stats_calculate_all"
+    if not force and _is_job_active(job_id):
+        return jsonify({"status": "already-running", "jobId": job_id}), 202
+    q3.enqueue(
+        calculateStatistics,
+        job_id=job_id,
+        job_timeout=STATISTICS_JOB_TIMEOUT_SECONDS
+    )
+    return jsonify({"status": "queued", "jobId": job_id}), 202
 
 
 @app.route('/api/image/<id>', methods=['GET', 'POST'])
@@ -3058,6 +3200,8 @@ def admin_assign_station_owner(station_id):
     stations.update_one({"station_id": station_id}, {'$set': {"ownerId": str(target_user["_id"])}})
     updated_station = stations.find_one({"station_id": station_id}, {'_id': False})
     return jsonify({"message": "Station owner updated.", "station": updated_station}), 200
+
+seed_nightly_statistics()
 
 if __name__==('__main__'):
     app.run(host="0.0.0.0", debug=False)

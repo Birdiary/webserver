@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Grid, CircularProgress, Alert, Box } from "@mui/material";
 import requests from "../helpers/requests";
+import { formatLocalDateTime } from "../helpers/dateUtils";
 import StatisticsView from "../Statistics/StatisticsView";
 
 const EBSW_FROM = "2026-05-16";
@@ -70,31 +71,6 @@ const copy = {
   },
 };
 
-function formatSyncTime(value) {
-  if (!value) {
-    return null;
-  }
-
-  // Ensure the string is treated as UTC (append Z if no timezone info present)
-  const normalized = typeof value === "string" && !value.endsWith("Z") && !/[+-]\d{2}:\d{2}$/.test(value)
-    ? value + "Z"
-    : value;
-
-  const parsed = new Date(normalized);
-  if (Number.isNaN(parsed.getTime())) {
-    return value;
-  }
-
-  return parsed.toLocaleString(undefined, {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-}
-
 function EBSW(props) {
   const lang = copy[props.language] || copy.de;
 
@@ -156,7 +132,7 @@ function EBSW(props) {
       ]
     : [];
 
-  const lastSyncLabel = formatSyncTime(stats?.lastSync || stats?.createdAt);
+  const lastSyncLabel = formatLocalDateTime(stats?.lastSync || stats?.createdAt) || null;
   const showStatisticsView = Boolean(
     stats &&
     !pending &&

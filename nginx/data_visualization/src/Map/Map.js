@@ -1,6 +1,7 @@
 // export default OwnMap
 import React from 'react'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import { formatLocalDateTime } from '../helpers/dateUtils'
 // icon creation
 import requests from '../helpers/requests'
 import { Button, Grid, Dialog, AppBar, IconButton, Toolbar, Divider } from '@mui/material';
@@ -190,7 +191,7 @@ class OwnMap extends React.Component {
                   <br />
 
                   {environment ?
-                    <div> {marker.lastEnvironment.date ? <span> {language[this.props.language]["map"]["lastEnvironment"]}{marker.lastEnvironment.date.split(".")[0]} <br></br> </span> : ""}
+                    <div> {marker.lastEnvironment.date ? <span> {language[this.props.language]["map"]["lastEnvironment"]}{formatLocalDateTime(marker.lastEnvironment.date)} <br></br> </span> : ""}
                       <span>
                         {language[this.props.language]["stations"]["temperature"]}{marker.lastEnvironment.temperature} <br />
                         {language[this.props.language]["stations"]["humidity"]}{marker.lastEnvironment.humidity}
@@ -201,7 +202,7 @@ class OwnMap extends React.Component {
                     : ""}
                   <Divider />
                   {movement ?
-                    <span> {language[this.props.language]["map"]["lastMovement"]}{marker.lastMovement.start_date.split(".")[0]} <br></br>
+                    <span> {language[this.props.language]["map"]["lastMovement"]}{formatLocalDateTime(marker.lastMovement.start_date)} <br></br>
                       {marker.lastMovement.video != "pending" ? <ReactPlayer playsinline url={marker.lastMovement.video} loop={true} controls={true} width="100" height="100" style={{ aspectRatio: 1 }} playing={true} /> : ""}
                       {language[this.props.language]["stations"]["species"]}{birdName != "" ? birdName : language[this.props.language]["table"]["noBird"]}
                     </span>
@@ -209,7 +210,7 @@ class OwnMap extends React.Component {
                   {feed ?
                     <div>
                       <Divider />
-                      {marker.lastFeedStatus.date ? <span> {language[this.props.language]["map"]["lastFeedStatus"]}{marker.lastFeedStatus.date.split(".")[0]} <br></br> </span> : ""}
+                      {marker.lastFeedStatus.date ? <span> {language[this.props.language]["map"]["lastFeedStatus"]}{formatLocalDateTime(marker.lastFeedStatus.date)} <br></br> </span> : ""}
                       {<span> {language[this.props.language]["map"]["level"]}{marker.lastFeedStatus.silolevel + " %"} <br /> </span>}
                     </div> : ""
                   }

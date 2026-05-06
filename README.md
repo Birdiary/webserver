@@ -65,6 +65,20 @@ docker-compose up
 docker-compose up --build
 ```
 
+### Statistics cache behavior
+
+Statistics are split into two paths:
+
+- **Manual full recomputation** (heavy): rebuilds full station + global statistics and prewarms configured range caches.
+- **Realtime cache refresh** (lightweight): range statistics are refreshed independently from full recomputation, and movement/validation/environment/feed writes trigger refreshes for matching cached ranges.
+
+Configure behavior with environment variables in `server.env`:
+
+- `RANGE_STATS_CACHE_MINUTES=30`
+- `RANGE_STATS_REFRESH_MATCH_LIMIT=200`
+
+The endpoint `/api/statistics/<station_id>/range` is cache-first: it always serves cache when present and queues an async range refresh when stale.
+
 ## How to Contribute
 Thank you for considering contributing to Birdiary. Birdiary is an open source project, and we love to receive contributions from our community — you!
 There are many ways to contribute, from writing tutorials or blog posts, improving the documentation, submitting bug reports and feature requests or writing code which can be incorporated into Birdiary itself.
