@@ -872,33 +872,39 @@ def modify_image(id, credentials, rotation, time, i):
 
 @enqueueable
 def calculateStatistics(reque):
-    stationsList = list(stations.find({ "type": {  "$nin": ["test", "exhibit"] } }, {'_id' : False, "mail":False} ))
-    stationsComplete = []
-    for station in stationsList:
-        movements = list(db["movements_" + station["station_id"]].find({}, {'_id' : False}).sort("start_date",-1))
-        station["measurements"] = dict()
-        station["measurements"]["movements"] = movements
-        environment= db["environments_"+station["station_id"]].find({}, {'_id' : False}).sort("month",-1)
-        environment = list(environment)
-        #print(environment, flush=True)
-        environments = []
-        for months in environment:
-            environments= environments + months["measurements"]
-        station["measurements"]["environment"] = environments
-        stationsComplete.append(station)
+    stationsList = list(stations.find(
+        {"type": {"$nin": ["test", "exhibit"]}},
+        {
+            '_id': False,
+            'station_id': True,
+            'name': True,
+            'lastMovement': True,
+            'lastEnvironment': True,
+            'lastFeedStatus': True
+        }
+    ))
 
     statisticsALL = create_statistics_payload("all", "all")
 
-    statisticsComplete=[]
-
-
-    for station in stationsComplete:
-        station_id= station["station_id"]
+    for station in stationsList:
+        station_id = station["station_id"]
         statistics = create_statistics_payload(station_id, station["name"])
-        statistics["numberOfMovements"] = len(station["measurements"]["movements"])
-        statisticsALL["numberOfMovements"] = statisticsALL["numberOfMovements"]+ len(station["measurements"]["movements"])
 
-        for movement in station["measurements"]["movements"]:
+        movement_count = 0
+        movements_cursor = db["movements_" + station_id].find(
+            {},
+            {
+                '_id': False,
+                'mov_id': True,
+                'video': True,
+                'start_date': True,
+                'detections': True,
+                'validation': True,
+            }
+        ).sort("start_date", -1)
+
+        for movement in movements_cursor:
+            movement_count = movement_count + 1
             detection = True
             if "detections" in movement and len(movement["detections"])  >0:
                 if movement["detections"][0]["latinName"] == "None":
@@ -1023,8 +1029,17 @@ def calculateStatistics(reque):
                         build_movement_reference(movement, station_id, station.get("name"), include_score=True),
                         MAX_SPECIAL_BIRD_REFERENCES
                     )
-        
-        for env in station["measurements"]["environment"]:
+
+        statistics["numberOfMovements"] = movement_count
+        statisticsALL["numberOfMovements"] = statisticsALL["numberOfMovements"] + movement_count
+
+        environment_cursor = db["environments_" + station_id].find(
+            {},
+            {'_id': False, 'measurements': True}
+        ).sort("month", -1)
+
+        for month_doc in environment_cursor:
+            for env in month_doc.get("measurements", []):
             temperature = None
             humidity = None
             measurement_date = env.get("date", "")
@@ -1039,44 +1054,44 @@ def calculateStatistics(reque):
             except Exception:
                 humidity = None
 
-            if temperature is not None and -20 < temperature < 60:
-                statistics["sumTemperature"] = statistics["sumTemperature"] + temperature
-                statisticsALL["sumTemperature"] = statisticsALL["sumTemperature"] + temperature
+                if temperature is not None and -20 < temperature < 60:
+                    statistics["sumTemperature"] = statistics["sumTemperature"] + temperature
+                    statisticsALL["sumTemperature"] = statisticsALL["sumTemperature"] + temperature
 
-            if humidity is not None and -1 < humidity < 101:
-                statistics["sumEnvironment"] = statistics["sumEnvironment"] + 1 
-                statistics["sumHumidity"] = statistics["sumHumidity"] + humidity
-                statisticsALL["sumEnvironment"] = statisticsALL["sumEnvironment"] + 1 
-                statisticsALL["sumHumidity"] = statisticsALL["sumHumidity"] + humidity
+                if humidity is not None and -1 < humidity < 101:
+                    statistics["sumEnvironment"] = statistics["sumEnvironment"] + 1
+                    statistics["sumHumidity"] = statistics["sumHumidity"] + humidity
+                    statisticsALL["sumEnvironment"] = statisticsALL["sumEnvironment"] + 1
+                    statisticsALL["sumHumidity"] = statisticsALL["sumHumidity"] + humidity
 
-            if temperature is not None and -20 < temperature < 60:
-                station_temp_entry = {"temperature": temperature, "date": measurement_date}
-                statistics["maxTemp"] = insertMax(statistics["maxTemp"], station_temp_entry.copy(), "temperature")
-                statistics["minTemp"] = insertMin(statistics["minTemp"], station_temp_entry.copy(), "temperature")
+                if temperature is not None and -20 < temperature < 60:
+                    station_temp_entry = {"temperature": temperature, "date": measurement_date}
+                    statistics["maxTemp"] = insertMax(statistics["maxTemp"], station_temp_entry.copy(), "temperature")
+                    statistics["minTemp"] = insertMin(statistics["minTemp"], station_temp_entry.copy(), "temperature")
 
-                global_temp_entry = station_temp_entry.copy()
-                global_temp_entry["station_id"] = station_id
-                global_temp_entry["station_name"] = station["name"]
-                statisticsALL["maxTemp"] = insertMax(statisticsALL["maxTemp"], global_temp_entry.copy(), "temperature")
-                statisticsALL["minTemp"] = insertMin(statisticsALL["minTemp"], global_temp_entry.copy(), "temperature")
-            elif temperature is not None and -30 < temperature < 60:
-                station_temp_entry = {"temperature": temperature, "date": measurement_date}
-                statistics["minTemp"] = insertMin(statistics["minTemp"], station_temp_entry.copy(), "temperature")
-                global_temp_entry = station_temp_entry.copy()
-                global_temp_entry["station_id"] = station_id
-                global_temp_entry["station_name"] = station["name"]
-                statisticsALL["minTemp"] = insertMin(statisticsALL["minTemp"], global_temp_entry.copy(), "temperature")
+                    global_temp_entry = station_temp_entry.copy()
+                    global_temp_entry["station_id"] = station_id
+                    global_temp_entry["station_name"] = station["name"]
+                    statisticsALL["maxTemp"] = insertMax(statisticsALL["maxTemp"], global_temp_entry.copy(), "temperature")
+                    statisticsALL["minTemp"] = insertMin(statisticsALL["minTemp"], global_temp_entry.copy(), "temperature")
+                elif temperature is not None and -30 < temperature < 60:
+                    station_temp_entry = {"temperature": temperature, "date": measurement_date}
+                    statistics["minTemp"] = insertMin(statistics["minTemp"], station_temp_entry.copy(), "temperature")
+                    global_temp_entry = station_temp_entry.copy()
+                    global_temp_entry["station_id"] = station_id
+                    global_temp_entry["station_name"] = station["name"]
+                    statisticsALL["minTemp"] = insertMin(statisticsALL["minTemp"], global_temp_entry.copy(), "temperature")
 
-            if humidity is not None and -0.1 < humidity < 100.1:
-                station_hum_entry = {"humidity": humidity, "date": measurement_date}
-                statistics["maxHum"] = insertMax(statistics["maxHum"], station_hum_entry.copy(), "humidity")
-                statistics["minHum"] = insertMin(statistics["minHum"], station_hum_entry.copy(), "humidity")
+                if humidity is not None and -0.1 < humidity < 100.1:
+                    station_hum_entry = {"humidity": humidity, "date": measurement_date}
+                    statistics["maxHum"] = insertMax(statistics["maxHum"], station_hum_entry.copy(), "humidity")
+                    statistics["minHum"] = insertMin(statistics["minHum"], station_hum_entry.copy(), "humidity")
 
-                global_hum_entry = station_hum_entry.copy()
-                global_hum_entry["station_id"] = station_id
-                global_hum_entry["station_name"] = station["name"]
-                statisticsALL["maxHum"] = insertMax(statisticsALL["maxHum"], global_hum_entry.copy(), "humidity")
-                statisticsALL["minHum"] = insertMin(statisticsALL["minHum"], global_hum_entry.copy(), "humidity")
+                    global_hum_entry = station_hum_entry.copy()
+                    global_hum_entry["station_id"] = station_id
+                    global_hum_entry["station_name"] = station["name"]
+                    statisticsALL["maxHum"] = insertMax(statisticsALL["maxHum"], global_hum_entry.copy(), "humidity")
+                    statisticsALL["minHum"] = insertMin(statisticsALL["minHum"], global_hum_entry.copy(), "humidity")
 
         for day in statistics["perDay"]:
                 if statistics["maxDay"][0]["sum"] < statistics["perDay"][day]["sum"]:
@@ -1552,6 +1567,7 @@ def saveFeed(body, feed_id, station_id):
     month = feedClass["date"][:7]
 
     collection = db["feed_" + station_id]
+    collection.create_index([("month", -1)])
     existing = collection.find_one({"month": month}, {"_id": 1})
 
     if not existing:
@@ -1824,6 +1840,8 @@ def add_station():
         movementsCollection.create_index( [( "start_date", -1 )] )
         environmentCollection = db["environments_"+ id]
         environmentCollection.create_index( [( "month", -1 )] )
+        feedCollection = db["feed_"+ id]
+        feedCollection.create_index( [( "month", -1 )] )
 
         return {"id": id, "key": key}, 201
     station = list(stations.find({ "type": {  "$ne": "test" } }, {'_id' : False, "mail":False, "count":False, "key":False} ))
@@ -2275,54 +2293,72 @@ def computeStatisticsRange(station_id: str, from_date: str, to_date: str):
         statistics = create_statistics_payload(station_id, station_doc.get("name", station_id))
         use_unique_references = False
 
-    station_docs = list(stations.find(station_filter, {'_id': False, 'mail': False, 'key': False}))
+    station_docs = list(stations.find(station_filter, {'_id': False, 'station_id': True, 'name': True}))
     active_station_ids = set()
+    from_month = from_date[:7]
+    to_month = to_date[:7]
+    to_dt_inclusive = to_dt + timedelta(days=1) - timedelta(seconds=1)
 
     for station in station_docs:
         sid = station["station_id"]
         station_name = station.get("name")
 
+        movements_cursor = []
+        has_movements_in_range = False
         try:
-            movements = list(db["movements_" + sid].find(
+            movements_cursor = db["movements_" + sid].find(
                 {"start_date": {"$gte": from_date, "$lt": to_date_exclusive}},
-                {'_id': False}
-            ).sort("start_date", -1))
+                {
+                    '_id': False,
+                    'mov_id': True,
+                    'video': True,
+                    'start_date': True,
+                    'detections': True,
+                    'validation': True,
+                }
+            ).sort("start_date", -1)
         except Exception:
-            movements = []
+            movements_cursor = []
 
         environment_months = []
         try:
-            environment_months = list(db["environments_" + sid].find({}, {'_id': False}).sort("month", -1))
+            environment_months = list(db["environments_" + sid].find(
+                {"month": {"$gte": from_month, "$lte": to_month}},
+                {'_id': False, 'measurements': True}
+            ).sort("month", -1))
         except Exception:
             environment_months = []
         environments = []
         for month_doc in environment_months:
             for measurement in month_doc.get("measurements", []):
                 measurement_dt = parse_datetime_value(measurement.get("date"))
-                if measurement_dt and from_dt <= measurement_dt <= (to_dt + timedelta(days=1) - timedelta(seconds=1)):
+                if measurement_dt and from_dt <= measurement_dt <= to_dt_inclusive:
                     environments.append(measurement)
 
         feed_months = []
         try:
-            feed_months = list(db["feed_" + sid].find({}, {'_id': False}).sort("month", -1))
+            feed_months = list(db["feed_" + sid].find(
+                {"month": {"$gte": from_month, "$lte": to_month}},
+                {'_id': False, 'measurements': True}
+            ).sort("month", -1))
         except Exception:
             feed_months = []
         has_feed_in_range = False
         for month_doc in feed_months:
             for measurement in month_doc.get("measurements", []):
                 measurement_dt = parse_datetime_value(measurement.get("date"))
-                if measurement_dt and from_dt <= measurement_dt <= (to_dt + timedelta(days=1) - timedelta(seconds=1)):
+                if measurement_dt and from_dt <= measurement_dt <= to_dt_inclusive:
                     has_feed_in_range = True
                     break
             if has_feed_in_range:
                 break
 
-        if movements or environments or has_feed_in_range:
+        if environments or has_feed_in_range:
             active_station_ids.add(sid)
 
-        statistics["numberOfMovements"] = statistics["numberOfMovements"] + len(movements)
-
-        for movement in movements:
+        for movement in movements_cursor:
+            has_movements_in_range = True
+            statistics["numberOfMovements"] = statistics["numberOfMovements"] + 1
             detection = True
             if "detections" in movement and len(movement["detections"]) > 0:
                 if movement["detections"][0]["latinName"] == "None":
@@ -2422,6 +2458,9 @@ def computeStatisticsRange(station_id: str, from_date: str, to_date: str):
                         special_entry["movements"] = append_recent_unique_station(special_entry.get("movements"), special_ref, MAX_SPECIAL_BIRD_REFERENCES)
                     else:
                         special_entry["movements"] = append_recent(special_entry.get("movements"), special_ref, MAX_SPECIAL_BIRD_REFERENCES)
+
+        if has_movements_in_range:
+            active_station_ids.add(sid)
 
         for env in environments:
             temperature = None
