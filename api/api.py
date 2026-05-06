@@ -599,12 +599,6 @@ def is_prewarm_range(station_id, from_date, to_date):
     return (station_id, from_date, to_date) in PREWARM_RANGES
 
 
-@enqueueable
-def refreshStatisticsAndRangeCache(station_id, from_date, to_date):
-    calculateStatistics(False)
-    if not is_prewarm_range(station_id, from_date, to_date):
-        return computeStatisticsRange(station_id, from_date, to_date)
-    return get_statistics_range_cache_entry(station_id, from_date, to_date)
 
 
 def enqueue_statistics_range_refresh(station_id, from_date, to_date):
@@ -712,6 +706,13 @@ def enqueueable(func):
         func.__module__, _ = splitext(basename(modules["__main__"].__file__))
     return func
 
+@enqueueable
+def refreshStatisticsAndRangeCache(station_id, from_date, to_date):
+    calculateStatistics(False)
+    if not is_prewarm_range(station_id, from_date, to_date):
+        return computeStatisticsRange(station_id, from_date, to_date)
+    return get_statistics_range_cache_entry(station_id, from_date, to_date)
+    
 @enqueueable
 def deleteImage(id):
     os.remove('./uploads/raspberry-pi-os' +id  +'.img')
