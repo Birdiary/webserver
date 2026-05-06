@@ -35,6 +35,13 @@ import "./stations.css";
 
 const MOVEMENT_PAGE_SIZE = 30;
 
+const displayTimestamp = (value) => {
+  if (typeof value === "string") {
+    return value.split(".")[0];
+  }
+  return value || "";
+};
+
 function StationView(props) {
 
   const { id } = useParams()
@@ -103,7 +110,7 @@ function StationView(props) {
     if (!timestamp || typeof timestamp !== "string") {
       return null;
     }
-    return timestamp;
+    return displayTimestamp(timestamp);
   }, [data]);
 
   const specialHighlightsUpdatedText = useMemo(() => {
@@ -545,7 +552,7 @@ function StationView(props) {
                   aria-label="scrollable auto tabs example"
                 >
                   {data.measurements.movements.map((movement) =>
-                    <Tab label={movement.start_date}></Tab>
+                    <Tab label={displayTimestamp(movement.start_date)}></Tab>
                   )}
                 </TabList>
               </Box>
@@ -656,7 +663,7 @@ function StationView(props) {
         ) : null}
           {
             data.lastFeedStatus? <span> {language[props.language]["map"]["lastFeedStatus"]}
-            {data.lastFeedStatus.silolevel+ " %" + " am " + data.lastFeedStatus.date}<br/> </span>: ""
+            {data.lastFeedStatus.silolevel+ " %" + " am " + displayTimestamp(data.lastFeedStatus.date)}<br/> </span>: ""
           }
         {temperature[0] ?
           (temperature[0].data.length > 0 ?

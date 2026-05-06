@@ -70,6 +70,13 @@ class OwnMap extends React.Component {
     return Number.isNaN(timestamp) ? null : timestamp;
   };
 
+  displayTimestamp = (value) => {
+    if (typeof value === "string") {
+      return value.split(".")[0];
+    }
+    return value || "";
+  };
+
 
   getStationLastDataTime = (station) => {
     const timestamps = [];
@@ -190,7 +197,7 @@ class OwnMap extends React.Component {
                   <br />
 
                   {environment ?
-                    <div> {marker.lastEnvironment.date ? <span> {language[this.props.language]["map"]["lastEnvironment"]}{marker.lastEnvironment.date} <br></br> </span> : ""}
+                    <div> {marker.lastEnvironment.date ? <span> {language[this.props.language]["map"]["lastEnvironment"]}{this.displayTimestamp(marker.lastEnvironment.date)} <br></br> </span> : ""}
                       <span>
                         {language[this.props.language]["stations"]["temperature"]}{marker.lastEnvironment.temperature} <br />
                         {language[this.props.language]["stations"]["humidity"]}{marker.lastEnvironment.humidity}
@@ -201,7 +208,7 @@ class OwnMap extends React.Component {
                     : ""}
                   <Divider />
                   {movement ?
-                    <span> {language[this.props.language]["map"]["lastMovement"]}{marker.lastMovement.start_date} <br></br>
+                    <span> {language[this.props.language]["map"]["lastMovement"]}{this.displayTimestamp(marker.lastMovement.start_date)} <br></br>
                       {marker.lastMovement.video != "pending" ? <ReactPlayer playsinline url={marker.lastMovement.video} loop={true} controls={true} width="100" height="100" style={{ aspectRatio: 1 }} playing={true} /> : ""}
                       {language[this.props.language]["stations"]["species"]}{birdName != "" ? birdName : language[this.props.language]["table"]["noBird"]}
                     </span>
@@ -209,7 +216,7 @@ class OwnMap extends React.Component {
                   {feed ?
                     <div>
                       <Divider />
-                      {marker.lastFeedStatus.date ? <span> {language[this.props.language]["map"]["lastFeedStatus"]}{marker.lastFeedStatus.date} <br></br> </span> : ""}
+                      {marker.lastFeedStatus.date ? <span> {language[this.props.language]["map"]["lastFeedStatus"]}{this.displayTimestamp(marker.lastFeedStatus.date)} <br></br> </span> : ""}
                       {<span> {language[this.props.language]["map"]["level"]}{marker.lastFeedStatus.silolevel + " %"} <br /> </span>}
                     </div> : ""
                   }

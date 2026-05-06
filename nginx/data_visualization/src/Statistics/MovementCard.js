@@ -6,6 +6,13 @@ import { useState, useEffect } from 'react';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
+const displayTimestamp = (value) => {
+  if (typeof value === "string") {
+    return value.split(".")[0];
+  }
+  return value || "";
+};
+
 function MovementCard(props) {
 
   const [movements, setMovements] = useState([])
@@ -49,7 +56,7 @@ function MovementCard(props) {
         <CardContent>
         <ReactPlayer playsinline url={currentMovement.video} loop={true} controls={true} width="100%" height="56.25%"/>
           <Typography variant="body2" color="text.secondary">
-          {language[props.language]["movementCard"]["capturedOn"]}<br/>{currentMovement.start_date} {language[props.language]["statistics"]["time"]}<br/>
+          {language[props.language]["movementCard"]["capturedOn"]}<br/>{displayTimestamp(currentMovement.start_date)} {language[props.language]["statistics"]["time"]}<br/>
             {currentMovement.score ? <span>{language[props.language]["movementCard"]["propability"]}{(currentMovement.score*100).toFixed(2)} % <br/> </span> : ""}
             {currentMovement.station_name?  <span>Station:  {currentMovement.station_name} </span>: ""}
           </Typography>
