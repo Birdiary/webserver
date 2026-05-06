@@ -79,6 +79,27 @@ try:
 except Exception:
     STATISTICS_JOB_TIMEOUT_SECONDS = 600
 
+try:
+    RANGE_STATS_CACHE_MINUTES = max(int(os.getenv('RANGE_STATS_CACHE_MINUTES', '30')), 5)
+except Exception:
+    RANGE_STATS_CACHE_MINUTES = 30
+
+# Known date ranges to pre-warm / keep fresh (station_id, from, to)
+PREWARM_RANGES = [
+    ("all", "2026-05-16", "2026-05-24"),
+]
+
+BIRDS_OF_INTEREST = [
+    "Passer domesticus", "Parus major", "Cyanistes caeruleus", "Erithacus rubecula",
+    "Turdus merula", "Fringilla coelebs", "Dendrocopos major", "Garrulus glandarius",
+    "Pica pica", "Pyrrhula pyrrhula", "Emberiza citrinella", "Chloris chloris",
+    "Picus viridis", "Coccothraustes coccothraustes", "Sitta europaea", "Vanellus vanellus",
+    "Corvus cornix", "Aegithalos caudatus", "Sturnus vulgaris", "Carduelis carduelis",
+    "Troglodytes troglodytes", "Phylloscopus collybita", "Psittacula krameri",
+    "Phoenicurus ochruros", "Prunella modularis", "Phoenicurus phoenicurus",
+    "Serinus serinus", "Emberiza citrinella"
+]
+
 
 def insertMax(items, entry, key, limit=ENV_EXTREMES_LIMIT):
         if not entry or key not in entry:
@@ -167,11 +188,13 @@ users = db.users
 sessions = db.sessions
 password_resets = db.password_resets
 email_verifications = db.email_verifications
+statistics_range = db.statistics_range
 
 password_resets.create_index("token", unique=True, background=True)
 password_resets.create_index("expires_at", expireAfterSeconds=0, background=True)
 email_verifications.create_index("token", unique=True, background=True)
 email_verifications.create_index("expires_at", expireAfterSeconds=0, background=True)
+statistics_range.create_index([("station_id", 1), ("from", 1), ("to", 1)], unique=True, background=True)
 
 SESSION_DURATION_HOURS = int(os.getenv('SESSION_DURATION_HOURS', '24'))
 ALLOWED_STATION_SOFTWARE = {"birdiary", "duisbird"}
@@ -555,6 +578,76 @@ def create_statistics_payload(station_id, name):
     return payload
 
 
+def get_statistics_range_cache_entry(station_id, from_date, to_date):
+    return statistics_range.find_one(
+        {"station_id": station_id, "from": from_date, "to": to_date},
+        {'_id': False}
+    )
+
+
+def is_statistics_range_cache_fresh(cached):
+    if not cached:
+        return False
+    created_at = parse_datetime_value(cached.get("createdAt"))
+    if not created_at:
+        return False
+    cache_age_minutes = (datetime.now() - created_at).total_seconds() / 60
+    return cache_age_minutes < RANGE_STATS_CACHE_MINUTES
+
+
+def is_prewarm_range(station_id, from_date, to_date):
+    return (station_id, from_date, to_date) in PREWARM_RANGES
+
+
+@enqueueable
+def refreshStatisticsAndRangeCache(station_id, from_date, to_date):
+    calculateStatistics(False)
+    if not is_prewarm_range(station_id, from_date, to_date):
+        return computeStatisticsRange(station_id, from_date, to_date)
+    return get_statistics_range_cache_entry(station_id, from_date, to_date)
+
+
+def enqueue_statistics_range_refresh(station_id, from_date, to_date):
+    if is_prewarm_range(station_id, from_date, to_date):
+        q3.enqueue(
+            calculateStatistics,
+            False,
+            job_timeout=STATISTICS_JOB_TIMEOUT_SECONDS
+        )
+        return
+
+    q3.enqueue(
+        refreshStatisticsAndRangeCache,
+        station_id,
+        from_date,
+        to_date,
+        job_timeout=STATISTICS_JOB_TIMEOUT_SECONDS
+    )
+
+
+def build_statistics_range_response(station_id, from_date, to_date, cached=None, cache_status="pending", message=None, refresh_queued=False):
+    if cached:
+        payload = dict(cached)
+    else:
+        payload = {
+            "station_id": station_id,
+            "from": from_date,
+            "to": to_date,
+            "lastSync": None,
+            "cacheStatus": cache_status,
+            "message": message,
+            "refreshQueued": refresh_queued,
+        }
+        return payload
+
+    payload["lastSync"] = payload.get("createdAt")
+    payload["cacheStatus"] = cache_status
+    payload["refreshQueued"] = refresh_queued
+    if message:
+        payload["message"] = message
+    return payload
+
+
 def finalize_statistics_payload(statistics):
     for day in statistics["perDay"]:
         if statistics["maxDay"][0]["sum"] < statistics["perDay"][day]["sum"]:
@@ -759,7 +852,6 @@ def modify_image(id, credentials, rotation, time, i):
 
 @enqueueable
 def calculateStatistics(reque):
-    birdsOfInterest= list(["Passer domesticus", "Parus major","Cyanistes caeruleus","Erithacus rubecula","Turdus merula","Fringilla coelebs","Dendrocopos major","Garrulus glandarius", "Pica pica", "Pyrrhula pyrrhula", "Emberiza citrinella", "Chloris chloris", "Picus viridis", "Coccothraustes coccothraustes", "Sitta europaea", "Vanellus vanellus","Corvus cornix", "Aegithalos caudatus","Sturnus vulgaris","Carduelis carduelis","Troglodytes troglodytes","Phylloscopus collybita", "Psittacula krameri", "Phoenicurus ochruros", "Prunella modularis", "Phoenicurus phoenicurus", "Serinus serinus", "Emberiza citrinella"])
     stationsList = list(stations.find({ "type": {  "$nin": ["test", "exhibit"] } }, {'_id' : False, "mail":False} ))
     stationsComplete = []
     for station in stationsList:
@@ -775,54 +867,16 @@ def calculateStatistics(reque):
         station["measurements"]["environment"] = environments
         stationsComplete.append(station)
 
-    statisticsALL= dict()
-    statisticsALL["station_id"] = "all"
-    statisticsALL["name"] = "all"
-    statisticsALL["numberOfMovements"] = 0
-    statisticsALL["perDay"] = dict()
-    statisticsALL["maxDay"] = [{"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0}]
-    statisticsALL["maxTemp"] = []
-    statisticsALL["minTemp"] = []
-    statisticsALL["maxHum"] = []
-    statisticsALL["minHum"] = []
-    statisticsALL["specialBirds"]  = dict()
-    statisticsALL["sumEnvironment"] = 0
-    statisticsALL["sumTemperature"] = 0
-    statisticsALL["sumHumidity"] = 0
-    statisticsALL["maxSpecies"] = [{"amount": 0}, {"amount": 0}, {"amount": 0}, {"amount": 0} , {"amount": 0}]
-    statisticsALL["maxValidatedBirds"] = [{"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0} , {"sum": 0}]
-    statisticsALL["all"] = dict()
-    statisticsALL["numberOfDetections"] = 0
-    statisticsALL["numberOfValidatedBirds"] = 0
-    statisticsALL["validatedBirds"] = dict()
+    statisticsALL = create_statistics_payload("all", "all")
 
     statisticsComplete=[]
 
 
     for station in stationsComplete:
-        statistics= {}
         station_id= station["station_id"]
-        statistics["station_id"] = station_id
-        statistics["name"] = station["name"]
-        statistics["createdAt"] = str(datetime.now())
+        statistics = create_statistics_payload(station_id, station["name"])
         statistics["numberOfMovements"] = len(station["measurements"]["movements"])
         statisticsALL["numberOfMovements"] = statisticsALL["numberOfMovements"]+ len(station["measurements"]["movements"])
-        statistics["perDay"] = {}
-        statistics["maxDay"] = [{"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0}]
-        statistics["maxTemp"] = []
-        statistics["minTemp"] = []
-        statistics["maxHum"] = []
-        statistics["minHum"] = []
-        statistics["specialBirds"]  = {}
-        statistics["sumEnvironment"] = 0
-        statistics["sumTemperature"] = 0
-        statistics["sumHumidity"] = 0
-        statistics["maxSpecies"] = [{"amount": 0}, {"amount": 0}, {"amount": 0}, {"amount": 0} , {"amount": 0}]
-        statistics["maxValidatedBirds"] = [{"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0} , {"sum": 0}]
-        statistics["all"] = {}
-        statistics["numberOfDetections"] = 0
-        statistics["numberOfValidatedBirds"] = 0
-        statistics["validatedBirds"] = {}
 
         for movement in station["measurements"]["movements"]:
             detection = True
@@ -929,7 +983,7 @@ def calculateStatistics(reque):
                     MAX_MOVEMENT_REFERENCES
                 )
 
-                if latinName in birdsOfInterest and detection_score > 0.8:
+                if latinName in BIRDS_OF_INTEREST and detection_score > 0.8:
                     station_special_entry = statistics["specialBirds"].setdefault(
                         latinName,
                         {"latinName": latinName, "germanName": germanName, "movements": []}
@@ -1165,6 +1219,9 @@ def calculateStatistics(reque):
 
     statisticsALL["createdAt"] = str(datetime.now())
     db["statistics"].replace_one({"station_id": "all"}, statisticsALL, True)
+    # Rebuild pre-warmed range caches in the same statistics job
+    for _pw_sid, _pw_from, _pw_to in PREWARM_RANGES:
+        computeStatisticsRange(_pw_sid, _pw_from, _pw_to)
     if reque:
         print(reque)
         delay = timedelta(minutes=STATISTICS_RECALC_INTERVAL_MINUTES)
@@ -2176,20 +2233,15 @@ def getStatistics(station_id: str):
     return jsonify(statistics)
 
 
-@app.route('/api/statistics/<station_id>/range', methods=['GET'])
-def getStatisticsRange(station_id: str):
-    from_date = request.args.get('from', '').strip()
-    to_date = request.args.get('to', '').strip()
-    if not from_date or not to_date:
-        return jsonify({"error": "Missing 'from' or 'to' query parameter (YYYY-MM-DD)"}), 400
+@enqueueable
+def computeStatisticsRange(station_id: str, from_date: str, to_date: str):
+    """Background job: compute range statistics and persist to statistics_range collection."""
     try:
         from_dt = datetime.strptime(from_date, '%Y-%m-%d')
         to_dt = datetime.strptime(to_date, '%Y-%m-%d')
         to_date_exclusive = (to_dt + timedelta(days=1)).strftime('%Y-%m-%d')
     except ValueError:
-        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD"}), 400
-
-    birdsOfInterest = list(["Passer domesticus", "Parus major", "Cyanistes caeruleus", "Erithacus rubecula", "Turdus merula", "Fringilla coelebs", "Dendrocopos major", "Garrulus glandarius", "Pica pica", "Pyrrhula pyrrhula", "Emberiza citrinella", "Chloris chloris", "Picus viridis", "Coccothraustes coccothraustes", "Sitta europaea", "Vanellus vanellus", "Corvus cornix", "Aegithalos caudatus", "Sturnus vulgaris", "Carduelis carduelis", "Troglodytes troglodytes", "Phylloscopus collybita", "Psittacula krameri", "Phoenicurus ochruros", "Prunella modularis", "Phoenicurus phoenicurus", "Serinus serinus", "Emberiza citrinella"])
+        return None
 
     if station_id == "all":
         station_filter = {"type": {"$nin": ["test", "exhibit"]}}
@@ -2199,7 +2251,7 @@ def getStatisticsRange(station_id: str):
         station_filter = {"station_id": station_id, "type": {"$nin": ["test", "exhibit"]}}
         station_doc = stations.find_one(station_filter, {'_id': False, 'mail': False, 'key': False})
         if not station_doc:
-            return jsonify({"error": "Station not found"}), 404
+            return None
         statistics = create_statistics_payload(station_id, station_doc.get("name", station_id))
         use_unique_references = False
 
@@ -2335,7 +2387,7 @@ def getStatisticsRange(station_id: str):
                 else:
                     species_entry["movements"] = append_recent(species_entry.get("movements"), species_ref, MAX_MOVEMENT_REFERENCES)
 
-                if latinName in birdsOfInterest and detection_score > 0.8:
+                if latinName in BIRDS_OF_INTEREST and detection_score > 0.8:
                     special_entry = statistics["specialBirds"].setdefault(
                         latinName,
                         {"latinName": latinName, "germanName": germanName, "movements": []}
@@ -2399,7 +2451,122 @@ def getStatisticsRange(station_id: str):
     statistics["to"] = to_date
     statistics["activeStations"] = len(active_station_ids)
     statistics = finalize_statistics_payload(statistics)
-    return jsonify(statistics)
+    statistics["createdAt"] = str(datetime.now())
+    statistics_range.replace_one(
+        {"station_id": station_id, "from": from_date, "to": to_date},
+        statistics,
+        upsert=True
+    )
+    return statistics
+
+
+@app.route('/api/statistics/<station_id>/range', methods=['GET'])
+def getStatisticsRange(station_id: str):
+    from_date = request.args.get('from', '').strip()
+    to_date = request.args.get('to', '').strip()
+    if not from_date or not to_date:
+        return jsonify({"error": "Missing 'from' or 'to' query parameter (YYYY-MM-DD)"}), 400
+    try:
+        from_dt = datetime.strptime(from_date, '%Y-%m-%d')
+        to_dt = datetime.strptime(to_date, '%Y-%m-%d')
+    except ValueError:
+        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD"}), 400
+    if from_dt > to_dt:
+        return jsonify({"error": "'from' must be on or before 'to'"}), 400
+
+    if station_id != "all":
+        station_doc = stations.find_one({"station_id": station_id, "type": {"$nin": ["test", "exhibit"]}}, {'_id': False, 'station_id': True})
+        if not station_doc:
+            return jsonify({"error": "Station not found"}), 404
+
+    force_refresh = request.args.get('refresh', '').lower() in ('1', 'true')
+
+    cached = get_statistics_range_cache_entry(station_id, from_date, to_date)
+
+    if force_refresh:
+        enqueue_statistics_range_refresh(station_id, from_date, to_date)
+        if cached:
+            return jsonify(build_statistics_range_response(
+                station_id,
+                from_date,
+                to_date,
+                cached=cached,
+                cache_status="refreshing",
+                message="Complete statistics refresh queued. Range cache will be updated afterwards.",
+                refresh_queued=True
+            ))
+        return jsonify(build_statistics_range_response(
+            station_id,
+            from_date,
+            to_date,
+            cache_status="pending",
+            message="No data yet. Complete statistics are being recalculated and the range cache will be generated afterwards.",
+            refresh_queued=True
+        )), 202
+
+    if cached:
+        if is_statistics_range_cache_fresh(cached):
+            return jsonify(build_statistics_range_response(
+                station_id,
+                from_date,
+                to_date,
+                cached=cached,
+                cache_status="ready"
+            ))
+
+        enqueue_statistics_range_refresh(station_id, from_date, to_date)
+        return jsonify(build_statistics_range_response(
+            station_id,
+            from_date,
+            to_date,
+            cached=cached,
+            cache_status="stale",
+            message="Showing cached range statistics while a complete statistics refresh is running.",
+            refresh_queued=True
+        ))
+
+    enqueue_statistics_range_refresh(station_id, from_date, to_date)
+    return jsonify(build_statistics_range_response(
+        station_id,
+        from_date,
+        to_date,
+        cache_status="pending",
+        message="No data yet. Complete statistics are being recalculated and the range cache will be generated afterwards.",
+        refresh_queued=True
+    )), 202
+
+
+@app.route('/api/statistics/<station_id>/range/refresh', methods=['POST'])
+def refreshStatisticsRange(station_id: str):
+    """Manually enqueue a background refresh of a range stats cache entry."""
+    from_date = request.args.get('from', '').strip()
+    to_date = request.args.get('to', '').strip()
+    if not from_date or not to_date:
+        return jsonify({"error": "Missing 'from' or 'to'"}), 400
+    try:
+        from_dt = datetime.strptime(from_date, '%Y-%m-%d')
+        to_dt = datetime.strptime(to_date, '%Y-%m-%d')
+    except ValueError:
+        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD"}), 400
+    if from_dt > to_dt:
+        return jsonify({"error": "'from' must be on or before 'to'"}), 400
+    if station_id != "all":
+        station_doc = stations.find_one({"station_id": station_id, "type": {"$nin": ["test", "exhibit"]}}, {'_id': False, 'station_id': True})
+        if not station_doc:
+            return jsonify({"error": "Station not found"}), 404
+    enqueue_statistics_range_refresh(station_id, from_date, to_date)
+    cached = get_statistics_range_cache_entry(station_id, from_date, to_date)
+    response_payload = build_statistics_range_response(
+        station_id,
+        from_date,
+        to_date,
+        cached=cached,
+        cache_status="refreshing" if cached else "pending",
+        message="Complete statistics refresh queued. Range cache will be updated afterwards.",
+        refresh_queued=True
+    )
+    return jsonify(response_payload), 202
+
 
 
 @app.route('/api/statistics', methods=['GET'])

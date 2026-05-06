@@ -36,9 +36,14 @@ const copy = {
     validations: "Validated observations",
     noData:
       "There are no Birdiary records for the EBSW period yet. Check back again during the campaign week.",
+    noDataYet:
+      "No cached EBSW data is available yet. Statistics are currently being prepared in the background.",
     loading: "Loading EBSW statistics…",
     error: "Could not load EBSW statistics.",
     overviewTitle: "Campaign overview",
+    lastSync: "Last sync",
+    neverSynced: "not available yet",
+    refreshRunning: "Background refresh is running.",
   },
   de: {
     title: "Wir sind Teil der EU Biodiversity Sampling Week!",
@@ -54,11 +59,29 @@ const copy = {
     validations: "Validierte Beobachtungen",
     noData:
       "Für den EBSW-Zeitraum liegen noch keine Birdiary-Daten vor. Schau während der Aktionswoche noch einmal vorbei.",
+    noDataYet:
+      "Es liegen noch keine zwischengespeicherten EBSW-Daten vor. Die Statistik wird gerade im Hintergrund erstellt.",
     loading: "EBSW-Statistiken werden geladen…",
     error: "EBSW-Statistiken konnten nicht geladen werden.",
     overviewTitle: "Kampagnenüberblick",
+    lastSync: "Letzte Synchronisierung",
+    neverSynced: "noch nicht verfügbar",
+    refreshRunning: "Hintergrundaktualisierung läuft.",
   },
 };
+
+function formatSyncTime(value) {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+
+  return parsed.toLocaleString();
+}
 
 function EBSW(props) {
   const lang = copy[props.language] || copy.de;
@@ -66,19 +89,51 @@ function EBSW(props) {
   const [stats, setStats]     = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState(false);
+  const [pending, setPending] = useState(false);
 
   useEffect(() => {
-    requests
-      .getStatisticsRange("all", EBSW_FROM, EBSW_TO)
-      .then((res) => {
-        setStats(res.data);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError(true);
-        setLoading(false);
+    let isMounted = true;
+    let retryTimer = null;
+
+    const loadStatistics = () => {
+      requests
+        .getStatisticsRange("all", EBSW_FROM, EBSW_TO)
+        .then((res) => {
+          if (!isMounted) {
+            return;
+          }
+
+          const payload = res.data || null;
+          const isPending = res.status === 202 || payload?.cacheStatus === "pending";
+
+          setStats(payload);
+          setPending(isPending);
+          setError(false);
+          setLoading(false);
+
+          if (isPending) {
+            retryTimer = window.setTimeout(loadStatistics, 15000);
+          }
+        })
+        .catch(() => {
+          if (!isMounted) {
+            return;
+          }
+          setError(true);
+          setLoading(false);
+          setPending(false);
         });
-      }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    };
+
+    loadStatistics();
+
+    return () => {
+      isMounted = false;
+      if (retryTimer) {
+        window.clearTimeout(retryTimer);
+      }
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const statCards = stats
     ? [
@@ -88,6 +143,13 @@ function EBSW(props) {
         { label: lang.validations,    value: stats.numberOfValidatedBirds },
       ]
     : [];
+
+  const lastSyncLabel = formatSyncTime(stats?.lastSync || stats?.createdAt);
+  const showStatisticsView = Boolean(
+    stats &&
+    !pending &&
+    (stats.numberOfMovements > 0 || stats.sumEnvironment > 0 || stats.numberOfValidatedBirds > 0)
+  );
 
   return (
     <div style={{ padding: "32px 4vw", maxWidth: 960, margin: "0 auto" }}>
@@ -127,6 +189,10 @@ function EBSW(props) {
             {lang.statsSubtitle}
           </span>
         </h2>
+
+        <p style={{ marginTop: -8, marginBottom: 24, color: "#666" }}>
+          {lang.lastSync}: {lastSyncLabel || lang.neverSynced}
+        </p>
 
         {loading ? (
           <div style={{ textAlign: "center", padding: 32 }}>
@@ -168,10 +234,20 @@ function EBSW(props) {
               </Grid>
             </Box>
 
-            {stats.numberOfMovements === 0 && stats.sumEnvironment === 0 && stats.numberOfValidatedBirds === 0 ? (
+            {pending ? (
+              <Alert severity="info" sx={{ mb: 4 }}>
+                {stats?.message || lang.noDataYet}
+              </Alert>
+            ) : stats.cacheStatus === "stale" || stats.cacheStatus === "refreshing" ? (
+              <Alert severity="info" sx={{ mb: 4 }}>
+                {stats?.message || lang.refreshRunning}
+              </Alert>
+            ) : null}
+
+            {!pending && !showStatisticsView ? (
               <Alert severity="info" sx={{ mb: 4 }}>{lang.noData}</Alert>
             ) : (
-              <StatisticsView language={props.language} view={"all"} data={stats}></StatisticsView>
+              showStatisticsView ? <StatisticsView language={props.language} view={"all"} data={stats}></StatisticsView> : null
             )}
           </div>
         ) : null}
