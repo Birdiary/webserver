@@ -649,7 +649,7 @@ def create_statistics_payload(station_id, name):
     payload["numberOfDetections"] = 0
     payload["numberOfValidatedBirds"] = 0
     payload["validatedBirds"] = dict()
-    payload["createdAt"] = str(datetime.now())
+    payload["createdAt"] = datetime.utcnow()
     return payload
 
 
@@ -2408,7 +2408,7 @@ def addValidation(station_id: str, movement_id: str):
 def getStatistics(station_id: str):
     statistics = db["statistics"].find({"station_id": station_id}, {'_id' : False})
     statistics = list(statistics)[0]
-    return jsonify(statistics)
+    return jsonify(to_json_safe(statistics))
 
 
 @enqueueable

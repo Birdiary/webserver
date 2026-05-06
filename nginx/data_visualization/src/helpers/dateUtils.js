@@ -9,10 +9,18 @@
  */
 export function formatLocalDateTime(value) {
   if (!value) return "";
-  const str = String(value).trim().replace(" ", "T");
-  // If no timezone info is present, treat as UTC
-  const utcStr = /[Zz]$|[+-]\d{2}:\d{2}$/.test(str) ? str : str + "Z";
-  const d = new Date(utcStr);
+  const raw = String(value).trim();
+
+  // First try native parsing for full RFC/ISO strings (e.g. "Wed, 06 May 2026 22:45:05 GMT")
+  let d = new Date(raw);
+
+  // Fallback for API strings like "YYYY-MM-DD HH:mm:ss" (no timezone): treat as UTC
+  if (isNaN(d.getTime())) {
+    const str = raw.replace(" ", "T");
+    const utcStr = /[Zz]$|[+-]\d{2}:\d{2}$/.test(str) ? str : str + "Z";
+    d = new Date(utcStr);
+  }
+
   if (isNaN(d.getTime())) return value;
   const pad = (n) => String(n).padStart(2, "0");
   return (
