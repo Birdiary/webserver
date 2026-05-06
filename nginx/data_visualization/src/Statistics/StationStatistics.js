@@ -12,6 +12,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import language from "../languages/languages";
 import { useNavigate } from "react-router-dom";
 import StatisticsView from "./StatisticsView";
+import { formatLocalDateTime } from "../helpers/dateUtils";
 
 
 
@@ -76,7 +77,7 @@ function StationStatistics(props) {
 
      <h1 style={{ textAlign: "center", marginBottom: "3px" }}>Statistiken zur Station: {data ? data.name : id}</h1>   
       
-     {data ? <div><span style={{ textAlign: "center", width: "100%", display: "block"}}> Stand: {(() => { const v = data.createdAt; const s = typeof v === "string" && !v.endsWith("Z") && !/[+-]\d{2}:\d{2}$/.test(v) ? v + "Z" : v; const d = new Date(s); return isNaN(d.getTime()) ? v : d.toLocaleString(undefined, { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" }); })()}</span> <StatisticsView language={props.language} view={"single"}data={data}></StatisticsView>  </div>: ""}
+    {data ? <div><span style={{ textAlign: "center", width: "100%", display: "block"}}> Stand: {formatLocalDateTime(data.createdAt)}</span> <StatisticsView language={props.language} view={"single"}data={data}></StatisticsView>  </div>: ""}
     <Dialog
       open={open}
       onClose={handleClose}

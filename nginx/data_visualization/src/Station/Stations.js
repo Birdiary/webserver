@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from "react";
-import { formatLocalDateTime } from "../helpers/dateUtils";
 import { useParams } from 'react-router-dom';
 import requests from "../helpers/requests";
 import ReactPlayer from 'react-player'
@@ -104,7 +103,7 @@ function StationView(props) {
     if (!timestamp || typeof timestamp !== "string") {
       return null;
     }
-    return formatLocalDateTime(timestamp);
+    return timestamp;
   }, [data]);
 
   const specialHighlightsUpdatedText = useMemo(() => {
@@ -546,7 +545,7 @@ function StationView(props) {
                   aria-label="scrollable auto tabs example"
                 >
                   {data.measurements.movements.map((movement) =>
-                    <Tab label={formatLocalDateTime(movement.start_date)}></Tab>
+                    <Tab label={movement.start_date}></Tab>
                   )}
                 </TabList>
               </Box>
@@ -657,7 +656,7 @@ function StationView(props) {
         ) : null}
           {
             data.lastFeedStatus? <span> {language[props.language]["map"]["lastFeedStatus"]}
-            {data.lastFeedStatus.silolevel+ " %" + " am " + formatLocalDateTime(data.lastFeedStatus.date)}<br/> </span>: ""
+            {data.lastFeedStatus.silolevel+ " %" + " am " + data.lastFeedStatus.date}<br/> </span>: ""
           }
         {temperature[0] ?
           (temperature[0].data.length > 0 ?
