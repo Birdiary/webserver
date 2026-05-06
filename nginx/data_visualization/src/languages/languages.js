@@ -7,6 +7,7 @@ const language = {
             overview: "Map",
             validation: "Validation",
             statistics: "Statistics",
+            ebsw: "EBSW",
             ownStations: "My Stations",
             login: "Log in",
             logout: "Log out",
@@ -394,7 +395,12 @@ const language = {
                 maxDay: " days, the stations have recorded at least one bird. ",
                 specialBirds: "These particular birds visited the stations:"  ,    
                 env1: "Besides birds, the stations have already collected a lot of environmental data. In total"        
-            }
+            },
+            activeStationsTitle: "Active Stations",
+            activeStationsWeek: "Last 7 days",
+            activeStationsMonth: "Last 30 days",
+            activeStations3Months: "Last 3 months",
+            activeStationsTotal: "Total stations"
         },
         movementCard:{
             capturedOn: "Bird captured on:  ",
@@ -414,6 +420,7 @@ const language = {
             overview: "Übersichtskarte",
             validation: "Validierung",
             statistics: "Statistiken",
+            ebsw: "EBSW",
             ownStations: "Meine Stationen",
             login: "Anmelden",
             logout: "Abmelden",
@@ -802,7 +809,12 @@ const language = {
                 maxDay: "Tagen haben die Stationen mindestens einen Vogel aufgenommen. ",
                 specialBirds: "Diese besonderen Vögel besuchten die Stationen:"  ,    
                 env1: "Neben Vögeln haben die Stationen auch schon viele Umweltdaten gesammelt. Insgesamt wurden"        
-            }
+            },
+            activeStationsTitle: "Aktive Stationen",
+            activeStationsWeek: "Letzte 7 Tage",
+            activeStationsMonth: "Letzte 30 Tage",
+            activeStations3Months: "Letzte 3 Monate",
+            activeStationsTotal: "Stationen gesamt"
         },
         movementCard:{
             capturedOn: "Vogel aufgenommen am:  ",

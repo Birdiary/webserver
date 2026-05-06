@@ -491,6 +491,125 @@ def build_movement_reference(movement, station_id, station_name=None, include_sc
     if station_name:
         reference["station_name"] = station_name
     return reference
+
+
+def parse_datetime_value(value):
+    if not value:
+        return None
+    if isinstance(value, datetime):
+        return value.replace(tzinfo=None) if value.tzinfo else value
+    candidate = str(value).strip()
+    if not candidate:
+        return None
+
+    variants = []
+    variants.append(candidate)
+    variants.append(candidate.replace("Z", "+00:00"))
+    variants.append(candidate.replace("T", " "))
+    variants.append(candidate.replace("T", " ").split(".")[0])
+    variants.append(candidate.split(".")[0])
+    if len(candidate) >= 10:
+        variants.append(candidate[:10])
+
+    seen = set()
+    for variant in variants:
+        if not variant or variant in seen:
+            continue
+        seen.add(variant)
+        try:
+            parsed = datetime.fromisoformat(variant)
+            return parsed.replace(tzinfo=None) if parsed.tzinfo else parsed
+        except Exception:
+            pass
+
+    for fmt in ["%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d"]:
+        try:
+            return datetime.strptime(candidate.replace("T", " ").split(".")[0], fmt)
+        except Exception:
+            pass
+    return None
+
+
+def create_statistics_payload(station_id, name):
+    payload = dict()
+    payload["station_id"] = station_id
+    payload["name"] = name
+    payload["numberOfMovements"] = 0
+    payload["perDay"] = dict()
+    payload["maxDay"] = [{"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0}]
+    payload["maxTemp"] = []
+    payload["minTemp"] = []
+    payload["maxHum"] = []
+    payload["minHum"] = []
+    payload["specialBirds"] = dict()
+    payload["sumEnvironment"] = 0
+    payload["sumTemperature"] = 0
+    payload["sumHumidity"] = 0
+    payload["maxSpecies"] = [{"amount": 0}, {"amount": 0}, {"amount": 0}, {"amount": 0}, {"amount": 0}]
+    payload["maxValidatedBirds"] = [{"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0}]
+    payload["all"] = dict()
+    payload["numberOfDetections"] = 0
+    payload["numberOfValidatedBirds"] = 0
+    payload["validatedBirds"] = dict()
+    payload["createdAt"] = str(datetime.now())
+    return payload
+
+
+def finalize_statistics_payload(statistics):
+    for day in statistics["perDay"]:
+        if statistics["maxDay"][0]["sum"] < statistics["perDay"][day]["sum"]:
+            objectToInsert = dict()
+            objectToInsert = statistics["perDay"][day]
+            objectToInsert["day"] = day
+            statistics["maxDay"] = insertMax(statistics["maxDay"], objectToInsert, "sum")
+
+    for item in statistics["maxDay"]:
+        maxSpeciesOnDay = [{"amount": 0}, {"amount": 0}, {"amount": 0}, {"amount": 0}, {"amount": 0}]
+        for species in item:
+            if species != "sum" and species != "day" and maxSpeciesOnDay[0]["amount"] < item[species]["amount"]:
+                objectToInsert = dict()
+                objectToInsert = item[species]
+                maxSpeciesOnDay = insertMax(maxSpeciesOnDay, objectToInsert, "amount")
+        maxSpeciesOnDayfiltered = list(filter(lambda i: i['amount'] != 0, maxSpeciesOnDay))
+        if len(maxSpeciesOnDayfiltered) > 0:
+            item["mostBirds"] = maxSpeciesOnDayfiltered
+
+    for species in statistics["all"]:
+        if species != "sum" and statistics["maxSpecies"][0]["amount"] < statistics["all"][species]["amount"]:
+            objectToInsert = dict()
+            objectToInsert = statistics["all"][species]
+            statistics["maxSpecies"] = insertMax(statistics["maxSpecies"], objectToInsert, "amount")
+    statistics["maxSpecies"] = list(filter(lambda i: i['amount'] != 0, statistics["maxSpecies"]))
+
+    for species in statistics["validatedBirds"]:
+        if statistics["maxValidatedBirds"][0]["sum"] < statistics["validatedBirds"][species]["sum"]:
+            objectToInsert = dict()
+            objectToInsert = statistics["validatedBirds"][species]
+            objectToInsert["latinName"] = species
+            germanName = ""
+            try:
+                germanName = birdJSON[species]
+            except Exception:
+                germanName = ""
+            objectToInsert["germanName"] = germanName
+            statistics["maxValidatedBirds"] = insertMax(statistics["maxValidatedBirds"], objectToInsert, "sum")
+    statistics["maxValidatedBirds"] = list(filter(lambda i: i['sum'] != 0, statistics["maxValidatedBirds"]))
+
+    specialBirds = []
+    for key in statistics['specialBirds']:
+        specialBirds.append(statistics['specialBirds'][key])
+    statistics['specialBirds'] = specialBirds
+
+    per_day_total = len(statistics["perDay"])
+    validated_total = len(statistics["validatedBirds"])
+
+    if statistics["sumEnvironment"] > 0:
+        statistics["averageTemp"] = statistics["sumTemperature"] / statistics["sumEnvironment"]
+        statistics["averageHum"] = statistics["sumHumidity"] / statistics["sumEnvironment"]
+
+    statistics["perDay"] = per_day_total
+    statistics["validatedBirds"] = validated_total
+    return statistics
  
 
 def enqueueable(func):
@@ -719,12 +838,12 @@ def calculateStatistics(reque):
             if "validation" in movement:
                 statistics["numberOfValidatedBirds"] = statistics["numberOfValidatedBirds"] + 1
                 statisticsALL["numberOfValidatedBirds"] = statisticsALL["numberOfValidatedBirds"] + 1
-                max= {"amount" : 0} 
+                max_validation = {"amount" : 0} 
                 for key in movement["validation"]["summary"]:
-                    if movement["validation"]["summary"][key]["amount"] > max["amount"]:
-                        max = movement["validation"]["summary"][key]
-                if max["latinName"] != 'None':
-                    latin_name = max["latinName"]
+                    if movement["validation"]["summary"][key]["amount"] > max_validation["amount"]:
+                        max_validation = movement["validation"]["summary"][key]
+                if max_validation["latinName"] != 'None':
+                    latin_name = max_validation["latinName"]
                     station_validation_ref = build_movement_reference(movement, station_id)
                     global_validation_ref = build_movement_reference(movement, station_id, station.get("name"))
 
@@ -999,6 +1118,51 @@ def calculateStatistics(reque):
         statisticsALL["averageTemp"] = statisticsALL["sumTemperature"] / statisticsALL["sumEnvironment"]
         statisticsALL["averageHum"] = statisticsALL["sumHumidity"] / statisticsALL["sumEnvironment"]
     
+    # --- Active station counts ---
+    now_for_active = datetime.now()
+    active_thresholds = {
+        "week": now_for_active - timedelta(days=7),
+        "month": now_for_active - timedelta(days=30),
+        "3months": now_for_active - timedelta(days=90),
+    }
+    activeStations_week = 0
+    activeStations_month = 0
+    activeStations_3months = 0
+    for _station in stationsList:
+        _last_dates = []
+        _lm = _station.get("lastMovement")
+        if _lm and _lm.get("start_date"):
+            try:
+                _last_dates.append(datetime.fromisoformat(str(_lm["start_date"]).split(".")[0].replace("T", " ")))
+            except Exception:
+                pass
+        _le = _station.get("lastEnvironment")
+        if _le and _le.get("date"):
+            try:
+                _last_dates.append(datetime.fromisoformat(str(_le["date"]).split(".")[0].replace("T", " ")))
+            except Exception:
+                pass
+        _lf = _station.get("lastFeedStatus")
+        if _lf and _lf.get("date"):
+            try:
+                _last_dates.append(datetime.fromisoformat(str(_lf["date"]).split(".")[0].replace("T", " ")))
+            except Exception:
+                pass
+        if not _last_dates:
+            continue
+        _last_activity = max(_last_dates)
+        if _last_activity >= active_thresholds["week"]:
+            activeStations_week += 1
+        if _last_activity >= active_thresholds["month"]:
+            activeStations_month += 1
+        if _last_activity >= active_thresholds["3months"]:
+            activeStations_3months += 1
+    statisticsALL["activeStations_week"] = activeStations_week
+    statisticsALL["activeStations_month"] = activeStations_month
+    statisticsALL["activeStations_3months"] = activeStations_3months
+    statisticsALL["activeStations_total"] = len(stationsList)
+    # --- End active station counts ---
+
     statisticsALL["createdAt"] = str(datetime.now())
     db["statistics"].replace_one({"station_id": "all"}, statisticsALL, True)
     if reque:
@@ -2009,6 +2173,232 @@ def addValidation(station_id: str, movement_id: str):
 def getStatistics(station_id: str):
     statistics = db["statistics"].find({"station_id": station_id}, {'_id' : False})
     statistics = list(statistics)[0]
+    return jsonify(statistics)
+
+
+@app.route('/api/statistics/<station_id>/range', methods=['GET'])
+def getStatisticsRange(station_id: str):
+    from_date = request.args.get('from', '').strip()
+    to_date = request.args.get('to', '').strip()
+    if not from_date or not to_date:
+        return jsonify({"error": "Missing 'from' or 'to' query parameter (YYYY-MM-DD)"}), 400
+    try:
+        from_dt = datetime.strptime(from_date, '%Y-%m-%d')
+        to_dt = datetime.strptime(to_date, '%Y-%m-%d')
+        to_date_exclusive = (to_dt + timedelta(days=1)).strftime('%Y-%m-%d')
+    except ValueError:
+        return jsonify({"error": "Invalid date format. Use YYYY-MM-DD"}), 400
+
+    birdsOfInterest = list(["Passer domesticus", "Parus major", "Cyanistes caeruleus", "Erithacus rubecula", "Turdus merula", "Fringilla coelebs", "Dendrocopos major", "Garrulus glandarius", "Pica pica", "Pyrrhula pyrrhula", "Emberiza citrinella", "Chloris chloris", "Picus viridis", "Coccothraustes coccothraustes", "Sitta europaea", "Vanellus vanellus", "Corvus cornix", "Aegithalos caudatus", "Sturnus vulgaris", "Carduelis carduelis", "Troglodytes troglodytes", "Phylloscopus collybita", "Psittacula krameri", "Phoenicurus ochruros", "Prunella modularis", "Phoenicurus phoenicurus", "Serinus serinus", "Emberiza citrinella"])
+
+    if station_id == "all":
+        station_filter = {"type": {"$nin": ["test", "exhibit"]}}
+        statistics = create_statistics_payload("all", "all")
+        use_unique_references = True
+    else:
+        station_filter = {"station_id": station_id, "type": {"$nin": ["test", "exhibit"]}}
+        station_doc = stations.find_one(station_filter, {'_id': False, 'mail': False, 'key': False})
+        if not station_doc:
+            return jsonify({"error": "Station not found"}), 404
+        statistics = create_statistics_payload(station_id, station_doc.get("name", station_id))
+        use_unique_references = False
+
+    station_docs = list(stations.find(station_filter, {'_id': False, 'mail': False, 'key': False}))
+    active_station_ids = set()
+
+    for station in station_docs:
+        sid = station["station_id"]
+        station_name = station.get("name")
+
+        try:
+            movements = list(db["movements_" + sid].find(
+                {"start_date": {"$gte": from_date, "$lt": to_date_exclusive}},
+                {'_id': False}
+            ).sort("start_date", -1))
+        except Exception:
+            movements = []
+
+        environment_months = []
+        try:
+            environment_months = list(db["environments_" + sid].find({}, {'_id': False}).sort("month", -1))
+        except Exception:
+            environment_months = []
+        environments = []
+        for month_doc in environment_months:
+            for measurement in month_doc.get("measurements", []):
+                measurement_dt = parse_datetime_value(measurement.get("date"))
+                if measurement_dt and from_dt <= measurement_dt <= (to_dt + timedelta(days=1) - timedelta(seconds=1)):
+                    environments.append(measurement)
+
+        feed_months = []
+        try:
+            feed_months = list(db["feed_" + sid].find({}, {'_id': False}).sort("month", -1))
+        except Exception:
+            feed_months = []
+        has_feed_in_range = False
+        for month_doc in feed_months:
+            for measurement in month_doc.get("measurements", []):
+                measurement_dt = parse_datetime_value(measurement.get("date"))
+                if measurement_dt and from_dt <= measurement_dt <= (to_dt + timedelta(days=1) - timedelta(seconds=1)):
+                    has_feed_in_range = True
+                    break
+            if has_feed_in_range:
+                break
+
+        if movements or environments or has_feed_in_range:
+            active_station_ids.add(sid)
+
+        statistics["numberOfMovements"] = statistics["numberOfMovements"] + len(movements)
+
+        for movement in movements:
+            detection = True
+            if "detections" in movement and len(movement["detections"]) > 0:
+                if movement["detections"][0]["latinName"] == "None":
+                    if len(movement["detections"]) < 2:
+                        detection = False
+                    else:
+                        movement["detections"][0] = movement["detections"][1]
+            else:
+                detection = False
+
+            if "validation" in movement:
+                statistics["numberOfValidatedBirds"] = statistics["numberOfValidatedBirds"] + 1
+                max_validation = {"amount": 0}
+                for key in movement["validation"].get("summary", {}):
+                    if movement["validation"]["summary"][key]["amount"] > max_validation["amount"]:
+                        max_validation = movement["validation"]["summary"][key]
+                if max_validation.get("latinName") and max_validation["latinName"] != 'None':
+                    latin_name = max_validation["latinName"]
+                    validation_ref = build_movement_reference(
+                        movement,
+                        sid,
+                        station_name if use_unique_references else None
+                    )
+                    validation_entry = statistics["validatedBirds"].setdefault(latin_name, {"sum": 0, "movements": []})
+                    validation_entry["sum"] = validation_entry["sum"] + 1
+                    if use_unique_references:
+                        validation_entry["movements"] = append_recent_unique_station(
+                            validation_entry.get("movements"),
+                            validation_ref,
+                            MAX_VALIDATED_REFERENCES
+                        )
+                    else:
+                        validation_entry["movements"] = append_recent(
+                            validation_entry.get("movements"),
+                            validation_ref,
+                            MAX_VALIDATED_REFERENCES
+                        )
+
+            if detection == True:
+                statistics["numberOfDetections"] = statistics["numberOfDetections"] + 1
+                latinName = movement["detections"][0]["latinName"]
+                germanName = movement["detections"][0]["germanName"]
+                day = movement["start_date"].split()[0]
+                detection_score = movement["detections"][0].get("score", 0)
+
+                if day in statistics["perDay"]:
+                    statistics["perDay"][day]["sum"] = statistics["perDay"][day]["sum"] + 1
+                    if latinName in statistics["perDay"][day]:
+                        statistics["perDay"][day][latinName]["amount"] = statistics["perDay"][day][latinName]["amount"] + 1
+                    else:
+                        statistics["perDay"][day][latinName] = {"latinName": latinName, "germanName": germanName, "amount": 1, "movements": []}
+                else:
+                    statistics["perDay"][day] = {latinName: {"latinName": latinName, "germanName": germanName, "amount": 1, "movements": []}}
+                    statistics["perDay"][day]["sum"] = 1
+
+                day_entry = statistics["perDay"][day][latinName]
+                day_ref = build_movement_reference(
+                    movement,
+                    sid,
+                    station_name if use_unique_references else None,
+                    include_score=True
+                )
+                if use_unique_references:
+                    day_entry["movements"] = append_recent_unique_station(day_entry.get("movements"), day_ref, MAX_MOVEMENT_REFERENCES)
+                else:
+                    day_entry["movements"] = append_recent(day_entry.get("movements"), day_ref, MAX_MOVEMENT_REFERENCES)
+
+                if latinName in statistics["all"]:
+                    statistics["all"][latinName]["amount"] = statistics["all"][latinName]["amount"] + 1
+                else:
+                    statistics["all"][latinName] = {"latinName": latinName, "germanName": germanName, "amount": 1, "movements": []}
+
+                species_entry = statistics["all"][latinName]
+                species_ref = build_movement_reference(
+                    movement,
+                    sid,
+                    station_name if use_unique_references else None,
+                    include_score=True
+                )
+                if use_unique_references:
+                    species_entry["movements"] = append_recent_unique_station(species_entry.get("movements"), species_ref, MAX_MOVEMENT_REFERENCES)
+                else:
+                    species_entry["movements"] = append_recent(species_entry.get("movements"), species_ref, MAX_MOVEMENT_REFERENCES)
+
+                if latinName in birdsOfInterest and detection_score > 0.8:
+                    special_entry = statistics["specialBirds"].setdefault(
+                        latinName,
+                        {"latinName": latinName, "germanName": germanName, "movements": []}
+                    )
+                    special_ref = build_movement_reference(
+                        movement,
+                        sid,
+                        station_name if use_unique_references else None,
+                        include_score=True
+                    )
+                    if use_unique_references:
+                        special_entry["movements"] = append_recent_unique_station(special_entry.get("movements"), special_ref, MAX_SPECIAL_BIRD_REFERENCES)
+                    else:
+                        special_entry["movements"] = append_recent(special_entry.get("movements"), special_ref, MAX_SPECIAL_BIRD_REFERENCES)
+
+        for env in environments:
+            temperature = None
+            humidity = None
+            measurement_date = env.get("date", "")
+
+            try:
+                temperature = float(env.get("temperature", 0))
+            except Exception:
+                temperature = None
+
+            try:
+                humidity = float(env.get("humidity", 0))
+            except Exception:
+                humidity = None
+
+            if temperature is not None and -20 < temperature < 60:
+                statistics["sumTemperature"] = statistics["sumTemperature"] + temperature
+
+            if humidity is not None and -1 < humidity < 101:
+                statistics["sumEnvironment"] = statistics["sumEnvironment"] + 1
+                statistics["sumHumidity"] = statistics["sumHumidity"] + humidity
+
+            if temperature is not None and -20 < temperature < 60:
+                temp_entry = {"temperature": temperature, "date": measurement_date}
+                if use_unique_references:
+                    temp_entry["station_id"] = sid
+                    temp_entry["station_name"] = station_name
+                statistics["maxTemp"] = insertMax(statistics["maxTemp"], temp_entry.copy(), "temperature")
+                statistics["minTemp"] = insertMin(statistics["minTemp"], temp_entry.copy(), "temperature")
+            elif temperature is not None and -30 < temperature < 60:
+                temp_entry = {"temperature": temperature, "date": measurement_date}
+                if use_unique_references:
+                    temp_entry["station_id"] = sid
+                    temp_entry["station_name"] = station_name
+                statistics["minTemp"] = insertMin(statistics["minTemp"], temp_entry.copy(), "temperature")
+
+            if humidity is not None and -0.1 < humidity < 100.1:
+                hum_entry = {"humidity": humidity, "date": measurement_date}
+                if use_unique_references:
+                    hum_entry["station_id"] = sid
+                    hum_entry["station_name"] = station_name
+                statistics["maxHum"] = insertMax(statistics["maxHum"], hum_entry.copy(), "humidity")
+                statistics["minHum"] = insertMin(statistics["minHum"], hum_entry.copy(), "humidity")
+
+    statistics["from"] = from_date
+    statistics["to"] = to_date
+    statistics["activeStations"] = len(active_station_ids)
+    statistics = finalize_statistics_payload(statistics)
     return jsonify(statistics)
 
 

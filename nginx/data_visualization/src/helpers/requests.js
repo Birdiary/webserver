@@ -151,6 +151,10 @@ function getStatisitcs(id){
     return axios.get(_env.api +"/statistics/"+id)
 }
 
+function getStatisticsRange(id, from, to){
+    return axios.get(_env.api + "/statistics/" + id + "/range?from=" + from + "&to=" + to)
+}
+
 function returnImageUrl(id){
     var _url = _env.api + "/image/" + id
     return _url
@@ -263,6 +267,7 @@ module.exports = {
     getSingleMovement : getSingleMovement,
     getCount :getCount,
     getStatisitcs: getStatisitcs,
+    getStatisticsRange: getStatisticsRange,
     getImage: getImage,
     returnImageUrl: returnImageUrl,
     createImage: createImage,

@@ -74,10 +74,22 @@ body {
   width: 100%;
 }
 
+.footer-alerts {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 980px;
+}
+
 .footer-alert {
   align-items: center;
   width: 100%;
+  min-width: 0;
   max-width: 460px;
+  flex: 1 1 0;
   background-color: #f57c00;
   color: #fff;
   padding: 0.5rem 1rem;

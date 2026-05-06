@@ -175,6 +175,27 @@ function StatisticsView(props) {
       </div>
     )}
 
+    {props.view === "all" && props.data.activeStations_total !== undefined && (
+      <div style={{ marginBottom: 24 }}>
+        <h3>{language[props.language]["statistics"]["activeStationsTitle"]}</h3>
+        <Grid container spacing={2} style={{ marginBottom: 16 }}>
+          {[
+            { key: "activeStations_week",   label: language[props.language]["statistics"]["activeStationsWeek"] },
+            { key: "activeStations_month",  label: language[props.language]["statistics"]["activeStationsMonth"] },
+            { key: "activeStations_3months",label: language[props.language]["statistics"]["activeStations3Months"] },
+            { key: "activeStations_total",  label: language[props.language]["statistics"]["activeStationsTotal"] },
+          ].map(item => (
+            <Grid item xs={6} sm={3} key={item.key}>
+              <div style={{ textAlign: "center", padding: "12px 8px", border: "2px solid orange", borderRadius: 8 }}>
+                <div style={{ fontSize: "1.8rem", fontWeight: 700, color: "orange" }}>{props.data[item.key] ?? "–"}</div>
+                <div style={{ fontSize: "0.85rem" }}>{item.label}</div>
+              </div>
+            </Grid>
+          ))}
+        </Grid>
+      </div>
+    )}
+
     <h3 >{language[props.language]["statistics"][props.view]["maxSpecies1"]}{props.data.numberOfMovements} {language[props.language]["statistics"]["maxSpecies2"]} {props.data.numberOfDetections}{language[props.language]["statistics"]["maxSpecies3"]}<br />
       {language[props.language]["statistics"]["the"]} {props.data.maxSpecies.length} {language[props.language]["statistics"]["maxSpecies5"]}
       <IconButton color="primary" aria-label="upload picture" component="span" onClick={() => { handleClickOpen("sum") }} >

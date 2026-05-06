@@ -100,6 +100,9 @@ function Header(props){
                   <Typography textAlign="center">{navCopy["ownStations"]}</Typography>
                 </MenuItem>
               ) : null}
+              <MenuItem key={"ebsw"} onClick={handleCloseNavMenu} component={Link} to="/view/ebsw" >
+                  <Typography textAlign="center">{navCopy["ebsw"]}</Typography>
+                </MenuItem>
               <MenuItem key={"more"} onClick={handleCloseNavMenu} component="a" href="/" >
                   <Typography textAlign="center">{navCopy["more"]}</Typography>
                 </MenuItem>
@@ -155,6 +158,9 @@ function Header(props){
           </Button>
           <Button rel="noopener" color="inherit" component={Link} to="/view/validation">
             {navCopy["validation"]}
+          </Button>
+          <Button rel="noopener" color="inherit" component={Link} to="/view/ebsw">
+            {navCopy["ebsw"]}
           </Button>
           {user ? (
             <Button rel="noopener" color="inherit" component={Link} to="/view/own-stations">

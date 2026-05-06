@@ -5,6 +5,7 @@ import StationView from './Station/Stations'
 import Validation from './Validation/Validation';
 import Statistics from './Statistics/Statistics'
 import StationStatistics from './Statistics/StationStatistics';
+import EBSW from './EBSW/EBSW';
 
 import {
   Routes,
@@ -46,12 +47,22 @@ const RequireAuth = ({ children }) => {
 };
 
 
-const Footer = () => {
+const Footer = ({ language }) => {
+  const isGerman = language === "de";
   return (
     <div className="mui-container mui--text-center" id="footer">
       <div className="footer-content">
-        <div className="footer-alert">
-          <strong>Regelmäßige Discord-Treffen <a href='https://pad.uni-muenster.de/DT2TUVfwRFqJHvKUWVLyPA?view'>Protokoll und nächster Termin</a> </strong>
+        <div className="footer-alerts">
+          <div className="footer-alert">
+            <strong>
+              {isGerman ? "Regelmäßige Discord-Treffen" : "Regular Discord meetings"} <a href='https://pad.uni-muenster.de/DT2TUVfwRFqJHvKUWVLyPA?view'>{isGerman ? "Protokoll und nächster Termin" : "Protocol and next date"}</a>
+            </strong>
+          </div>
+          <div className="footer-alert">
+            <strong>
+              EU Biodiversity Sampling Week: 16.–24. Mai 2026 <br /><a href='/view/ebsw'>{isGerman ? "Mehr erfahren" : "Learn more"}</a>
+            </strong>
+          </div>
         </div>
         <div id="links">
           <a id="link" href="/doc">API</a> |&nbsp;
@@ -116,12 +127,12 @@ class App extends React.Component {
                 <Route path="/view/validation" element={<Validation language={this.state.language} />}></Route>
                 <Route path="/view/statistics" element={<Statistics language={this.state.language} />}></Route>
                 <Route exact path="/view/statistics/:id" element={<StationStatistics language={this.state.language} />}></Route>
+                <Route path="/view/ebsw" element={<EBSW language={this.state.language} />}></Route>
               </SentryRoutes>
             </div>
           </div>
 
-          <Footer
-          ></Footer>
+          <Footer language={this.state.language}></Footer>
         </BrowserRouter>
       </div>
 
