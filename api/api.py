@@ -1040,19 +1040,19 @@ def calculateStatistics(reque):
 
         for month_doc in environment_cursor:
             for env in month_doc.get("measurements", []):
-            temperature = None
-            humidity = None
-            measurement_date = env.get("date", "")
-
-            try:
-                temperature = float(env.get("temperature", 0))
-            except Exception:
                 temperature = None
-
-            try:
-                humidity = float(env.get("humidity", 0))
-            except Exception:
                 humidity = None
+                measurement_date = env.get("date", "")
+
+                try:
+                    temperature = float(env.get("temperature", 0))
+                except Exception:
+                    temperature = None
+
+                try:
+                    humidity = float(env.get("humidity", 0))
+                except Exception:
+                    humidity = None
 
                 if temperature is not None and -20 < temperature < 60:
                     statistics["sumTemperature"] = statistics["sumTemperature"] + temperature
