@@ -18,6 +18,8 @@ import os, shutil
 import cv2
 from redis import Redis
 from rq import Queue
+from rq.job import Job
+from rq.exceptions import NoSuchJobError
 
 import requests
 import csv 
@@ -75,7 +77,7 @@ except Exception:
     STATISTICS_RECALC_INTERVAL_MINUTES = 30
 
 try:
-    STATISTICS_JOB_TIMEOUT_SECONDS = max(int(os.getenv('STATISTICS_JOB_TIMEOUT_SECONDS', '600')), 180)
+    STATISTICS_JOB_TIMEOUT_SECONDS = max(int(os.getenv('STATISTICS_JOB_TIMEOUT_SECONDS', '1200')), 180)
 except Exception:
     STATISTICS_JOB_TIMEOUT_SECONDS = 600
 
@@ -601,20 +603,37 @@ def is_prewarm_range(station_id, from_date, to_date):
 
 
 
+def _is_job_active(job_id):
+    """Return True if a job with this ID is already queued or executing."""
+    try:
+        job = Job.fetch(job_id, connection=redis)
+        return job.get_status() in ("queued", "started", "deferred", "scheduled")
+    except NoSuchJobError:
+        return False
+
+
 def enqueue_statistics_range_refresh(station_id, from_date, to_date):
     if is_prewarm_range(station_id, from_date, to_date):
+        job_id = "stats_calculate_all"
+        if _is_job_active(job_id):
+            return
         q3.enqueue(
             calculateStatistics,
             False,
+            job_id=job_id,
             job_timeout=STATISTICS_JOB_TIMEOUT_SECONDS
         )
         return
 
+    job_id = f"stats_range_{station_id}_{from_date}_{to_date}"
+    if _is_job_active(job_id):
+        return
     q3.enqueue(
         refreshStatisticsAndRangeCache,
         station_id,
         from_date,
         to_date,
+        job_id=job_id,
         job_timeout=STATISTICS_JOB_TIMEOUT_SECONDS
     )
 
@@ -712,7 +731,7 @@ def refreshStatisticsAndRangeCache(station_id, from_date, to_date):
     if not is_prewarm_range(station_id, from_date, to_date):
         return computeStatisticsRange(station_id, from_date, to_date)
     return get_statistics_range_cache_entry(station_id, from_date, to_date)
-    
+
 @enqueueable
 def deleteImage(id):
     os.remove('./uploads/raspberry-pi-os' +id  +'.img')
