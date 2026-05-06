@@ -73,7 +73,7 @@ function StatisticsView(props) {
             {safeEntries.map((entry, index) => {
               const measurement = entry && entry[valueKey] !== undefined ? entry[valueKey] : "-"
               const formattedMeasurement = typeof measurement === "number" ? measurement.toFixed(1) : measurement
-              const dateText = entry && entry.date ? formatLocalDateTime(entry.date) : ""
+              const dateText = entry && entry.date ? entry.date : ""
               return (
                 <li key={`${heading}-${index}`}>
                   <span className="statistics-env-value">{formattedMeasurement} {unit}</span><br />
