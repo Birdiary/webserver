@@ -60,8 +60,9 @@ wrapt==1.14.0
 WTForms==3.0.1
 zipp==1.0.0
 gunicorn==19.9.0
-redis
-rq
+redis==4.6.0
+rq==1.15.1
+rq-scheduler==0.13.1
 sentry-sdk[flask]
 protobuf==3.19.4
 pycrypto
