@@ -55,7 +55,7 @@ const Footer = ({ language }) => {
         <div className="footer-alerts">
           <div className="footer-alert">
             <strong>
-              {isGerman ? "Regelmäßige Discord-Treffen" : "Regular Discord meetings"} <a href='https://pad.uni-muenster.de/DT2TUVfwRFqJHvKUWVLyPA?view'>{isGerman ? "Protokoll und nächster Termin" : "Protocol and next date"}</a>
+              {isGerman ? "Regelmäßige Discord-Treffen" : "Regular Discord meetings"} <a href='https://pad.uni-muenster.de/DT2TUVfwRFqJHvKUWVLyPA?view' target='_blank' rel='noopener noreferrer'>{isGerman ? "Protokoll und nächster Termin" : "Protocol and next date"}</a>
             </strong>
           </div>
           <div className="footer-alert">

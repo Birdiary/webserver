@@ -10,11 +10,11 @@ const EBSW_TO   = "2026-05-24";
 const LINKS = [
   {
     label: "EU Biodiversity Sampling Week",
-    href: "https://biodiversitysampling.eu",
+    href: "https://ebsw.my.canva.site/",
   },
   {
     label: "Museum für Naturkunde Berlin",
-    href: "https://www.museumfuernaturkunde.berlin/en/science/european-biodiversity-sampling-week",
+    href: "https://www.museumfuernaturkunde.berlin/en/science/european-biodiversity-sampling-week-2026/",
   },
   {
     label: "ECSA – European Citizen Science Association",
