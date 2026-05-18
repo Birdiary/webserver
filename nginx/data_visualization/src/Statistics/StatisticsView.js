@@ -1,5 +1,5 @@
 import { Grid, Dialog, DialogActions, Button, DialogTitle, DialogContent, DialogContentText, IconButton, TextField, InputAdornment, Autocomplete } from "@mui/material"
-import { formatLocalDateTime } from "../helpers/dateUtils"
+import { formatUTCDateTime } from "../helpers/dateUtils"
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import { useState, useMemo } from "react"
@@ -90,7 +90,26 @@ function StatisticsView(props) {
     )
   }
 
+  const showUpdateInfo = props.showUpdateInfo !== false
+
   return <div style={{ paddingLeft: "4vw", paddingRight: "4vw" }}>
+
+    {showUpdateInfo && (
+      <div style={{ marginBottom: 16, color: "#555", fontSize: "0.85rem", display: "flex", gap: 32, flexWrap: "wrap" }}>
+        <span>
+          <strong>{language[props.language]["statistics"]["lastFullUpdateLabel"]}:</strong>{" "}
+          {props.data.lastFullUpdate
+            ? formatUTCDateTime(props.data.lastFullUpdate)
+            : language[props.language]["statistics"]["neverUpdated"]}
+        </span>
+        <span>
+          <strong>{language[props.language]["statistics"]["lastRealtimeUpdateLabel"]}:</strong>{" "}
+          {props.data.lastRealtimeUpdate
+            ? formatUTCDateTime(props.data.lastRealtimeUpdate)
+            : language[props.language]["statistics"]["neverUpdated"]}
+        </span>
+      </div>
+    )}
 
     {allBirds.length > 0 && (
       <div className="statistics-search statistics-search--highlight">

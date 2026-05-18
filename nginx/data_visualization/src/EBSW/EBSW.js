@@ -14,7 +14,7 @@ const LINKS = [
   },
   {
     label: "Museum für Naturkunde Berlin",
-    href: "https://www.museumfuernaturkunde.berlin/en/science/european-biodiversity-sampling-week-2026/",
+    href: "https://www.museumfuernaturkunde.berlin/forschung/projekte/european-biodiversity-sampling-week-2026/",
   },
   {
     label: "ECSA – European Citizen Science Association",
@@ -42,7 +42,8 @@ const copy = {
     loading: "Loading EBSW statistics…",
     error: "Could not load EBSW statistics.",
     overviewTitle: "Campaign overview",
-    lastSync: "Last sync",
+    lastFullUpdate: "Last full nightly update",
+    lastRealtimeUpdate: "Last realtime update",
     neverSynced: "not available yet",
     refreshRunning: "Background refresh is running.",
   },
@@ -65,7 +66,8 @@ const copy = {
     loading: "EBSW-Statistiken werden geladen…",
     error: "EBSW-Statistiken konnten nicht geladen werden.",
     overviewTitle: "Kampagnenüberblick",
-    lastSync: "Letzte Synchronisierung",
+    lastFullUpdate: "Letztes nächtliches Voll-Update",
+    lastRealtimeUpdate: "Letztes Echtzeit-Update",
     neverSynced: "noch nicht verfügbar",
     refreshRunning: "Hintergrundaktualisierung läuft.",
   },
@@ -132,7 +134,6 @@ function EBSW(props) {
       ]
     : [];
 
-  const lastSyncLabel = formatLocalDateTime(stats?.lastSync || stats?.createdAt) || null;
   const showStatisticsView = Boolean(
     stats &&
     !pending &&
@@ -178,8 +179,15 @@ function EBSW(props) {
           </span>
         </h2>
 
-        <p style={{ marginTop: -8, marginBottom: 24, color: "#666" }}>
-          {lang.lastSync}: {lastSyncLabel || lang.neverSynced}
+        <p style={{ marginTop: -8, marginBottom: 24, color: "#666", fontSize: "0.85rem", display: "flex", gap: 24, flexWrap: "wrap" }}>
+          <span>
+            <strong>{lang.lastFullUpdate}:</strong>{" "}
+            {stats?.lastFullUpdate ? formatLocalDateTime(stats.lastFullUpdate) : lang.neverSynced}
+          </span>
+          <span>
+            <strong>{lang.lastRealtimeUpdate}:</strong>{" "}
+            {stats?.lastRealtimeUpdate ? formatLocalDateTime(stats.lastRealtimeUpdate) : lang.neverSynced}
+          </span>
         </p>
 
         {loading ? (
@@ -235,7 +243,7 @@ function EBSW(props) {
             {!pending && !showStatisticsView ? (
               <Alert severity="info" sx={{ mb: 4 }}>{lang.noData}</Alert>
             ) : (
-              showStatisticsView ? <StatisticsView language={props.language} view={"all"} data={stats}></StatisticsView> : null
+              showStatisticsView ? <StatisticsView language={props.language} view={"all"} data={stats} showUpdateInfo={false}></StatisticsView> : null
             )}
           </div>
         ) : null}

@@ -400,7 +400,10 @@ const language = {
             activeStationsWeek: "Last 7 days",
             activeStationsMonth: "Last 30 days",
             activeStations3Months: "Last 3 months",
-            activeStationsTotal: "Total stations"
+            activeStationsTotal: "Total stations",
+            lastFullUpdateLabel: "Last full nightly update (UTC)",
+            lastRealtimeUpdateLabel: "Last realtime update (UTC)",
+            neverUpdated: "not yet available"
         },
         movementCard:{
             capturedOn: "Bird captured on:  ",
@@ -814,7 +817,10 @@ const language = {
             activeStationsWeek: "Letzte 7 Tage",
             activeStationsMonth: "Letzte 30 Tage",
             activeStations3Months: "Letzte 3 Monate",
-            activeStationsTotal: "Stationen gesamt"
+            activeStationsTotal: "Stationen gesamt",
+            lastFullUpdateLabel: "Letztes nächtliches Voll-Update (UTC)",
+            lastRealtimeUpdateLabel: "Letztes Echtzeit-Update (UTC)",
+            neverUpdated: "noch nicht verfügbar"
         },
         movementCard:{
             capturedOn: "Vogel aufgenommen am:  ",

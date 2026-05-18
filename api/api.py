@@ -716,6 +716,8 @@ def build_statistics_range_response(station_id, from_date, to_date, cached=None,
     payload["lastSync"] = payload.get("createdAt")
     payload["lastSync"] = serialize_datetime_value(payload.get("lastSync"))
     payload["createdAt"] = serialize_datetime_value(payload.get("createdAt"))
+    payload["lastFullUpdate"] = serialize_datetime_value(payload.get("lastFullUpdate"))
+    payload["lastRealtimeUpdate"] = serialize_datetime_value(payload.get("lastRealtimeUpdate"))
     payload["cacheStatus"] = cache_status
     if message:
         payload["message"] = message
@@ -765,7 +767,7 @@ def apply_daytime_statistics_delta(station_id, movement_delta=0, detection_delta
 
     now = datetime.utcnow()
     for sid in (station_id, "all"):
-        update_doc = {"$set": {"createdAt": now}}
+        update_doc = {"$set": {"createdAt": now, "lastRealtimeUpdate": now}}
         if increments:
             update_doc["$inc"] = dict(increments)
         db["statistics"].update_one({"station_id": sid}, update_doc)
@@ -854,7 +856,7 @@ def enqueueable(func):
 
 @enqueueable
 def refreshStatisticsAndRangeCache(station_id, from_date, to_date):
-    return computeStatisticsRange(station_id, from_date, to_date)
+    return computeStatisticsRange(station_id, from_date, to_date, is_nightly=False)
 
 @enqueueable
 def deleteImage(id):
@@ -1271,6 +1273,7 @@ def calculateStatistics():
 
         #Remove perDay and validated Birds statistic to keep object small and they are not necessary for the current view
         statistics["perDay"] = len(statistics["perDay"])
+        statistics["lastFullUpdate"] = datetime.utcnow()
 
         result = db["statistics"].replace_one({"station_id": station_id},statistics, True)
 
@@ -1378,10 +1381,11 @@ def calculateStatistics():
     # --- End active station counts ---
 
     statisticsALL["createdAt"] = datetime.utcnow()
+    statisticsALL["lastFullUpdate"] = datetime.utcnow()
     db["statistics"].replace_one({"station_id": "all"}, statisticsALL, True)
     # Rebuild pre-warmed range caches in the same statistics job
     for _pw_sid, _pw_from, _pw_to in PREWARM_RANGES:
-        computeStatisticsRange(_pw_sid, _pw_from, _pw_to)
+        computeStatisticsRange(_pw_sid, _pw_from, _pw_to, is_nightly=True)
     # Re-schedule the next nightly run
     seed_nightly_statistics()
 
@@ -2412,7 +2416,7 @@ def getStatistics(station_id: str):
 
 
 @enqueueable
-def computeStatisticsRange(station_id: str, from_date: str, to_date: str):
+def computeStatisticsRange(station_id: str, from_date: str, to_date: str, is_nightly: bool = False):
     """Background job: compute range statistics and persist to statistics_range collection."""
     try:
         from_dt = datetime.strptime(from_date, '%Y-%m-%d')
@@ -2650,7 +2654,12 @@ def computeStatisticsRange(station_id: str, from_date: str, to_date: str):
     statistics["to"] = to_date
     statistics["activeStations"] = len(active_station_ids)
     statistics = finalize_statistics_payload(statistics)
-    statistics["createdAt"] = datetime.utcnow()
+    _now = datetime.utcnow()
+    statistics["createdAt"] = _now
+    if is_nightly:
+        statistics["lastFullUpdate"] = _now
+    else:
+        statistics["lastRealtimeUpdate"] = _now
     statistics_range.replace_one(
         {"station_id": station_id, "from": from_date, "to": to_date},
         statistics,

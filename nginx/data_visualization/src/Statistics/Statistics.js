@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { useParams } from 'react-router-dom';
 import requests from "../helpers/requests";
 import StatisticsView from "./StatisticsView";
-import { formatLocalDateTime } from "../helpers/dateUtils";
 
 function Statistics(props) {
   // The useParams hook provides access to the URL parameters of the current route.
@@ -36,7 +35,6 @@ function Statistics(props) {
       <h1 style={{ textAlign: "center",  marginBottom: "3px" }}>Statistiken zu allen Stationen</h1>    
       {data ? 
         <div>
-          <span style={{ textAlign: "center", width: "100%", display: "block"}}> Stand: {formatLocalDateTime(data.createdAt)}</span>
           <StatisticsView language={props.language} view={"all"} data={data}></StatisticsView>
         </div>
         : ""
