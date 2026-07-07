@@ -7,27 +7,11 @@ import StatisticsView from "../Statistics/StatisticsView";
 const EBSW_FROM = "2026-05-16";
 const EBSW_TO   = "2026-05-24";
 
-const LINKS = [
-  {
-    label: "EU Biodiversity Sampling Week",
-    href: "https://ebsw.my.canva.site/",
-  },
-  {
-    label: "Museum für Naturkunde Berlin",
-    href: "https://www.museumfuernaturkunde.berlin/forschung/projekte/european-biodiversity-sampling-week-2026/",
-  },
-  {
-    label: "ECSA – European Citizen Science Association",
-    href: "https://ecsa.citizen-science.net",
-  },
-];
-
 const copy = {
   en: {
     title: "We are part of the EU Biodiversity Sampling Week!",
     intro:
       "During the week of 16 to 24 May 2026, citizen science projects across the EU are taking place to highlight the important contribution of citizen science to biodiversity monitoring. Around the International Day for Biological Diversity, the European Biodiversity Sampling Week brings people together to actively observe and document nature. We invite everyone to take part!",
-    linksTitle: "More information",
     statsTitle: "Birdiary during the EBSW",
     statsSubtitle: "(16 – 24 May 2026)",
     pageLead: "On this page we collect all Birdiary observations that fall into the official EBSW time window. As soon as data arrives, the full Birdiary statistics view below updates for the campaign week.",
@@ -51,7 +35,6 @@ const copy = {
     title: "Wir sind Teil der EU Biodiversity Sampling Week!",
     intro:
       "In der Woche vom 16. bis zum 24. Mai 2026 finden EU-weit Citizen-Science-Projekte statt, um den wichtigen Beitrag von Citizen Science zum Monitoring der Biodiversität aufzuzeigen. Rund um den Internationalen Tag der biologischen Vielfalt soll die European Biodiversity Sampling Week Menschen zusammenbringen, um Natur aktiv zu beobachten und zu dokumentieren. Wir laden alle ein mitzumachen!",
-    linksTitle: "Weitere Informationen",
     statsTitle: "Birdiary während der EBSW",
     statsSubtitle: "(16. – 24. Mai 2026)",
     pageLead: "Auf dieser Seite sammeln wir alle Birdiary-Beobachtungen, die in das offizielle EBSW-Zeitfenster fallen. Sobald Daten eingehen, aktualisiert sich unten die vollständige Birdiary-Statistikansicht für die Aktionswoche.",
@@ -156,19 +139,6 @@ function EBSW(props) {
         <p style={{ maxWidth: 760, margin: "0 auto", lineHeight: 1.6 }}>
           {lang.pageLead}
         </p>
-      </div>
-
-      <div style={{ marginBottom: 40 }}>
-        <h3>{lang.linksTitle}</h3>
-        <ul style={{ listStyle: "none", paddingLeft: 0, margin: 0 }}>
-          {LINKS.map((link) => (
-            <li key={link.href} style={{ marginBottom: 8, fontSize: "1rem" }}>
-              <a href={link.href} target="_blank" rel="noopener noreferrer">
-                {link.label}
-              </a>
-            </li>
-          ))}
-        </ul>
       </div>
 
       <div>

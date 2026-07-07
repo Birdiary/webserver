@@ -401,8 +401,8 @@ const language = {
             activeStationsMonth: "Last 30 days",
             activeStations3Months: "Last 3 months",
             activeStationsTotal: "Total stations",
-            lastFullUpdateLabel: "Last full nightly update (UTC)",
-            lastRealtimeUpdateLabel: "Last realtime update (UTC)",
+            lastFullUpdateLabel: "Last full nightly update",
+            lastRealtimeUpdateLabel: "Last realtime update",
             neverUpdated: "not yet available"
         },
         movementCard:{
@@ -818,8 +818,8 @@ const language = {
             activeStationsMonth: "Letzte 30 Tage",
             activeStations3Months: "Letzte 3 Monate",
             activeStationsTotal: "Stationen gesamt",
-            lastFullUpdateLabel: "Letztes nächtliches Voll-Update (UTC)",
-            lastRealtimeUpdateLabel: "Letztes Echtzeit-Update (UTC)",
+            lastFullUpdateLabel: "Letztes nächtliches Voll-Update",
+            lastRealtimeUpdateLabel: "Letztes Echtzeit-Update",
             neverUpdated: "noch nicht verfügbar"
         },
         movementCard:{

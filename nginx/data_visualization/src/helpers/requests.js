@@ -100,30 +100,63 @@ function sendValdation(station_id, movement_id, validation){
     return axios.put(_url, validation);
 }
 
-function searchForSpecies(station_id, species, numberOfMovements, date){
-    var query= "?"
+function searchForSpecies(station_id, species, numberOfMovements, date, options){
+    var query = "?"
+
     if (species){
-            species = species.replace(" ", "_")
-        	query += "species=" + species
+        species = species.replace(" ", "_")
+        query += "species=" + encodeURIComponent(species)
     }
+
     if(numberOfMovements){
-        if (query.length >1){
-            query+= "&"
+        if (query.length > 1){
+            query += "&"
         }
-        query += "movements=" +numberOfMovements
+        query += "movements=" + numberOfMovements
     }
+
     if(date){
-        if (query.length >1){
-            query+= "&"
+        if (query.length > 1){
+            query += "&"
         }
-        query += "date=" +date
+        query += "date=" + encodeURIComponent(date)
     }
+
+    const extra = options && typeof options === 'object' ? options : {}
+
+    if (typeof extra.offset === 'number' && extra.offset > 0){
+        if (query.length > 1){
+            query += "&"
+        }
+        query += "offset=" + extra.offset
+    }
+
+    if (typeof extra.days === 'number' && extra.days > 0){
+        if (query.length > 1){
+            query += "&"
+        }
+        query += "days=" + extra.days
+    }
+
+    if (extra.from){
+        if (query.length > 1){
+            query += "&"
+        }
+        query += "from=" + encodeURIComponent(extra.from)
+    }
+
+    if (extra.to){
+        if (query.length > 1){
+            query += "&"
+        }
+        query += "to=" + encodeURIComponent(extra.to)
+    }
+
     var _url = _env.api + "/movement/" + station_id
-    if (query.length >1){
-        _url+= query
+    if (query.length > 1){
+        _url += query
     }
     return axios.get(_url)
-    
 }
 
 function getEnvironment(station_id, months){

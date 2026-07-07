@@ -109,7 +109,316 @@ paths:
       servers:
         - url: 'https://wiediversistmeingarten.org/api'
           description: Wie divers ist mein Garten
+
     get:
+      summary: Get all stations
+      operationId: get-station-minimal
+      responses:
+        '200':
+          description: OK
+
+  /video:
+    get:
+      summary: Get random classified video
+      operationId: get-video
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Upload video for classification
+      operationId: post-video
+      responses:
+        '200':
+          description: OK
+
+  /audio:
+    post:
+      summary: Upload audio for classification
+      operationId: post-audio
+      responses:
+        '200':
+          description: OK
+
+  /movement/image/{station_id}:
+    post:
+      summary: Upload movement image
+      operationId: post-movement-image-station_id
+      parameters:
+        - name: station_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+  /uploads/images/{filename}:
+    get:
+      summary: Download image upload
+      operationId: get-uploads-images-filename
+      parameters:
+        - name: filename
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+  /image:
+    get:
+      summary: List image modification jobs
+      operationId: get-image
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Start image modification job
+      operationId: post-image
+      responses:
+        '200':
+          description: OK
+
+  /image/{id}:
+    get:
+      summary: Download customized image
+      operationId: get-image-id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Queue image customization
+      operationId: post-image-id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+  /imageStatus/{id}:
+    get:
+      summary: Get image job status
+      operationId: get-imageStatus-id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+  /feed/{station_id}:
+    get:
+      summary: Get feed records
+      operationId: get-feed-station_id
+      parameters:
+        - name: station_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Save feed record
+      operationId: post-feed-station_id
+      parameters:
+        - name: station_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+  /register:
+    post:
+      summary: Register user
+      operationId: post-register
+      responses:
+        '200':
+          description: OK
+
+  /verify-email:
+    post:
+      summary: Verify user email
+      operationId: post-verify-email
+      responses:
+        '200':
+          description: OK
+
+  /verify-email/resend:
+    post:
+      summary: Resend email verification
+      operationId: post-verify-email-resend
+      responses:
+        '200':
+          description: OK
+
+  /login:
+    post:
+      summary: Login user
+      operationId: post-login
+      responses:
+        '200':
+          description: OK
+
+  /logout:
+    post:
+      summary: Logout user
+      operationId: post-logout
+      responses:
+        '200':
+          description: OK
+
+  /me:
+    get:
+      summary: Get current user
+      operationId: get-me
+      responses:
+        '200':
+          description: OK
+    delete:
+      summary: Delete current user
+      operationId: delete-me
+      responses:
+        '200':
+          description: OK
+
+  /reset-password:
+    post:
+      summary: Reset password by token
+      operationId: post-reset-password
+      responses:
+        '200':
+          description: OK
+
+  /reset-password/request:
+    post:
+      summary: Request password reset
+      operationId: post-reset-password-request
+      responses:
+        '200':
+          description: OK
+
+  /reset-password/confirm:
+    post:
+      summary: Confirm password reset
+      operationId: post-reset-password-confirm
+      responses:
+        '200':
+          description: OK
+
+  /my-stations:
+    get:
+      summary: Get stations of current user
+      operationId: get-my-stations
+      responses:
+        '200':
+          description: OK
+
+  /statistics/{station_id}/range:
+    get:
+      summary: Get station statistics for range
+      operationId: get-statistics-station_id-range
+      parameters:
+        - name: station_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+  /statistics/{station_id}/range/refresh:
+    post:
+      summary: Rebuild station range statistics
+      operationId: post-statistics-station_id-range-refresh
+      parameters:
+        - name: station_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+  /updateStations:
+    get:
+      summary: Update station metadata cache
+      operationId: get-updateStations
+      responses:
+        '200':
+          description: OK
+
+  x-admin-users:
+    get:
+      summary: List users (admin)
+      operationId: get-admin-users
+      responses:
+        '200':
+          description: OK
+
+  x-admin-users-user_id-password:
+    put:
+      summary: Set user password (admin)
+      operationId: put-admin-users-user_id-password
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+  x-admin-users-user_id:
+    delete:
+      summary: Delete user (admin)
+      operationId: delete-admin-users-user_id
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+  x-admin-stations-station_id-owner:
+    put:
+      summary: Change station owner (admin)
+      operationId: put-admin-stations-station_id-owner
+      parameters:
+        - name: station_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+    x-station-get-doc:
       summary: Get all stations
       description: Get all Stations
       operationId: get-station
@@ -76979,6 +77288,21 @@ paths:
           description: 'Number of movements that should be returned. If parameter not given, all movements get returned.'
           schema:
             type: number
+        - name: movementsOffset
+          in: query
+          description: 'Offset for movement pagination (skip first N movements before applying the movements limit).'
+          schema:
+            type: number
+        - name: movements_offset
+          in: query
+          description: 'Alias for movementsOffset.'
+          schema:
+            type: number
+        - name: apikey
+          in: query
+          description: Optional API key to unlock protected station fields (mail/key)
+          schema:
+            type: string
         - name: station_id
           in: path
           description: Id of the station which is requested/should be changed
@@ -77101,6 +77425,38 @@ paths:
                               type: number
                             humidity:
                               type: number
+                  movementsMeta:
+                    type: object
+                    description: Present when movements and/or movementsOffset is used
+                    properties:
+                      limit:
+                        type: integer
+                      offset:
+                        type: integer
+                      returned:
+                        type: integer
+                      total:
+                        type: integer
+                      hasMore:
+                        type: boolean
+                  statisticsSummary:
+                    type: object
+                    properties:
+                      specialBirds:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            latinName:
+                              type: string
+                            germanName:
+                              type: string
+                            movements:
+                              type: array
+                              items:
+                                type: object
+                      updatedAt:
+                        type: string
                 x-examples:
                   Example 1:
                     station_id: a19bdefe-403b-4791-a220-48a857dce14f
@@ -79902,7 +80258,7 @@ paths:
       x-code_example: null
     get:
       summary: Get Movements of one Station
-      description: Endpoint to get all movements or filter them by species and/or date
+      description: Endpoint to get all movements or filter them by species and/or date range with pagination. Date precedence is from/to first, then days, then date.
       operationId: get-movement-station_id
       parameters:
         - name: species
@@ -79912,14 +80268,37 @@ paths:
             type: string
         - name: date
           in: query
-          description: date to search for
+          description: Single day filter in format YYYY-MM-DD
           schema:
             type: string
+            format: date
+        - name: days
+          in: query
+          description: Rolling day window including today (for example days=2)
+          schema:
+            type: integer
+        - name: from
+          in: query
+          description: Start date in format YYYY-MM-DD (used with to)
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          description: End date in format YYYY-MM-DD (used with from)
+          schema:
+            type: string
+            format: date
         - name: movements
           in: query
-          description: number of movements to return
+          description: Number of movements to return (limit)
           schema:
-            type: string
+            type: integer
+        - name: offset
+          in: query
+          description: Offset for movement pagination (skip first N matching movements)
+          schema:
+            type: integer
         - name: station_id
           in: path
           required: true
@@ -79929,7 +80308,7 @@ paths:
         '200':
           description: OK
           content:
-            application/xml:
+            application/json:
               schema:
                 type: array
                 items:
@@ -80442,6 +80821,8 @@ paths:
                           None:
                             latinName: None
                             amount: 2
+        '400':
+          description: Bad Request (invalid query parameter values)
       servers:
         - url: 'https://wiediversistmeingarten.org/api'
           description: Wie divers ist mein Garten

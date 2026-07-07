@@ -58,11 +58,6 @@ const Footer = ({ language }) => {
               {isGerman ? "Regelmäßige Discord-Treffen" : "Regular Discord meetings"} <a href='https://pad.uni-muenster.de/DT2TUVfwRFqJHvKUWVLyPA?view' target='_blank' rel='noopener noreferrer'>{isGerman ? "Protokoll und nächster Termin" : "Protocol and next date"}</a>
             </strong>
           </div>
-          <div className="footer-alert">
-            <strong>
-              EU Biodiversity Sampling Week: 16.–24. Mai 2026 <br /><a href='/view/ebsw'>{isGerman ? "Mehr erfahren" : "Learn more"}</a>
-            </strong>
-          </div>
         </div>
         <div id="links">
           <a id="link" href="/doc">API</a> |&nbsp;

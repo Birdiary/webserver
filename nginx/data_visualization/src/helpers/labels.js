@@ -4987,6 +4987,14 @@ const saerchOptions = {
 
 
 const validationOptions = {
+    "Human": {
+        "latinName": "human",
+        "germanName": "Mensch"
+    },
+    "Mensch": {
+        "latinName": "human",
+        "germanName": "Mensch"
+    },
     "Haussperling": {
         "latinName": "Passer domesticus",
         "germanName": "Haussperling"

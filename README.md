@@ -79,6 +79,38 @@ Configure behavior with environment variables in `server.env`:
 
 The endpoint `/api/statistics/<station_id>/range` is cache-first: it always serves cache when present and queues an async range refresh when stale.
 
+### Movement API filtering & pagination (UI performance)
+
+The movement endpoint supports server-side filtering/pagination so the UI can avoid loading full movement histories:
+
+`GET /api/movement/<station_id>`
+
+- `movements=<N>`: limit number of returned movements
+- `offset=<N>`: skip first N matching movements
+- `species=<latin_name>`: filter by species (UI uses `_` as space replacement)
+- `date=YYYY-MM-DD`: single-day filter
+- `days=<N>`: rolling date window including today (for example `days=2`)
+- `from=YYYY-MM-DD&to=YYYY-MM-DD`: explicit date range (inclusive by date)
+
+Date filter precedence in the backend:
+
+1. `from`/`to`
+2. `days`
+3. `date`
+
+Examples:
+
+- `/api/movement/<station_id>?movements=50&offset=100`
+- `/api/movement/<station_id>?species=Parus_major&days=7&movements=30`
+- `/api/movement/<station_id>?from=2026-07-01&to=2026-07-07&movements=100`
+
+For paged station loading, `GET /api/station/<station_id>` also supports:
+
+- `movements=<N>`
+- `movementsOffset=<N>`
+
+and returns `movementsMeta` (`limit`, `offset`, `returned`, `total`, `hasMore`) used by the UI "load more" workflow.
+
 ## How to Contribute
 Thank you for considering contributing to Birdiary. Birdiary is an open source project, and we love to receive contributions from our community — you!
 There are many ways to contribute, from writing tutorials or blog posts, improving the documentation, submitting bug reports and feature requests or writing code which can be incorporated into Birdiary itself.

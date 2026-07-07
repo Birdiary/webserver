@@ -1,5 +1,5 @@
 import { Grid, Dialog, DialogActions, Button, DialogTitle, DialogContent, DialogContentText, IconButton, TextField, InputAdornment, Autocomplete } from "@mui/material"
-import { formatUTCDateTime } from "../helpers/dateUtils"
+import { formatLocalDateTime } from "../helpers/dateUtils"
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import { useState, useMemo } from "react"
@@ -99,13 +99,13 @@ function StatisticsView(props) {
         <span>
           <strong>{language[props.language]["statistics"]["lastFullUpdateLabel"]}:</strong>{" "}
           {props.data.lastFullUpdate
-            ? formatUTCDateTime(props.data.lastFullUpdate)
+            ? formatLocalDateTime(props.data.lastFullUpdate)
             : language[props.language]["statistics"]["neverUpdated"]}
         </span>
         <span>
           <strong>{language[props.language]["statistics"]["lastRealtimeUpdateLabel"]}:</strong>{" "}
           {props.data.lastRealtimeUpdate
-            ? formatUTCDateTime(props.data.lastRealtimeUpdate)
+            ? formatLocalDateTime(props.data.lastRealtimeUpdate)
             : language[props.language]["statistics"]["neverUpdated"]}
         </span>
       </div>
@@ -200,7 +200,6 @@ function StatisticsView(props) {
         <h3>{language[props.language]["statistics"]["activeStationsTitle"]}</h3>
         <Grid container spacing={2} style={{ marginBottom: 16 }}>
           {[
-            { key: "activeStations_week",   label: language[props.language]["statistics"]["activeStationsWeek"] },
             { key: "activeStations_month",  label: language[props.language]["statistics"]["activeStationsMonth"] },
             { key: "activeStations_3months",label: language[props.language]["statistics"]["activeStations3Months"] },
             { key: "activeStations_total",  label: language[props.language]["statistics"]["activeStationsTotal"] },

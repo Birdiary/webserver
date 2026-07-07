@@ -107,6 +107,29 @@ BIRDS_OF_INTEREST = [
     "Serinus serinus", "Emberiza citrinella"
 ]
 
+HUMAN_VALIDATION_ALIASES = {
+    "human": "human",
+    "mensch": "human",
+    "menshc": "human"
+}
+
+
+def normalize_validation_species(validation_payload):
+    latin_name = validation_payload.get("latinName")
+    if not isinstance(latin_name, str):
+        return validation_payload
+
+    normalized_key = latin_name.strip().lower()
+    canonical = HUMAN_VALIDATION_ALIASES.get(normalized_key)
+    if not canonical:
+        return validation_payload
+
+    normalized_payload = dict(validation_payload)
+    normalized_payload["latinName"] = canonical
+    if not normalized_payload.get("germanName"):
+        normalized_payload["germanName"] = "Mensch"
+    return normalized_payload
+
 
 def insertMax(items, entry, key, limit=ENV_EXTREMES_LIMIT):
         if not entry or key not in entry:
@@ -1338,11 +1361,9 @@ def calculateStatistics():
     # --- Active station counts ---
     now_for_active = datetime.now()
     active_thresholds = {
-        "week": now_for_active - timedelta(days=7),
         "month": now_for_active - timedelta(days=30),
         "3months": now_for_active - timedelta(days=90),
     }
-    activeStations_week = 0
     activeStations_month = 0
     activeStations_3months = 0
     for _station in stationsList:
@@ -1368,13 +1389,10 @@ def calculateStatistics():
         if not _last_dates:
             continue
         _last_activity = max(_last_dates)
-        if _last_activity >= active_thresholds["week"]:
-            activeStations_week += 1
         if _last_activity >= active_thresholds["month"]:
             activeStations_month += 1
         if _last_activity >= active_thresholds["3months"]:
             activeStations_3months += 1
-    statisticsALL["activeStations_week"] = activeStations_week
     statisticsALL["activeStations_month"] = activeStations_month
     statisticsALL["activeStations_3months"] = activeStations_3months
     statisticsALL["activeStations_total"] = len(stationsList)
@@ -1731,7 +1749,7 @@ def saveValidation(validation, movement_id, station_id):
         print(f"validation skipped; movement {movement_id} for station {station_id} missing", flush=True)
         return None
 
-    validation_payload = dict(validation)
+    validation_payload = normalize_validation_species(dict(validation))
     latinName = validation_payload.get("latinName")
     if not latinName:
         print(f"validation skipped; latinName missing for movement {movement_id}", flush=True)
@@ -2307,37 +2325,92 @@ def handle_movement(station_id: str, movement_id: str):
 def search_Movements(station_id: str):
     species = request.args.get('species')
     date = request.args.get('date')
-    
     numberOfMovements = request.args.get('movements')
+    offset_raw = request.args.get('offset', 0)
+    days_raw = request.args.get('days')
+    from_raw = request.args.get('from')
+    to_raw = request.args.get('to')
+
     query = {}
+    conditions = []
     print(species, flush=True)
-    if date and species:
-        date = date.split()[0]
-        date_object = datetime.strptime(date, '%Y-%m-%d').date()
-        date2_object = date_object + timedelta(days=1)
-        date2 = date2_object.strftime("%Y-%m-%d")
-        species = species.replace("_", " ")
-        query = {"$and": [{"detections": { "$elemMatch" : {"latinName": { "$in": [species] } } }},{"start_date": {
-        "$gte": date,
-        "$lt": date2
-    } }]}
-    elif species:
+
+    if species:
         species = species.replace("_", " ")
         print(species, flush=True)
-        query = {"detections": { "$elemMatch" : {"latinName": { "$in": [species] } } } }
+        conditions.append({"detections": {"$elemMatch": {"latinName": {"$in": [species]}}}})
+
+    range_start = None
+    range_end_exclusive = None
+
+    if from_raw or to_raw:
+        if from_raw:
+            try:
+                from_day = datetime.strptime(from_raw.split()[0], '%Y-%m-%d').date()
+                range_start = from_day.strftime('%Y-%m-%d')
+            except Exception:
+                return "from must be YYYY-MM-DD", 400
+        if to_raw:
+            try:
+                to_day = datetime.strptime(to_raw.split()[0], '%Y-%m-%d').date()
+                range_end_exclusive = (to_day + timedelta(days=1)).strftime('%Y-%m-%d')
+            except Exception:
+                return "to must be YYYY-MM-DD", 400
+        if range_start and range_end_exclusive and range_start >= range_end_exclusive:
+            return "from must be <= to", 400
+    elif days_raw:
+        try:
+            days = int(days_raw)
+            if days <= 0:
+                return "days must be > 0", 400
+            today = datetime.utcnow().date()
+            from_day = today - timedelta(days=days - 1)
+            to_day = today
+            range_start = from_day.strftime('%Y-%m-%d')
+            range_end_exclusive = (to_day + timedelta(days=1)).strftime('%Y-%m-%d')
+        except Exception:
+            return "days must be an integer", 400
     elif date:
-        date = date.split()[0]
-        date_object = datetime.strptime(date, '%Y-%m-%d').date()
-        date2_object = date_object + timedelta(days=1)
-        date2 = date2_object.strftime("%Y-%m-%d")
-        query = {"start_date": {
-        "$gte": date,
-        "$lt": date2
-    } }
-    if numberOfMovements and int(numberOfMovements) > 0:
-            movements = list(db["movements_" + station_id].find(query, {'_id' : False}).sort("start_date",-1).limit(int(numberOfMovements)))
-    else:
-            movements = list(db["movements_" + station_id].find(query, {'_id' : False}).sort("start_date",-1))
+        try:
+            date_value = date.split()[0]
+            date_object = datetime.strptime(date_value, '%Y-%m-%d').date()
+            range_start = date_object.strftime('%Y-%m-%d')
+            range_end_exclusive = (date_object + timedelta(days=1)).strftime('%Y-%m-%d')
+        except Exception:
+            return "date must be YYYY-MM-DD", 400
+
+    if range_start or range_end_exclusive:
+        date_query = {}
+        if range_start:
+            date_query["$gte"] = range_start
+        if range_end_exclusive:
+            date_query["$lt"] = range_end_exclusive
+        conditions.append({"start_date": date_query})
+
+    if len(conditions) == 1:
+        query = conditions[0]
+    elif len(conditions) > 1:
+        query = {"$and": conditions}
+
+    try:
+        movement_limit = int(numberOfMovements) if numberOfMovements else 0
+    except Exception:
+        return "movements must be an integer", 400
+    movement_limit = max(movement_limit, 0)
+
+    try:
+        movement_offset = int(offset_raw) if offset_raw else 0
+    except Exception:
+        return "offset must be an integer", 400
+    movement_offset = max(movement_offset, 0)
+
+    cursor = db["movements_" + station_id].find(query, {'_id' : False}).sort("start_date",-1)
+    if movement_offset > 0:
+        cursor = cursor.skip(movement_offset)
+    if movement_limit > 0:
+        cursor = cursor.limit(movement_limit)
+
+    movements = list(cursor)
     return jsonify(movements), 200
 
 @app.route('/api/uploads/images/<filename>')
@@ -2383,10 +2456,18 @@ def count():
 def getMovement():
     collections = db.list_collection_names()
     movementCollections= []
+    fallbackCollections = []
     for col in collections:
         if col.find('movements') != -1:
-            if db[col].count_documents({}) > 30:
+            count = db[col].count_documents({})
+            if count > 30:
                 movementCollections.append(col)
+            elif count > 0:
+                fallbackCollections.append(col)
+    if not movementCollections:
+        movementCollections = fallbackCollections
+    if not movementCollections:
+        return jsonify({}), 404
     randomCollection = random.choice(movementCollections)
     print(randomCollection, flush=True)
     movement = db[randomCollection].aggregate([{ "$sample": { "size": 1 } } ])

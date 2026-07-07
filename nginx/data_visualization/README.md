@@ -45,6 +45,36 @@ You can learn more in the [Create React App documentation](https://facebook.gith
 
 To learn React, check out the [React documentation](https://reactjs.org/).
 
+## Birdiary UI API usage
+
+The UI uses helper functions in `src/helpers/requests.js` to query the Birdiary API.
+
+For movement-heavy views, use server-side constrained requests to improve performance.
+
+### Station movements (paged)
+
+`getStation(id, { movements, movementsOffset })`
+
+This maps to `GET /api/station/<station_id>` and enables incremental loading via the returned `movementsMeta.hasMore` flag.
+
+### Movement search with advanced filters
+
+`searchForSpecies(stationId, species, movements, date, options)`
+
+`options` supports:
+
+- `offset`
+- `days`
+- `from`
+- `to`
+
+Examples:
+
+- last 30 matching movements: `searchForSpecies(id, 'Parus major', 30, null)`
+- next search page: `searchForSpecies(id, 'Parus major', 30, null, { offset: 30 })`
+- rolling window: `searchForSpecies(id, null, 50, null, { days: 7 })`
+- explicit range: `searchForSpecies(id, null, 100, null, { from: '2026-07-01', to: '2026-07-07' })`
+
 ### Code Splitting
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
