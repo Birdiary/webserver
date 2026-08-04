@@ -932,6 +932,14 @@ def cleanupUploads(dry_run=False, min_age_hours=24):
                     orphan_collections[key].append(col)
                 break
 
+    # How many documents each station-less movements collection holds. This is the proof of how
+    # much real data a drop would destroy: empty / tiny collections are leftover test cruft,
+    # collections with many docs are deleted stations that still carry observation data.
+    orphan_movement_doc_counts = {
+        col: db[col].count_documents({}) for col in orphan_collections["movements"]
+    }
+    total_orphan_movement_docs = sum(orphan_movement_doc_counts.values())
+
     # Remove files referenced by movements in station-less collections (no age gate: the station
     # is gone, so nothing here is an in-flight upload).
     orphan_collection_files_deleted = 0
@@ -947,11 +955,11 @@ def cleanupUploads(dry_run=False, min_age_hours=24):
                     orphan_collection_files_deleted += 1
 
     dropped_collections = []
-    for key in ("movements", "environments", "feed"):
-        for col in orphan_collections[key]:
-            if not dry_run:
+    if not dry_run:
+        for key in ("movements", "environments", "feed"):
+            for col in orphan_collections[key]:
                 db[col].drop()
-            dropped_collections.append(col)
+                dropped_collections.append(col)
 
     # --- Part 2: files not referenced by any remaining movement ---
     # Station-less movements collections are treated as already gone, so their files are not
@@ -1009,7 +1017,13 @@ def cleanupUploads(dry_run=False, min_age_hours=24):
             "movements": orphan_collections["movements"],
             "environments": orphan_collections["environments"],
             "feed": orphan_collections["feed"],
+            # documents that would be destroyed, per station-less movements collection (sorted desc)
+            "movementDocCounts": dict(sorted(
+                orphan_movement_doc_counts.items(), key=lambda kv: kv[1], reverse=True
+            )),
+            "totalMovementDocs": total_orphan_movement_docs,
             "filesDeleted": orphan_collection_files_deleted,
+            # in a dry run nothing is dropped; this lists only collections ACTUALLY dropped.
             "dropped": dropped_collections,
         },
         "referenced": {"videos": len(referenced_videos), "audios": len(referenced_audios)},
