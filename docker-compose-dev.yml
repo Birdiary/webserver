@@ -57,6 +57,25 @@ services:
     depends_on:
       - api
 
+  # Modernized (Vite) dashboard, run in parallel with the old CRA `ui` for
+  # side-by-side comparison. Reachable directly at http://localhost:3001/view
+  # while the old app stays at http://localhost:8080/view. Remove at cutover.
+  ui-next:
+    build:
+      context: ./nginx/data_visualization_next
+      dockerfile: Dockerfile.dev
+    volumes:
+      - './nginx/data_visualization_next:/usr/src/app'
+      - '/usr/src/app/node_modules'
+    ports:
+      - 3001:3001
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    depends_on:
+      - api
+
   worker:
     image: api
     command: rq worker priority image statistics default --url redis://redis:6379 --with-scheduler  

@@ -150,6 +150,85 @@ def insertMin(items, entry, key, limit=ENV_EXTREMES_LIMIT):
         filtered.sort(key=lambda candidate: candidate.get(key, float('inf')))
         return filtered[:limit]
 
+
+# Time-bucketed environment extremes: for each timeframe we keep the single
+# warmest/coldest (temperature) and most humid/driest (humidity) reading, each
+# with its date and (for the global doc) originating station.
+ENV_EXTREME_BUCKETS = ("today", "week", "month", "all")
+
+
+def empty_env_extremes():
+        return {
+                bucket: {"warmest": None, "coldest": None, "wettest": None, "driest": None}
+                for bucket in ENV_EXTREME_BUCKETS
+        }
+
+
+def env_extreme_buckets(measurement_date, now):
+        buckets = ["all"]
+        parsed = parse_datetime_value(measurement_date)
+        if parsed:
+                try:
+                        delta_days = (now.date() - parsed.date()).days
+                except Exception:
+                        delta_days = None
+                if delta_days is not None and delta_days >= 0:
+                        if delta_days == 0:
+                                buckets.append("today")
+                        if delta_days < 7:
+                                buckets.append("week")
+                        if delta_days < 30:
+                                buckets.append("month")
+        return buckets
+
+
+RANGE_SPECIES_REF_LIMIT = min(MAX_MOVEMENT_REFERENCES, 6)
+
+
+def add_species_to_bucket(bucket_dict, latin_name, german_name, ref, unique_station=False):
+        entry = bucket_dict.setdefault(
+                latin_name,
+                {"latinName": latin_name, "germanName": german_name, "amount": 0, "movements": []}
+        )
+        entry["amount"] = entry["amount"] + 1
+        if unique_station:
+                entry["movements"] = append_recent_unique_station(entry.get("movements"), ref, RANGE_SPECIES_REF_LIMIT)
+        else:
+                entry["movements"] = append_recent(entry.get("movements"), ref, RANGE_SPECIES_REF_LIMIT)
+
+
+def finalize_species_by_range(all_by_range):
+        result = {}
+        for bucket in ("today", "week", "month"):
+                top = [{"amount": 0}, {"amount": 0}, {"amount": 0}, {"amount": 0}, {"amount": 0}]
+                for species in all_by_range.get(bucket, {}):
+                        if top[0]["amount"] < all_by_range[bucket][species]["amount"]:
+                                top = insertMax(top, all_by_range[bucket][species], "amount")
+                result[bucket] = list(filter(lambda i: i.get("amount", 0) != 0, top))
+        return result
+
+
+def update_env_extremes(extremes, entry, value_key, now):
+        if not extremes or not entry or value_key not in entry:
+                return
+        value = entry.get(value_key)
+        if value is None:
+                return
+        if value_key == "temperature":
+                high_key, low_key = "warmest", "coldest"
+        else:
+                high_key, low_key = "wettest", "driest"
+        for bucket in env_extreme_buckets(entry.get("date"), now):
+                slot = extremes.get(bucket)
+                if slot is None:
+                        continue
+                current_high = slot.get(high_key)
+                if current_high is None or value > current_high.get(value_key, float('-inf')):
+                        slot[high_key] = entry.copy()
+                current_low = slot.get(low_key)
+                if current_low is None or value < current_low.get(value_key, float('inf')):
+                        slot[low_key] = entry.copy()
+
 birdJSON = {}
     
 #read csv file
@@ -662,11 +741,14 @@ def create_statistics_payload(station_id, name):
     payload["minTemp"] = []
     payload["maxHum"] = []
     payload["minHum"] = []
+    payload["envExtremes"] = empty_env_extremes()
     payload["specialBirds"] = dict()
     payload["sumEnvironment"] = 0
     payload["sumTemperature"] = 0
     payload["sumHumidity"] = 0
     payload["maxSpecies"] = [{"amount": 0}, {"amount": 0}, {"amount": 0}, {"amount": 0}, {"amount": 0}]
+    payload["maxSpeciesByRange"] = {"today": [], "week": [], "month": []}
+    payload["allByRange"] = {"today": dict(), "week": dict(), "month": dict()}
     payload["maxValidatedBirds"] = [{"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0}, {"sum": 0}]
     payload["all"] = dict()
     payload["numberOfDetections"] = 0
@@ -865,6 +947,9 @@ def finalize_statistics_payload(statistics):
         statistics["averageTemp"] = statistics["sumTemperature"] / statistics["sumEnvironment"]
         statistics["averageHum"] = statistics["sumHumidity"] / statistics["sumEnvironment"]
 
+    statistics["maxSpeciesByRange"] = finalize_species_by_range(statistics.get("allByRange", {}))
+    statistics.pop("allByRange", None)
+
     statistics["perDay"] = per_day_total
     statistics["validatedBirds"] = validated_total
     return statistics
@@ -886,14 +971,25 @@ def deleteImage(id):
     os.remove('./uploads/raspberry-pi-os' +id  +'.img')
     os.remove('./uploads/raspberry-pi-os' +id  +'draft.img')
 
+def safe_remove_file(path):
+    """Remove a file, tolerating a missing file / other OS errors. Returns True if a file was actually removed."""
+    try:
+        os.remove(path)
+        return True
+    except FileNotFoundError:
+        return False
+    except OSError as e:
+        print("Failed to remove {}: {}".format(path, e), flush=True)
+        return False
+
 @enqueueable
 def removeMovementFiles(movement):
-    videofile = movement["video"]
-    videofilename = os.path.basename(videofile)
-    audiofile = movement["audio"]
-    audiofilename = os.path.basename(audiofile)
-    os.remove("./uploads/disk/audios/" + audiofilename)
-    os.remove("./uploads/disk/videos/" + videofilename)
+    videofile = movement.get("video")
+    if videofile and videofile != "pending":
+        safe_remove_file("./uploads/disk/videos/" + os.path.basename(videofile))
+    audiofile = movement.get("audio")
+    if audiofile and audiofile != "pending":
+        safe_remove_file("./uploads/disk/audios/" + os.path.basename(audiofile))
 
 
 @enqueueable
@@ -1035,6 +1131,7 @@ def calculateStatistics():
     ))
 
     statisticsALL = create_statistics_payload("all", "all")
+    compute_now = datetime.utcnow()
 
     for station in stationsList:
         station_id = station["station_id"]
@@ -1159,6 +1256,20 @@ def calculateStatistics():
                     MAX_MOVEMENT_REFERENCES
                 )
 
+                # Time-bucketed species rankings (today / this week / this month).
+                for movement_bucket in env_extreme_buckets(movement["start_date"], compute_now):
+                    if movement_bucket == "all":
+                        continue
+                    add_species_to_bucket(
+                        statistics["allByRange"][movement_bucket], latinName, germanName,
+                        build_movement_reference(movement, station_id, include_score=True)
+                    )
+                    add_species_to_bucket(
+                        statisticsALL["allByRange"][movement_bucket], latinName, germanName,
+                        build_movement_reference(movement, station_id, station.get("name"), include_score=True),
+                        unique_station=True
+                    )
+
                 if latinName in BIRDS_OF_INTEREST and detection_score > 0.8:
                     station_special_entry = statistics["specialBirds"].setdefault(
                         latinName,
@@ -1218,12 +1329,14 @@ def calculateStatistics():
                     station_temp_entry = {"temperature": temperature, "date": measurement_date}
                     statistics["maxTemp"] = insertMax(statistics["maxTemp"], station_temp_entry.copy(), "temperature")
                     statistics["minTemp"] = insertMin(statistics["minTemp"], station_temp_entry.copy(), "temperature")
+                    update_env_extremes(statistics["envExtremes"], station_temp_entry, "temperature", compute_now)
 
                     global_temp_entry = station_temp_entry.copy()
                     global_temp_entry["station_id"] = station_id
                     global_temp_entry["station_name"] = station["name"]
                     statisticsALL["maxTemp"] = insertMax(statisticsALL["maxTemp"], global_temp_entry.copy(), "temperature")
                     statisticsALL["minTemp"] = insertMin(statisticsALL["minTemp"], global_temp_entry.copy(), "temperature")
+                    update_env_extremes(statisticsALL["envExtremes"], global_temp_entry, "temperature", compute_now)
                 elif temperature is not None and -30 < temperature < 60:
                     station_temp_entry = {"temperature": temperature, "date": measurement_date}
                     statistics["minTemp"] = insertMin(statistics["minTemp"], station_temp_entry.copy(), "temperature")
@@ -1236,12 +1349,14 @@ def calculateStatistics():
                     station_hum_entry = {"humidity": humidity, "date": measurement_date}
                     statistics["maxHum"] = insertMax(statistics["maxHum"], station_hum_entry.copy(), "humidity")
                     statistics["minHum"] = insertMin(statistics["minHum"], station_hum_entry.copy(), "humidity")
+                    update_env_extremes(statistics["envExtremes"], station_hum_entry, "humidity", compute_now)
 
                     global_hum_entry = station_hum_entry.copy()
                     global_hum_entry["station_id"] = station_id
                     global_hum_entry["station_name"] = station["name"]
                     statisticsALL["maxHum"] = insertMax(statisticsALL["maxHum"], global_hum_entry.copy(), "humidity")
                     statisticsALL["minHum"] = insertMin(statisticsALL["minHum"], global_hum_entry.copy(), "humidity")
+                    update_env_extremes(statisticsALL["envExtremes"], global_hum_entry, "humidity", compute_now)
 
         for day in statistics["perDay"]:
                 if statistics["maxDay"][0]["sum"] < statistics["perDay"][day]["sum"]:
@@ -1293,6 +1408,9 @@ def calculateStatistics():
         if statistics["sumEnvironment"] > 0:
             statistics["averageTemp"] = statistics["sumTemperature"] / statistics["sumEnvironment"]
             statistics["averageHum"] = statistics["sumHumidity"] / statistics["sumEnvironment"]
+
+        statistics["maxSpeciesByRange"] = finalize_species_by_range(statistics["allByRange"])
+        del statistics["allByRange"]
 
         #Remove perDay and validated Birds statistic to keep object small and they are not necessary for the current view
         statistics["perDay"] = len(statistics["perDay"])
@@ -1397,6 +1515,9 @@ def calculateStatistics():
     statisticsALL["activeStations_3months"] = activeStations_3months
     statisticsALL["activeStations_total"] = len(stationsList)
     # --- End active station counts ---
+
+    statisticsALL["maxSpeciesByRange"] = finalize_species_by_range(statisticsALL["allByRange"])
+    del statisticsALL["allByRange"]
 
     statisticsALL["createdAt"] = datetime.utcnow()
     statisticsALL["lastFullUpdate"] = datetime.utcnow()
@@ -2112,7 +2233,6 @@ def station(station_id: str):
         return jsonify(result.modified_count), 200
     if request.method=="DELETE":
         apikey= request.args.get("apikey")
-        deleteData = request.args.get("deleteData")
         station = stations.find_one({"station_id":station_id}, {'_id' : False} )
         if station is None:
             return "not found", 404
@@ -2121,15 +2241,13 @@ def station(station_id: str):
         if API_KEY != apikey and station_key != apikey and not is_station_owner(station, user) and not is_admin_user(user):
             return "Not authorized", 401
         stations.delete_one({"station_id": station_id})
-        if(deleteData):
-            movements = db["movements_" + station_id].find({})
-            movements = list(movements)
-            for movement in movements:
-                q.enqueue(removeMovementFiles, movement)
-            movementsCollection = db["movements_"+station_id]
-            movementsCollection.drop
-            environmentCollection = db["environments_"+station_id]
-            environmentCollection.drop
+        # Always remove the station's underlying files and drop its collections so nothing stays servable.
+        movements = list(db["movements_" + station_id].find({}))
+        for movement in movements:
+            q.enqueue(removeMovementFiles, movement)
+        db["movements_" + station_id].drop()
+        db["environments_" + station_id].drop()
+        db["feed_" + station_id].drop()
         return jsonify(str(station_id)), 200
 
 @app.route('/api/updateStations')
@@ -2303,19 +2421,17 @@ def add_movement_image(station_id: str):
 def handle_movement(station_id: str, movement_id: str):
     if request.method=="DELETE":
         apikey= request.args.get("apikey")
-        deleteData = request.args.get("deleteData")
         station = stations.find_one({"station_id": station_id}, {'_id' : False})
         station_key = ensure_station_key(station) if station else None
         user = get_authenticated_user()
         if API_KEY != apikey and (not station or station_key != apikey) and not is_station_owner(station, user) and not is_admin_user(user):
             return "Not authorized", 401
-        if deleteData:
-            movements = db["movements_" + station_id].find({"mov_id": movement_id})
-            movements = list(movements)
-            for movement in movements:
-                q.enqueue(removeMovementFiles, movement)
+        # Always delete the underlying video/audio files so nothing stays servable after the movement is gone.
+        movements = list(db["movements_" + station_id].find({"mov_id": movement_id}))
+        for movement in movements:
+            q.enqueue(removeMovementFiles, movement)
         db["movements_" + station_id].delete_many({"mov_id": movement_id})
-        return jsonify(str(station_id)), 200   
+        return jsonify(str(station_id)), 200
         
     movement = db["movements_" + station_id].find({"mov_id": movement_id}, {'_id' : False})
     movement = list(movement)[0]
@@ -2324,21 +2440,46 @@ def handle_movement(station_id: str, movement_id: str):
 @app.route('/api/movement/<station_id>', methods=['GET'])
 def search_Movements(station_id: str):
     species = request.args.get('species')
+    validation = request.args.get('validation')
     date = request.args.get('date')
     numberOfMovements = request.args.get('movements')
     offset_raw = request.args.get('offset', 0)
     days_raw = request.args.get('days')
     from_raw = request.args.get('from')
     to_raw = request.args.get('to')
+    undetected_raw = request.args.get('undetected')
+    detection_first_raw = request.args.get('detection_first')
+    has_validation_raw = request.args.get('has_validation')
 
     query = {}
     conditions = []
     print(species, flush=True)
 
-    if species:
+    # Validation filter
+    if has_validation_raw and has_validation_raw.lower() in ['true', '1', 'yes']:
+        conditions.append({"validation": {"$exists": True}})
+
+    # Validation species filter
+    if validation:
+        validation = validation.replace("_", " ")
+        conditions.append({"validation.validations": {"$elemMatch": {"latinName": validation}}})
+
+    # Species filter
+    if undetected_raw and undetected_raw.lower() in ['true', '1', 'yes']:
+        # Filter for undetected birds (detections[0].latinName == "None")
+        if detection_first_raw and detection_first_raw.lower() in ['true', '1', 'yes']:
+            conditions.append({"detections.0.latinName": "None"})
+        else:
+            conditions.append({"detections": {"$elemMatch": {"latinName": {"$in": ["None"]}}}})
+    elif species:
         species = species.replace("_", " ")
         print(species, flush=True)
-        conditions.append({"detections": {"$elemMatch": {"latinName": {"$in": [species]}}}})
+        if detection_first_raw and detection_first_raw.lower() in ['true', '1', 'yes']:
+            # Only match if first detection has this species
+            conditions.append({"detections.0.latinName": species})
+        else:
+            # Match any detection in the array
+            conditions.append({"detections": {"$elemMatch": {"latinName": {"$in": [species]}}}})
 
     range_start = None
     range_end_exclusive = None
@@ -2424,6 +2565,86 @@ def getAudios(filename):
 @app.route('/api/uploads/videos/<filename>')
 def getVideos(filename):
     return send_from_directory(app.config['UPLOADED_VIDEOS_DEST'], filename)
+
+@app.route('/api/cleanup/uploads', methods=['GET'])
+def cleanup_uploads():
+    """Delete video/audio files on disk that are no longer referenced by any movement.
+
+    Guarded by API_KEY (?apikey=) or an authenticated admin user.
+    Query params:
+      - dryRun=true    only report what would be deleted, delete nothing
+      - minAgeHours=N  only touch files older than N hours (default 24) to avoid
+                       deleting files of in-flight uploads whose movement is still "pending"
+    """
+    apikey = request.args.get("apikey")
+    user = get_authenticated_user()
+    if API_KEY != apikey and not is_admin_user(user):
+        return "Not authorized", 401
+
+    dry_run = request.args.get("dryRun", "").lower() in ["true", "1", "yes"]
+    try:
+        min_age_hours = float(request.args.get("minAgeHours", 24))
+    except (TypeError, ValueError):
+        return "minAgeHours must be a number", 400
+    min_age_seconds = max(0.0, min_age_hours) * 3600
+    now = time.time()
+
+    # Collect every video/audio filename still referenced by a movement, across all stations.
+    referenced_videos = set()
+    referenced_audios = set()
+    for col in db.list_collection_names():
+        if not col.startswith("movements_"):
+            continue
+        for movement in db[col].find({}, {"video": True, "audio": True, "_id": False}):
+            video = movement.get("video")
+            if video and video != "pending":
+                referenced_videos.add(os.path.basename(video))
+            audio = movement.get("audio")
+            if audio and audio != "pending":
+                referenced_audios.add(os.path.basename(audio))
+
+    def find_orphans(directory, referenced):
+        orphans = []
+        if not os.path.isdir(directory):
+            return orphans
+        for fname in os.listdir(directory):
+            full = os.path.join(directory, fname)
+            if not os.path.isfile(full):
+                continue
+            if fname in referenced:
+                continue
+            try:
+                if now - os.path.getmtime(full) < min_age_seconds:
+                    continue  # too new — likely an in-flight upload
+            except OSError:
+                continue
+            orphans.append(fname)
+        return orphans
+
+    video_dir = app.config['UPLOADED_VIDEOS_DEST']
+    audio_dir = app.config['UPLOADED_AUDIOS_DEST']
+    orphan_videos = find_orphans(video_dir, referenced_videos)
+    orphan_audios = find_orphans(audio_dir, referenced_audios)
+
+    deleted_videos = []
+    deleted_audios = []
+    if not dry_run:
+        for fname in orphan_videos:
+            if safe_remove_file(os.path.join(video_dir, fname)):
+                deleted_videos.append(fname)
+        for fname in orphan_audios:
+            if safe_remove_file(os.path.join(audio_dir, fname)):
+                deleted_audios.append(fname)
+
+    return jsonify({
+        "dryRun": dry_run,
+        "minAgeHours": min_age_hours,
+        "referenced": {"videos": len(referenced_videos), "audios": len(referenced_audios)},
+        "orphaned": {"videos": len(orphan_videos), "audios": len(orphan_audios)},
+        "deleted": {"videos": len(deleted_videos), "audios": len(deleted_audios)},
+        "orphanedVideos": orphan_videos,
+        "orphanedAudios": orphan_audios,
+    }), 200
 
 @app.route('/api/count')
 def count():

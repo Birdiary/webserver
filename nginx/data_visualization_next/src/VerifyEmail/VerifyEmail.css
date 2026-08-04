@@ -1,0 +1,26 @@
+.verify-email-wrapper {
+  min-height: calc(100vh - 160px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  background: linear-gradient(135deg, rgba(0, 121, 145, 0.08), rgba(0, 0, 0, 0));
+}
+
+.verify-email-card {
+  width: 100%;
+  max-width: 520px;
+  padding: 32px;
+  border-radius: 16px;
+}
+
+.verify-email-tabs {
+  margin-top: 16px;
+}
+
+.verify-email-form {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

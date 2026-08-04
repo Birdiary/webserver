@@ -1,0 +1,21 @@
+# Dev image for the modernized (Vite) dashboard — runs the Vite dev server on 3001.
+FROM node:22-bookworm-slim
+
+WORKDIR /usr/src/app
+
+ENV PATH=/usr/src/app/node_modules/.bin:$PATH
+
+# Build-time secrets for client-side AES (must match AES_KEY/AES_IV in server.env).
+ENV VITE_SECRET_KEY=secret-key
+ENV VITE_SECRET_IV=secret-iv
+
+# Install and cache dependencies (no lockfile committed yet -> npm install).
+COPY package.json ./
+RUN npm install
+
+# App source is bind-mounted over this in docker-compose-dev.yml; the COPY makes
+# the image self-contained for a standalone build.
+COPY . .
+
+# Vite reads port 3001 + host:true from vite.config.js.
+CMD ["npm", "start"]

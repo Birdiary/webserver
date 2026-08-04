@@ -1,0 +1,190 @@
+import React, { Component } from 'react'
+import { AppBar, Toolbar, Typography, Button, Container, Box, IconButton, Menu, MenuItem } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+import { Link } from 'react-router-dom'; 
+import language from '../languages/languages';
+import { useAuth } from '../context/AuthContext';
+import "./Navbar.css";
+import StationSearch from './StationSearch';
+//import { ReactComponent as SnowEnable} from '../helpers/icons/snow-enable.svg'
+//import { ReactComponent as SnowDisable } from '../helpers/icons/snow-disable.svg'
+
+function Header(props){
+  const [anchorElNav, setAnchorElNav] = React.useState(null);
+  const { user, logout } = useAuth();
+  const navCopy = language[props.language]["navbar"];
+
+  const handleOpenNavMenu = (event) => {
+    setAnchorElNav(event.currentTarget);
+  };
+
+  const handleCloseNavMenu = () => {
+    setAnchorElNav(null);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    handleCloseNavMenu();
+  };
+
+    return (
+
+      <div>
+      <AppBar id="header">
+      <Container style={{width: "100%", maxWidth: "none"}}>
+        <Toolbar disableGutters >
+          <Typography
+            variant="h6"
+            noWrap
+            component="a"
+            href="/"
+            sx={{
+              mr: 2,
+              display: { xs: 'none', md: 'flex' },
+              fontFamily: 'monospace',
+              fontWeight: 700,
+              letterSpacing: '.3rem',
+              color: 'inherit',
+              textDecoration: 'none',
+            }}
+          >
+            Birdiary
+          </Typography>
+
+          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
+            <IconButton
+              size="large"
+              aria-label="account of current user"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              onClick={handleOpenNavMenu}
+              color="inherit"
+            >
+              <MenuIcon />
+            </IconButton>
+            <Menu
+              id="menu-appbar"
+              anchorEl={anchorElNav}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'left',
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'left',
+              }}
+              open={Boolean(anchorElNav)}
+              onClose={handleCloseNavMenu}
+              sx={{
+                display: { xs: 'block', md: 'none' },
+              }}
+            >
+                <Box sx={{ px: 2, pt: 1, pb: 2 }}>
+                  <StationSearch languageKey={props.language} fullWidth />
+                </Box>
+                <MenuItem key={"home"} onClick={handleCloseNavMenu} component={Link} to="/view" >
+                  <Typography align="center">{navCopy["overview"]}</Typography>
+                </MenuItem>
+                <MenuItem key={"en"} onClick={() => {props.changeLang("en"); handleCloseNavMenu()}}>
+                  <Typography align="center" className={props.language == "en" ? 'bold' : null}>EN</Typography>
+                </MenuItem>
+                <MenuItem key={"de"} onClick={() => {props.changeLang("de"); handleCloseNavMenu()}}>
+                  <Typography align="center" className={props.language == "de" ? 'bold' : null}>DE</Typography>
+                </MenuItem>
+                <MenuItem key={"create"} onClick={handleCloseNavMenu} component={Link} to="/view/createstation" >
+                  <Typography align="center">{navCopy["create"]}</Typography>
+                </MenuItem>
+              {user ? (
+                <MenuItem key={"own-stations"} onClick={handleCloseNavMenu} component={Link} to="/view/own-stations" >
+                  <Typography align="center">{navCopy["ownStations"]}</Typography>
+                </MenuItem>
+              ) : null}
+              <MenuItem key={"more"} onClick={handleCloseNavMenu} component="a" href="/" >
+                  <Typography align="center">{navCopy["more"]}</Typography>
+                </MenuItem>
+              {user ? (
+                <MenuItem key={"logout"} onClick={handleLogout}>
+                  <Typography align="center">{navCopy["logout"]}</Typography>
+                </MenuItem>
+              ) : (
+                <MenuItem key={"login"} onClick={handleCloseNavMenu} component={Link} to="/view/login" >
+                  <Typography align="center">{navCopy["login"]}</Typography>
+                </MenuItem>
+              )}
+
+              
+            </Menu>
+          </Box>
+          <Typography
+            variant="h5"
+            noWrap
+            component="a"
+            href=""
+            sx={{
+              mr: 2,
+              display: { xs: 'flex', md: 'none' },
+              flexGrow: 1,
+              fontFamily: 'monospace',
+              fontWeight: 700,
+              letterSpacing: '.3rem',
+              color: 'inherit',
+              textDecoration: 'none',
+            }}
+          >
+            Birdiary
+          </Typography>
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, width: 240, maxWidth: 380, mx: 2, flexShrink: 0 }}>
+            <StationSearch languageKey={props.language} fullWidth />
+          </Box>
+          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex', lg:"flex" } }} >
+          <Typography variant="h4" color="inherit" style={{ flex: 1 }}>
+            <Button style={{ fontWeight : "bold"}} color="inherit" component={Link} to="/view" >{navCopy["overview"]}</Button>
+          </Typography>
+          <Button
+            color="inherit"
+            onClick={() => props.changeLang(props.language === "en" ? "de" : "en")}
+            sx={{ minWidth: 0, px: 1.75, mx: 0.75 }}
+          >
+            {props.language === "en" ? "DE" : "EN"}
+          </Button>
+          <Button rel="noopener" color="inherit" component={Link} to="/view/createstation">
+            {navCopy["create"]}</Button>
+          <Button rel="noopener" color="inherit" component={Link} to="/view/statistics">
+            {navCopy["statistics"]}
+          </Button>
+          <Button rel="noopener" color="inherit" component={Link} to="/view/validation">
+            {navCopy["validation"]}
+          </Button>
+          {user ? (
+            <Button rel="noopener" color="inherit" component={Link} to="/view/own-stations">
+              {navCopy["ownStations"]}
+            </Button>
+          ) : null}
+          <Button rel="noopener" color="inherit"  href="/" >
+            {navCopy["more"]}
+          </Button>
+          {user ? (
+            <Button color="inherit" onClick={logout}>
+              {navCopy["logout"]}
+            </Button>
+          ) : (
+            <Button color="inherit" component={Link} to="/view/login">
+              {navCopy["login"]}
+            </Button>
+          )}
+          </Box>
+
+          
+        </Toolbar>
+      </Container>
+    </AppBar>
+
+
+      </div>
+    );
+    
+  };
+  
+
+  export default Header

@@ -87,7 +87,9 @@ The movement endpoint supports server-side filtering/pagination so the UI can av
 
 - `movements=<N>`: limit number of returned movements
 - `offset=<N>`: skip first N matching movements
-- `species=<latin_name>`: filter by species (UI uses `_` as space replacement)
+- `species=<latin_name>`: filter by species (UI uses `_` as space replacement). Matches **any** detection in the movement, not just the first.
+- `undetected=true`: filter for movements with no bird detected (detection latinName = "None")
+- `validation=<latin_name_or_None>`: filter by validated species name (for example `validation=None` or `validation=Parus_major`)
 - `date=YYYY-MM-DD`: single-day filter
 - `days=<N>`: rolling date window including today (for example `days=2`)
 - `from=YYYY-MM-DD&to=YYYY-MM-DD`: explicit date range (inclusive by date)
@@ -103,6 +105,9 @@ Examples:
 - `/api/movement/<station_id>?movements=50&offset=100`
 - `/api/movement/<station_id>?species=Parus_major&days=7&movements=30`
 - `/api/movement/<station_id>?from=2026-07-01&to=2026-07-07&movements=100`
+- `/api/movement/<station_id>?from=2026-07-01&undetected=true` — all undetected birds since July 1
+- `/api/movement/<station_id>?validation=None&days=7` — movements validated as "None" in the last 7 days
+- `/api/movement/<station_id>?validation=Parus_major` — movements validated as Great Tit
 
 For paged station loading, `GET /api/station/<station_id>` also supports:
 

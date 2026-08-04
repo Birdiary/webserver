@@ -1,0 +1,55 @@
+/* Themed Leaflet popups + controls to match the Birdiary nature palette. */
+.leaflet-popup-content-wrapper {
+  background: var(--mui-palette-background-paper, #ffffff);
+  color: var(--mui-palette-text-primary, #1e2a24);
+  border-radius: 14px;
+  border: 1px solid var(--mui-palette-divider, rgba(30, 42, 36, 0.12));
+  border-top: 4px solid var(--mui-palette-primary-main, #2e7d5b);
+  box-shadow: 0 12px 34px -14px rgba(16, 24, 20, 0.45);
+  font-family: "Inter Variable", "Inter", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.leaflet-popup-content {
+  margin: 14px 16px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.leaflet-popup-content b {
+  color: var(--mui-palette-primary-main, #2e7d5b);
+}
+
+.leaflet-popup-content .MuiDivider-root {
+  margin: 10px 0;
+}
+
+/* The little arrow under the popup — match the surface, no double borders. */
+.leaflet-popup-tip {
+  background: var(--mui-palette-background-paper, #ffffff);
+  box-shadow: none;
+}
+
+.leaflet-popup-close-button {
+  color: var(--mui-palette-text-secondary, #55645c) !important;
+  padding: 8px 8px 0 0 !important;
+}
+.leaflet-popup-close-button:hover {
+  color: var(--mui-palette-primary-main, #2e7d5b) !important;
+  background: transparent !important;
+}
+
+/* Zoom / attribution controls: softer, rounded, on-palette. */
+.leaflet-bar {
+  border: 1px solid var(--mui-palette-divider, rgba(30, 42, 36, 0.12));
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px -10px rgba(16, 24, 20, 0.4);
+}
+.leaflet-bar a {
+  color: var(--mui-palette-text-primary, #1e2a24);
+}
+.leaflet-bar a:hover {
+  background: var(--mui-palette-action-hover, rgba(46, 125, 91, 0.08));
+  color: var(--mui-palette-primary-main, #2e7d5b);
+}

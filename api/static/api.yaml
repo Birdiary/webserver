@@ -80258,52 +80258,107 @@ paths:
       x-code_example: null
     get:
       summary: Get Movements of one Station
-      description: Endpoint to get all movements or filter them by species and/or date range with pagination. Date precedence is from/to first, then days, then date.
+      description: |
+        Get movements of one station.
+
+        You can call this endpoint without filters to get recent movements,
+        or add one or more query parameters to narrow results.
+
+        Date filter priority is:
+        1) from/to
+        2) days
+        3) date
+
+        Easy copy/paste examples:
+        - /api/movement/{station_id}  -> all movements
+        - /api/movement/{station_id}?species=Parus_major  -> movements where Great Tit appears
+        - /api/movement/{station_id}?species=Parus_major&detection_first=true  -> Great Tit must be first detection
+        - /api/movement/{station_id}?undetected=true  -> no bird detected (None)
+        - /api/movement/{station_id}?validation=None  -> user validated as None
+        - /api/movement/{station_id}?validation=Parus_major  -> user validated as Great Tit
+        - /api/movement/{station_id}?has_validation=true&days=7  -> validated movements from last 7 days
+        - /api/movement/{station_id}?from=2026-07-01&to=2026-07-07&movements=50  -> first 50 movements in date range
       operationId: get-movement-station_id
       parameters:
         - name: species
           in: query
-          description: Species to search for
+          description: 'Species to search for (replaces spaces with underscores, e.g. Parus_major). Matches any detection unless detection_first=true is set.'
           schema:
             type: string
+          example: Parus_major
+        - name: detection_first
+          in: query
+          description: 'When true, species filter only matches the first detection (highest confidence). (true/1/yes)'
+          schema:
+            type: string
+          example: 'true'
+        - name: undetected
+          in: query
+          description: 'When true, returns only movements where no bird was detected (detections[0].latinName=="None"). (true/1/yes)'
+          schema:
+            type: string
+          example: 'true'
+        - name: has_validation
+          in: query
+          description: 'When true, returns only movements that have been validated by users. (true/1/yes)'
+          schema:
+            type: string
+          example: 'true'
+        - name: validation
+          in: query
+          description: 'Filter by validated latinName (for example None or Parus_major). Replaces underscores with spaces.'
+          schema:
+            type: string
+          examples:
+            none:
+              value: None
+            great_tit:
+              value: Parus_major
         - name: date
           in: query
           description: Single day filter in format YYYY-MM-DD
           schema:
             type: string
             format: date
+          example: '2026-07-01'
         - name: days
           in: query
           description: Rolling day window including today (for example days=2)
           schema:
             type: integer
+          example: 7
         - name: from
           in: query
           description: Start date in format YYYY-MM-DD (used with to)
           schema:
             type: string
             format: date
+          example: '2026-07-01'
         - name: to
           in: query
           description: End date in format YYYY-MM-DD (used with from)
           schema:
             type: string
             format: date
+          example: '2026-07-07'
         - name: movements
           in: query
           description: Number of movements to return (limit)
           schema:
             type: integer
+          example: 50
         - name: offset
           in: query
           description: Offset for movement pagination (skip first N matching movements)
           schema:
             type: integer
+          example: 0
         - name: station_id
           in: path
           required: true
           schema:
             type: string
+          example: a19bdefe-403b-4791-a220-48a857dce14f
       responses:
         '200':
           description: OK
@@ -80971,6 +81026,17 @@ paths:
   '/validate/{station_id}/{movement_id}':
     put:
       summary: Save new validation
+      description: |
+        Save a user validation for one movement.
+
+        Typical flow:
+        1) Pick a movement_id from GET /api/movement/{station_id}
+        2) Send one validation object in the body
+        3) Later query GET /api/movement/{station_id}?has_validation=true
+
+        Example request body values:
+        - {"validation": {"latinName": "Erithacus rubecula", "germanName": "Rotkehlchen"}}
+        - {"validation": {"latinName": "None", "germanName": ""}}
       operationId: put-validate-station_id-movement_id
       parameters:
         - name: station_id
@@ -81001,6 +81067,19 @@ paths:
                   validation:
                     latinName: Erithacus rubecula
                     germanName: Rotkehlchen
+            examples:
+              robin:
+                summary: Validate movement as robin
+                value:
+                  validation:
+                    latinName: Erithacus rubecula
+                    germanName: Rotkehlchen
+              none:
+                summary: Validate movement as no bird
+                value:
+                  validation:
+                    latinName: None
+                    germanName: ''
       responses:
         '200':
           description: OK

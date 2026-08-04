@@ -1,0 +1,9 @@
+.apexcharts-canvas svg {
+    /* Allow the legend to overflow the chart area */
+    overflow: visible;
+  }
+  
+  .apexcharts-canvas svg foreignObject {
+    /* Allow the legend to overflow the legend container */
+    overflow: visible;
+  }

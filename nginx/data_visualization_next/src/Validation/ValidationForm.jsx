@@ -10,17 +10,12 @@ function ValidationForm(props) {
         props.setBird(value)
       }
 
-  const humanOptionLabel = props.language === "de" ? "Mensch" : "Human";
-  const validationOptionKeys = Object.keys(options.validationOptions)
-    .filter((optionLabel) => optionLabel !== "Mensch" && optionLabel !== "Human");
-  validationOptionKeys.unshift(humanOptionLabel);
-
   return <div>
 
     <Autocomplete
     freeSolo
     id="combo-box-demo"
-    options={validationOptionKeys}
+    options={Object.keys(options.validationOptions)}
     sx={{ width: 300 }}
     onInputChange= {handleInputChange}
     value={props.bird}

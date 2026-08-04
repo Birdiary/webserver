@@ -1,0 +1,303 @@
+/* --- Statistics page layout --- */
+.statistics-view {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 4px 24px 40px;
+}
+
+/* Compact "last updated" strip. */
+.stats-updated {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    color: var(--mui-palette-text-secondary, #55645c);
+    font-size: 0.85rem;
+}
+
+/* --- At-a-glance metric cards --- */
+.stats-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.stats-metric {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    background: var(--mui-palette-background-paper, #fff);
+    border: 1px solid var(--mui-palette-divider, rgba(30, 42, 36, 0.12));
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(16, 24, 20, 0.05), 0 10px 26px -20px rgba(16, 24, 20, 0.35);
+}
+
+.stats-metric__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    color: var(--mui-palette-primary-main, #2e7d5b);
+    background: rgba(76, 165, 125, 0.14);
+}
+
+.stats-metric__icon .MuiSvgIcon-root {
+    font-size: 1.5rem;
+}
+
+.stats-metric__value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--mui-palette-text-primary, #1e2a24);
+}
+
+.stats-metric--env .stats-metric__value {
+    font-size: 1.25rem;
+}
+
+.stats-metric__label {
+    font-size: 0.82rem;
+    color: var(--mui-palette-text-secondary, #55645c);
+    margin-top: 2px;
+}
+
+/* Environment section: title + timeframe toggle on one row. */
+.stats-env {
+    margin-bottom: 22px;
+}
+
+.stats-env__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.stats-section-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0;
+    padding-left: 12px;
+    border-left: 4px solid var(--mui-palette-primary-main, #2e7d5b);
+    color: var(--mui-palette-text-secondary, #55645c);
+}
+
+.stats-env__range.MuiToggleButtonGroup-root {
+    background: var(--mui-palette-background-paper, #fff);
+    border-radius: 999px;
+    padding: 3px;
+    box-shadow: 0 1px 3px rgba(16, 24, 20, 0.06);
+}
+
+.stats-env__range .MuiToggleButton-root {
+    border: none;
+    border-radius: 999px !important;
+    text-transform: none;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 4px 14px;
+    color: var(--mui-palette-text-secondary, #55645c);
+}
+
+.stats-env__range .MuiToggleButton-root.Mui-selected {
+    background: var(--mui-palette-primary-main, #2e7d5b);
+    color: #fff;
+}
+
+.stats-env__range .MuiToggleButton-root.Mui-selected:hover {
+    background: var(--mui-palette-primary-dark, #1f5a40);
+}
+
+.stats-metric__sub {
+    font-size: 0.72rem;
+    color: var(--mui-palette-text-secondary, #55645c);
+    opacity: 0.8;
+    margin-top: 3px;
+}
+
+.stats-metrics--env .stats-metric {
+    cursor: default;
+}
+
+/* --- Search panel --- */
+.stats-panel {
+    background: var(--mui-palette-background-paper, #fff);
+    border: 1px solid var(--mui-palette-divider, rgba(30, 42, 36, 0.12));
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(16, 24, 20, 0.05), 0 14px 34px -26px rgba(16, 24, 20, 0.4);
+    padding: 20px 22px 22px;
+    margin-bottom: 22px;
+}
+
+.stats-panel__title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.45;
+    margin: 0 0 16px;
+    color: var(--mui-palette-text-primary, #1e2a24);
+}
+
+.statistics-search--highlight {
+    background:
+      linear-gradient(135deg, var(--mui-palette-background-paper, #fff) 0%, rgba(76, 165, 125, 0.10) 100%);
+    border-left: 6px solid var(--mui-palette-primary-main, #2E7D5B);
+}
+
+/* --- Accordions (detail sections) --- */
+.stats-accordions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.stats-accordion.MuiAccordion-root {
+    background: var(--mui-palette-background-paper, #fff);
+    border: 1px solid var(--mui-palette-divider, rgba(30, 42, 36, 0.12));
+    border-radius: 14px !important;
+    box-shadow: 0 1px 3px rgba(16, 24, 20, 0.05), 0 14px 34px -26px rgba(16, 24, 20, 0.4);
+    overflow: hidden;
+}
+
+.stats-accordion.MuiAccordion-root::before {
+    display: none;
+}
+
+.stats-accordion .MuiAccordionSummary-root {
+    padding: 4px 20px;
+    min-height: 56px;
+}
+
+.stats-accordion .MuiAccordionSummary-content {
+    align-items: center;
+}
+
+.stats-acc-title {
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: var(--mui-palette-text-primary, #1e2a24);
+    border-left: 4px solid var(--mui-palette-primary-main, #2e7d5b);
+    padding-left: 12px;
+}
+
+.stats-accordion .MuiAccordionDetails-root {
+    padding: 4px 20px 22px;
+}
+
+.stats-acc-intro {
+    margin: 0 0 16px;
+    color: var(--mui-palette-text-secondary, #55645c);
+    line-height: 1.5;
+}
+
+/* Timeframe toggle inside a detail accordion (reuses the environment style). */
+.stats-acc-range.MuiToggleButtonGroup-root {
+    background: rgba(76, 165, 125, 0.10);
+    border-radius: 999px;
+    padding: 3px;
+    margin-bottom: 14px;
+}
+
+.stats-acc-range .MuiToggleButton-root {
+    border: none;
+    border-radius: 999px !important;
+    text-transform: none;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 4px 14px;
+    color: var(--mui-palette-text-secondary, #55645c);
+}
+
+.stats-acc-range .MuiToggleButton-root.Mui-selected {
+    background: var(--mui-palette-primary-main, #2e7d5b);
+    color: #fff;
+}
+
+.stats-acc-range .MuiToggleButton-root.Mui-selected:hover {
+    background: var(--mui-palette-primary-dark, #1f5a40);
+}
+
+/* Bird cards inside an accordion flow in a responsive auto-fill grid. */
+.stats-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 16px;
+}
+
+.stats-rank-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    line-height: 1.35;
+    margin: 0 0 8px;
+    color: var(--mui-palette-text-secondary, #55645c);
+}
+
+/* Environment detail columns (recent extreme readings). */
+.stats-env-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.stats-env-col h5 {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin: 0 0 10px;
+    color: var(--mui-palette-text-primary, #1e2a24);
+}
+
+.statistics-view h5 {
+    font-weight: 600;
+    font-size: 0.92rem;
+    line-height: 1.35;
+    margin: 2px 0 10px;
+    color: var(--mui-palette-text-secondary, #55645c);
+}
+
+.statistics-search-option-primary {
+    font-weight: 600;
+}
+
+.statistics-search-option-secondary {
+    margin-left: 8px;
+    color: var(--mui-palette-text-secondary, #55645C);
+    font-size: 0.85em;
+}
+
+.statistics-search-message {
+    margin: 8px 0 16px 0;
+    font-style: italic;
+}
+
+.statistics-env-intro {
+    margin-bottom: 12px;
+    font-style: italic;
+}
+
+.statistics-env-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.statistics-env-list li {
+    margin-bottom: 8px;
+}
+
+.statistics-env-value {
+    font-weight: bold;
+}
+
+.statistics-env-empty {
+    font-style: italic;
+    color: var(--mui-palette-text-secondary, #666);
+}

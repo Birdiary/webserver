@@ -37,6 +37,7 @@
   - Station lifecycle + metadata: `/api/station`, `/api/station/<station_id>` with API key gates and exhibit/test logic ([api/api.py#L1132-L1257](api/api.py#L1132-L1257)).
   - Environment + feed series: `/api/environment/<station_id>` and `/api/feed/<station_id>` ([api/api.py#L1258-L1350](api/api.py#L1258-L1350), [api/api.py#L1596-L1634](api/api.py#L1596-L1634)).
   - Movement ingestion, listing, media downloads, and validation endpoints ([api/api.py#L1313-L1548](api/api.py#L1313-L1548)).
+    - `GET /api/movement/<station_id>` supports filters: `species`, `validation`, `undetected=true`, `date`, `days`, `from`/`to` for efficient server-side pagination.
   - Station image customization endpoints `/api/image/<id>` for Raspberry Pi OS templating ([api/api.py#L1563-L1587](api/api.py#L1563-L1587)).
 - Background jobs (decorated via `enqueueable`):
   - `modify_image()` updates Wi-Fi credentials and rotation inside a mounted Pi image ([api/api.py#L222-L323](api/api.py#L222-L323)).

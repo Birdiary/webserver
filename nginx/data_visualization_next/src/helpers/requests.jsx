@@ -1,0 +1,324 @@
+import axios from 'axios';
+const _env = {
+    api: config.apiUrl // eslint-disable-line
+}
+
+function authHeaders(token) {
+    if (!token) {
+        return {};
+    }
+    return {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    };
+}
+
+function buildConfig(token, params) {
+    const config = authHeaders(token);
+    if (params) {
+        config.params = params;
+    }
+    return config;
+}
+
+function normalizeMovementParams(arg) {
+    const params = {};
+    if (typeof arg === 'number') {
+        if (arg > 0) {
+            params.movements = arg;
+        }
+        return params;
+    }
+    if (arg && typeof arg === 'object') {
+        const limit = typeof arg.movements === 'number' ? arg.movements : arg.limit;
+        const offset = typeof arg.movementsOffset === 'number' ? arg.movementsOffset : arg.offset;
+        if (typeof limit === 'number' && limit > 0) {
+            params.movements = limit;
+        }
+        if (typeof offset === 'number' && offset > 0) {
+            params.movementsOffset = offset;
+        }
+        return params;
+    }
+    return params;
+}
+
+function normalizeMyStationParams(options) {
+    const params = normalizeMovementParams(options);
+    if (!options || typeof options !== 'object') {
+        return params;
+    }
+    if (typeof options.stationId === 'string' && options.stationId.trim().length > 0) {
+        params.stationId = options.stationId.trim();
+        return params;
+    }
+    if (typeof options.name === 'string' && options.name.trim().length > 0) {
+        params.name = options.name.trim();
+        if (typeof options.searchLimit === 'number' && options.searchLimit > 0) {
+            params.searchLimit = options.searchLimit;
+        }
+    }
+    return params;
+}
+
+function getStation(id, options, token) {
+    let authToken = token;
+    let movementOptions = options;
+    if (typeof options === 'string' && typeof token === 'undefined') {
+        authToken = options;
+        movementOptions = undefined;
+    }
+    const params = normalizeMovementParams(movementOptions);
+    const config = buildConfig(authToken, Object.keys(params).length ? params : undefined);
+    return axios.get(_env.api + '/station/' + id, config);
+}
+
+function getStations() {
+    return axios.get(_env.api + '/station');
+}
+
+function sendStation(body, token) {
+    var _url = _env.api + '/station';
+    return axios.post(_url, body, authHeaders(token));
+}
+
+
+function getMovement() {
+    return axios.get(_env.api + '/movement');
+}
+
+
+function getSingleMovement(station_id, mov_id) {
+    return axios.get(_env.api + '/movement/' + station_id + "/" + mov_id);
+}
+
+
+function sendValdation(station_id, movement_id, validation){
+    var _url = _env.api + "/validate/" + station_id + "/" + movement_id
+    return axios.put(_url, validation);
+}
+
+function searchForSpecies(station_id, species, numberOfMovements, date, options){
+    var query = "?"
+
+    if (species){
+        species = species.replace(" ", "_")
+        query += "species=" + encodeURIComponent(species)
+    }
+
+    if(numberOfMovements){
+        if (query.length > 1){
+            query += "&"
+        }
+        query += "movements=" + numberOfMovements
+    }
+
+    if(date){
+        if (query.length > 1){
+            query += "&"
+        }
+        query += "date=" + encodeURIComponent(date)
+    }
+
+    const extra = options && typeof options === 'object' ? options : {}
+
+    if (typeof extra.offset === 'number' && extra.offset > 0){
+        if (query.length > 1){
+            query += "&"
+        }
+        query += "offset=" + extra.offset
+    }
+
+    if (typeof extra.days === 'number' && extra.days > 0){
+        if (query.length > 1){
+            query += "&"
+        }
+        query += "days=" + extra.days
+    }
+
+    if (extra.from){
+        if (query.length > 1){
+            query += "&"
+        }
+        query += "from=" + encodeURIComponent(extra.from)
+    }
+
+    if (extra.to){
+        if (query.length > 1){
+            query += "&"
+        }
+        query += "to=" + encodeURIComponent(extra.to)
+    }
+
+    var _url = _env.api + "/movement/" + station_id
+    if (query.length > 1){
+        _url += query
+    }
+    return axios.get(_url)
+}
+
+function getEnvironment(station_id, months){
+    var _url = _env.api + "/environment/" + station_id
+    if (months){
+        _url += "?months=" + months
+    }
+    return axios.get(_url)
+}
+
+function getImage(station_id){
+    var _url = _env.api + "/imageStatus/" + station_id
+    return axios.get(_url)
+}
+function createImage(station_id, payload){
+    var _url = _env.api + "/image/" + station_id
+    return axios.post(_url, payload)
+}
+
+function getCount(){
+    return axios.get(_env.api +"/count")
+}
+
+function getStatisitcs(id){
+    return axios.get(_env.api +"/statistics/"+id)
+}
+
+function getStatisticsRange(id, from, to){
+    return axios.get(_env.api + "/statistics/" + id + "/range?from=" + from + "&to=" + to)
+}
+
+function returnImageUrl(id){
+    var _url = _env.api + "/image/" + id
+    return _url
+}
+
+function registerUser(body){
+    var _url = _env.api + '/register';
+    return axios.post(_url, body);
+}
+
+function login(body){
+    var _url = _env.api + '/login';
+    return axios.post(_url, body);
+}
+
+function logout(token){
+    var _url = _env.api + '/logout';
+    return axios.post(_url, {}, authHeaders(token));
+}
+
+function getCurrentUser(token){
+    var _url = _env.api + '/me';
+    return axios.get(_url, authHeaders(token));
+}
+
+function deleteCurrentUser(token){
+    var _url = _env.api + '/me';
+    return axios.delete(_url, authHeaders(token));
+}
+
+function resetPassword(payload, token){
+    var _url = _env.api + '/reset-password';
+    return axios.post(_url, payload, authHeaders(token));
+}
+
+function requestPasswordReset(payload){
+    var _url = _env.api + '/reset-password/request';
+    return axios.post(_url, payload);
+}
+
+function confirmPasswordReset(payload){
+    var _url = _env.api + '/reset-password/confirm';
+    return axios.post(_url, payload);
+}
+
+function verifyEmail(payload){
+    var _url = _env.api + '/verify-email';
+    return axios.post(_url, payload);
+}
+
+function resendVerificationEmail(payload){
+    var _url = _env.api + '/verify-email/resend';
+    return axios.post(_url, payload);
+}
+
+function getMyStations(token, options){
+    const params = normalizeMyStationParams(options);
+    const config = buildConfig(token, Object.keys(params).length ? params : undefined);
+    return axios.get(_env.api + '/my-stations', config);
+}
+
+function updateStation(stationId, payload, token){
+    var _url = _env.api + `/station/${stationId}`;
+    return axios.put(_url, payload, authHeaders(token));
+}
+
+function deleteStation(stationId, token, deleteData){
+    var _url = _env.api + `/station/${stationId}`;
+    const config = buildConfig(token, deleteData ? { deleteData: true } : null);
+    return axios.delete(_url, config);
+}
+
+function deleteMovement(stationId, movementId, token, deleteData){
+    var _url = _env.api + `/movement/${stationId}/${movementId}`;
+    const config = buildConfig(token, deleteData ? { deleteData: true } : null);
+    return axios.delete(_url, config);
+}
+
+function adminSetUserPassword(payload, token){
+    if (!payload || !payload.userId) {
+        throw new Error('userId is required');
+    }
+    var _url = _env.api + `/admin/users/${payload.userId}/password`;
+    return axios.put(_url, { newPassword: payload.newPassword }, authHeaders(token));
+}
+
+function adminListUsers(token){
+    var _url = _env.api + '/admin/users';
+    return axios.get(_url, authHeaders(token));
+}
+
+function adminDeleteUser(userId, token){
+    var _url = _env.api + `/admin/users/${userId}`;
+    return axios.delete(_url, authHeaders(token));
+}
+
+function adminAssignStationOwner(stationId, payload, token){
+    var _url = _env.api + `/admin/stations/${stationId}/owner`;
+    return axios.put(_url, payload, authHeaders(token));
+}
+
+export default {
+    getStation : getStation,
+    sendStation : sendStation,
+    getStations : getStations,
+    getMovement : getMovement,
+    sendValidation : sendValdation,
+    searchForSpecies : searchForSpecies,
+    getEnvironment : getEnvironment,
+    getSingleMovement : getSingleMovement,
+    getCount :getCount,
+    getStatisitcs: getStatisitcs,
+    getStatisticsRange: getStatisticsRange,
+    getImage: getImage,
+    returnImageUrl: returnImageUrl,
+    createImage: createImage,
+    registerUser: registerUser,
+    login: login,
+    logout: logout,
+    getCurrentUser: getCurrentUser,
+    deleteCurrentUser: deleteCurrentUser,
+    resetPassword: resetPassword,
+    requestPasswordReset: requestPasswordReset,
+    confirmPasswordReset: confirmPasswordReset,
+    verifyEmail: verifyEmail,
+    resendVerificationEmail: resendVerificationEmail,
+    getMyStations: getMyStations,
+    updateStation: updateStation,
+    deleteStation: deleteStation,
+    deleteMovement: deleteMovement,
+    adminSetUserPassword: adminSetUserPassword,
+    adminAssignStationOwner: adminAssignStationOwner,
+    adminListUsers: adminListUsers,
+    adminDeleteUser: adminDeleteUser,
+};
