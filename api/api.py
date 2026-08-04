@@ -886,14 +886,25 @@ def deleteImage(id):
     os.remove('./uploads/raspberry-pi-os' +id  +'.img')
     os.remove('./uploads/raspberry-pi-os' +id  +'draft.img')
 
+def safe_remove_file(path):
+    """Remove a file, tolerating a missing file / other OS errors. Returns True if a file was actually removed."""
+    try:
+        os.remove(path)
+        return True
+    except FileNotFoundError:
+        return False
+    except OSError as e:
+        print("Failed to remove {}: {}".format(path, e), flush=True)
+        return False
+
 @enqueueable
 def removeMovementFiles(movement):
-    videofile = movement["video"]
-    videofilename = os.path.basename(videofile)
-    audiofile = movement["audio"]
-    audiofilename = os.path.basename(audiofile)
-    os.remove("./uploads/disk/audios/" + audiofilename)
-    os.remove("./uploads/disk/videos/" + videofilename)
+    videofile = movement.get("video")
+    if videofile and videofile != "pending":
+        safe_remove_file("./uploads/disk/videos/" + os.path.basename(videofile))
+    audiofile = movement.get("audio")
+    if audiofile and audiofile != "pending":
+        safe_remove_file("./uploads/disk/audios/" + os.path.basename(audiofile))
 
 
 @enqueueable
@@ -2112,7 +2123,6 @@ def station(station_id: str):
         return jsonify(result.modified_count), 200
     if request.method=="DELETE":
         apikey= request.args.get("apikey")
-        deleteData = request.args.get("deleteData")
         station = stations.find_one({"station_id":station_id}, {'_id' : False} )
         if station is None:
             return "not found", 404
@@ -2121,15 +2131,13 @@ def station(station_id: str):
         if API_KEY != apikey and station_key != apikey and not is_station_owner(station, user) and not is_admin_user(user):
             return "Not authorized", 401
         stations.delete_one({"station_id": station_id})
-        if(deleteData):
-            movements = db["movements_" + station_id].find({})
-            movements = list(movements)
-            for movement in movements:
-                q.enqueue(removeMovementFiles, movement)
-            movementsCollection = db["movements_"+station_id]
-            movementsCollection.drop
-            environmentCollection = db["environments_"+station_id]
-            environmentCollection.drop
+        # Always remove the station's underlying files and drop its collections so nothing stays servable.
+        movements = list(db["movements_" + station_id].find({}))
+        for movement in movements:
+            q.enqueue(removeMovementFiles, movement)
+        db["movements_" + station_id].drop()
+        db["environments_" + station_id].drop()
+        db["feed_" + station_id].drop()
         return jsonify(str(station_id)), 200
 
 @app.route('/api/updateStations')
@@ -2303,19 +2311,17 @@ def add_movement_image(station_id: str):
 def handle_movement(station_id: str, movement_id: str):
     if request.method=="DELETE":
         apikey= request.args.get("apikey")
-        deleteData = request.args.get("deleteData")
         station = stations.find_one({"station_id": station_id}, {'_id' : False})
         station_key = ensure_station_key(station) if station else None
         user = get_authenticated_user()
         if API_KEY != apikey and (not station or station_key != apikey) and not is_station_owner(station, user) and not is_admin_user(user):
             return "Not authorized", 401
-        if deleteData:
-            movements = db["movements_" + station_id].find({"mov_id": movement_id})
-            movements = list(movements)
-            for movement in movements:
-                q.enqueue(removeMovementFiles, movement)
+        # Always delete the underlying video/audio files so nothing stays servable after the movement is gone.
+        movements = list(db["movements_" + station_id].find({"mov_id": movement_id}))
+        for movement in movements:
+            q.enqueue(removeMovementFiles, movement)
         db["movements_" + station_id].delete_many({"mov_id": movement_id})
-        return jsonify(str(station_id)), 200   
+        return jsonify(str(station_id)), 200
         
     movement = db["movements_" + station_id].find({"mov_id": movement_id}, {'_id' : False})
     movement = list(movement)[0]
@@ -2424,6 +2430,86 @@ def getAudios(filename):
 @app.route('/api/uploads/videos/<filename>')
 def getVideos(filename):
     return send_from_directory(app.config['UPLOADED_VIDEOS_DEST'], filename)
+
+@app.route('/api/cleanup/uploads', methods=['GET'])
+def cleanup_uploads():
+    """Delete video/audio files on disk that are no longer referenced by any movement.
+
+    Guarded by API_KEY (?apikey=) or an authenticated admin user.
+    Query params:
+      - dryRun=true    only report what would be deleted, delete nothing
+      - minAgeHours=N  only touch files older than N hours (default 24) to avoid
+                       deleting files of in-flight uploads whose movement is still "pending"
+    """
+    apikey = request.args.get("apikey")
+    user = get_authenticated_user()
+    if API_KEY != apikey and not is_admin_user(user):
+        return "Not authorized", 401
+
+    dry_run = request.args.get("dryRun", "").lower() in ["true", "1", "yes"]
+    try:
+        min_age_hours = float(request.args.get("minAgeHours", 24))
+    except (TypeError, ValueError):
+        return "minAgeHours must be a number", 400
+    min_age_seconds = max(0.0, min_age_hours) * 3600
+    now = time.time()
+
+    # Collect every video/audio filename still referenced by a movement, across all stations.
+    referenced_videos = set()
+    referenced_audios = set()
+    for col in db.list_collection_names():
+        if not col.startswith("movements_"):
+            continue
+        for movement in db[col].find({}, {"video": True, "audio": True, "_id": False}):
+            video = movement.get("video")
+            if video and video != "pending":
+                referenced_videos.add(os.path.basename(video))
+            audio = movement.get("audio")
+            if audio and audio != "pending":
+                referenced_audios.add(os.path.basename(audio))
+
+    def find_orphans(directory, referenced):
+        orphans = []
+        if not os.path.isdir(directory):
+            return orphans
+        for fname in os.listdir(directory):
+            full = os.path.join(directory, fname)
+            if not os.path.isfile(full):
+                continue
+            if fname in referenced:
+                continue
+            try:
+                if now - os.path.getmtime(full) < min_age_seconds:
+                    continue  # too new — likely an in-flight upload
+            except OSError:
+                continue
+            orphans.append(fname)
+        return orphans
+
+    video_dir = app.config['UPLOADED_VIDEOS_DEST']
+    audio_dir = app.config['UPLOADED_AUDIOS_DEST']
+    orphan_videos = find_orphans(video_dir, referenced_videos)
+    orphan_audios = find_orphans(audio_dir, referenced_audios)
+
+    deleted_videos = []
+    deleted_audios = []
+    if not dry_run:
+        for fname in orphan_videos:
+            if safe_remove_file(os.path.join(video_dir, fname)):
+                deleted_videos.append(fname)
+        for fname in orphan_audios:
+            if safe_remove_file(os.path.join(audio_dir, fname)):
+                deleted_audios.append(fname)
+
+    return jsonify({
+        "dryRun": dry_run,
+        "minAgeHours": min_age_hours,
+        "referenced": {"videos": len(referenced_videos), "audios": len(referenced_audios)},
+        "orphaned": {"videos": len(orphan_videos), "audios": len(orphan_audios)},
+        "deleted": {"videos": len(deleted_videos), "audios": len(deleted_audios)},
+        "orphanedVideos": orphan_videos,
+        "orphanedAudios": orphan_audios,
+    }), 200
 
 @app.route('/api/count')
 def count():
