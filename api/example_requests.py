@@ -169,7 +169,7 @@ def create_station(payload, url ):
 
 
 def deleteStation(url, stationid, apiKey):
-    r = requests.delete(url + "api/station/" + stationid +"?deleteData=True&apikey=" + apiKey)
+    r = requests.delete(url + "api/station/" + stationid +"?apikey=" + apiKey)
 
 
 def updatestation(payload, url, stationid, apiKey):
@@ -183,7 +183,7 @@ def updatestation(payload, url, stationid, apiKey):
 
 def deleteMovement(url, stationid, movid, apiKey):
 
-    r = requests.delete(url +"/api/movement/"+ stationid +"/"+ movid+ "?apikey="+ apiKey +"&deleteData=True")
+    r = requests.delete(url +"/api/movement/"+ stationid +"/"+ movid+ "?apikey="+ apiKey)
 
 
 def addValidation(payload, url, stationid, movid):

@@ -908,6 +908,119 @@ def removeMovementFiles(movement):
 
 
 @enqueueable
+def cleanupUploads(dry_run=False, min_age_hours=24):
+    """Housekeeping sweep, run on an RQ worker (heavy: full DB + fs scan). Two parts:
+    1. Drop per-station collections (movements_/environments_/feed_) whose station no longer
+       exists in the stations collection, first removing their video/audio files from disk.
+    2. Delete video/audio files that are no longer referenced by any remaining movement."""
+    video_dir = app.config['UPLOADED_VIDEOS_DEST']
+    audio_dir = app.config['UPLOADED_AUDIOS_DEST']
+    min_age_seconds = max(0.0, float(min_age_hours)) * 3600
+    now = time.time()
+
+    # --- Part 1: collections whose station no longer exists ---
+    existing_station_ids = set(
+        s["station_id"] for s in stations.find({}, {"station_id": True, "_id": False})
+    )
+    collection_prefixes = (("movements_", "movements"), ("environments_", "environments"), ("feed_", "feed"))
+    orphan_collections = {"movements": [], "environments": [], "feed": []}
+    for col in db.list_collection_names():
+        for prefix, key in collection_prefixes:
+            if col.startswith(prefix):
+                station_id = col[len(prefix):]
+                if station_id and station_id not in existing_station_ids:
+                    orphan_collections[key].append(col)
+                break
+
+    # Remove files referenced by movements in station-less collections (no age gate: the station
+    # is gone, so nothing here is an in-flight upload).
+    orphan_collection_files_deleted = 0
+    for col in orphan_collections["movements"]:
+        for movement in db[col].find({}, {"video": True, "audio": True, "_id": False}):
+            video = movement.get("video")
+            if video and video != "pending" and not dry_run:
+                if safe_remove_file(os.path.join(video_dir, os.path.basename(video))):
+                    orphan_collection_files_deleted += 1
+            audio = movement.get("audio")
+            if audio and audio != "pending" and not dry_run:
+                if safe_remove_file(os.path.join(audio_dir, os.path.basename(audio))):
+                    orphan_collection_files_deleted += 1
+
+    dropped_collections = []
+    for key in ("movements", "environments", "feed"):
+        for col in orphan_collections[key]:
+            if not dry_run:
+                db[col].drop()
+            dropped_collections.append(col)
+
+    # --- Part 2: files not referenced by any remaining movement ---
+    # Station-less movements collections are treated as already gone, so their files are not
+    # counted as referenced (they were handled above / will be dropped).
+    orphan_movement_cols = set(orphan_collections["movements"])
+    referenced_videos = set()
+    referenced_audios = set()
+    for col in db.list_collection_names():
+        if not col.startswith("movements_") or col in orphan_movement_cols:
+            continue
+        for movement in db[col].find({}, {"video": True, "audio": True, "_id": False}):
+            video = movement.get("video")
+            if video and video != "pending":
+                referenced_videos.add(os.path.basename(video))
+            audio = movement.get("audio")
+            if audio and audio != "pending":
+                referenced_audios.add(os.path.basename(audio))
+
+    def find_orphans(directory, referenced):
+        orphans = []
+        if not os.path.isdir(directory):
+            return orphans
+        for fname in os.listdir(directory):
+            full = os.path.join(directory, fname)
+            if not os.path.isfile(full):
+                continue
+            if fname in referenced:
+                continue
+            try:
+                if now - os.path.getmtime(full) < min_age_seconds:
+                    continue  # too new — likely an in-flight upload
+            except OSError:
+                continue
+            orphans.append(fname)
+        return orphans
+
+    orphan_videos = find_orphans(video_dir, referenced_videos)
+    orphan_audios = find_orphans(audio_dir, referenced_audios)
+
+    deleted_videos = []
+    deleted_audios = []
+    if not dry_run:
+        for fname in orphan_videos:
+            if safe_remove_file(os.path.join(video_dir, fname)):
+                deleted_videos.append(fname)
+        for fname in orphan_audios:
+            if safe_remove_file(os.path.join(audio_dir, fname)):
+                deleted_audios.append(fname)
+
+    return {
+        "dryRun": bool(dry_run),
+        "minAgeHours": min_age_hours,
+        "orphanCollections": {
+            "count": sum(len(v) for v in orphan_collections.values()),
+            "movements": orphan_collections["movements"],
+            "environments": orphan_collections["environments"],
+            "feed": orphan_collections["feed"],
+            "filesDeleted": orphan_collection_files_deleted,
+            "dropped": dropped_collections,
+        },
+        "referenced": {"videos": len(referenced_videos), "audios": len(referenced_audios)},
+        "orphaned": {"videos": len(orphan_videos), "audios": len(orphan_audios)},
+        "deleted": {"videos": len(deleted_videos), "audios": len(deleted_audios)},
+        "orphanedVideos": orphan_videos,
+        "orphanedAudios": orphan_audios,
+    }
+
+
+@enqueueable
 def deleteMovement(movement_id, station_id):
     movement = db["movements_"+station_id].find_one({"mov_id": movement_id}, {'_id' : False})
     videofile = movement["video"]
@@ -2433,7 +2546,13 @@ def getVideos(filename):
 
 @app.route('/api/cleanup/uploads', methods=['GET'])
 def cleanup_uploads():
-    """Delete video/audio files on disk that are no longer referenced by any movement.
+    """Queue a background housekeeping sweep. It (1) drops per-station collections
+    (movements_/environments_/feed_) whose station no longer exists, removing their files first,
+    and (2) deletes video/audio files no longer referenced by any remaining movement.
+
+    The scan over every movements_* collection + the uploads directory is too heavy for the
+    request cycle (it would exceed gunicorn's worker timeout and 502), so it runs on an RQ worker.
+    Returns a jobId immediately; poll /api/cleanup/uploads/status/<jobId> for the result.
 
     Guarded by API_KEY (?apikey=) or an authenticated admin user.
     Query params:
@@ -2451,65 +2570,37 @@ def cleanup_uploads():
         min_age_hours = float(request.args.get("minAgeHours", 24))
     except (TypeError, ValueError):
         return "minAgeHours must be a number", 400
-    min_age_seconds = max(0.0, min_age_hours) * 3600
-    now = time.time()
 
-    # Collect every video/audio filename still referenced by a movement, across all stations.
-    referenced_videos = set()
-    referenced_audios = set()
-    for col in db.list_collection_names():
-        if not col.startswith("movements_"):
-            continue
-        for movement in db[col].find({}, {"video": True, "audio": True, "_id": False}):
-            video = movement.get("video")
-            if video and video != "pending":
-                referenced_videos.add(os.path.basename(video))
-            audio = movement.get("audio")
-            if audio and audio != "pending":
-                referenced_audios.add(os.path.basename(audio))
-
-    def find_orphans(directory, referenced):
-        orphans = []
-        if not os.path.isdir(directory):
-            return orphans
-        for fname in os.listdir(directory):
-            full = os.path.join(directory, fname)
-            if not os.path.isfile(full):
-                continue
-            if fname in referenced:
-                continue
-            try:
-                if now - os.path.getmtime(full) < min_age_seconds:
-                    continue  # too new — likely an in-flight upload
-            except OSError:
-                continue
-            orphans.append(fname)
-        return orphans
-
-    video_dir = app.config['UPLOADED_VIDEOS_DEST']
-    audio_dir = app.config['UPLOADED_AUDIOS_DEST']
-    orphan_videos = find_orphans(video_dir, referenced_videos)
-    orphan_audios = find_orphans(audio_dir, referenced_audios)
-
-    deleted_videos = []
-    deleted_audios = []
-    if not dry_run:
-        for fname in orphan_videos:
-            if safe_remove_file(os.path.join(video_dir, fname)):
-                deleted_videos.append(fname)
-        for fname in orphan_audios:
-            if safe_remove_file(os.path.join(audio_dir, fname)):
-                deleted_audios.append(fname)
-
+    job = q.enqueue(cleanupUploads, dry_run, min_age_hours,
+                    job_timeout=STATISTICS_JOB_TIMEOUT_SECONDS, result_ttl=3600)
     return jsonify({
+        "jobId": job.id,
+        "status": "queued",
         "dryRun": dry_run,
         "minAgeHours": min_age_hours,
-        "referenced": {"videos": len(referenced_videos), "audios": len(referenced_audios)},
-        "orphaned": {"videos": len(orphan_videos), "audios": len(orphan_audios)},
-        "deleted": {"videos": len(deleted_videos), "audios": len(deleted_audios)},
-        "orphanedVideos": orphan_videos,
-        "orphanedAudios": orphan_audios,
-    }), 200
+        "statusUrl": "/api/cleanup/uploads/status/" + job.id,
+    }), 202
+
+
+@app.route('/api/cleanup/uploads/status/<job_id>', methods=['GET'])
+def cleanup_uploads_status(job_id):
+    """Fetch the status/result of a cleanup job queued via /api/cleanup/uploads."""
+    apikey = request.args.get("apikey")
+    user = get_authenticated_user()
+    if API_KEY != apikey and not is_admin_user(user):
+        return "Not authorized", 401
+    try:
+        job = Job.fetch(job_id, connection=redis)
+    except NoSuchJobError:
+        return jsonify({"jobId": job_id, "status": "not_found"}), 404
+
+    status = job.get_status()
+    payload = {"jobId": job.id, "status": status}
+    if job.is_finished:
+        payload["result"] = job.result
+    elif job.is_failed:
+        payload["error"] = (job.exc_info or "job failed")[-1000:]
+    return jsonify(payload), 200
 
 @app.route('/api/count')
 def count():
