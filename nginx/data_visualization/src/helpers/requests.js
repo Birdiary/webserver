@@ -254,16 +254,14 @@ function updateStation(stationId, payload, token){
     return axios.put(_url, payload, authHeaders(token));
 }
 
-function deleteStation(stationId, token, deleteData){
+function deleteStation(stationId, token){
     var _url = _env.api + `/station/${stationId}`;
-    const config = buildConfig(token, deleteData ? { deleteData: true } : null);
-    return axios.delete(_url, config);
+    return axios.delete(_url, authHeaders(token));
 }
 
-function deleteMovement(stationId, movementId, token, deleteData){
+function deleteMovement(stationId, movementId, token){
     var _url = _env.api + `/movement/${stationId}/${movementId}`;
-    const config = buildConfig(token, deleteData ? { deleteData: true } : null);
-    return axios.delete(_url, config);
+    return axios.delete(_url, authHeaders(token));
 }
 
 function adminSetUserPassword(payload, token){

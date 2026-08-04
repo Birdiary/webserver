@@ -157,7 +157,7 @@ function StationView(props) {
     }
     try {
       setMovementDeletion({ loading: true, movementId });
-      await requests.deleteMovement(id, movementId, token, true);
+      await requests.deleteMovement(id, movementId, token);
       showDeleteFeedback(
         stationCopy.deleteMovementSuccess || language.en.stations.deleteMovementSuccess,
         'success'

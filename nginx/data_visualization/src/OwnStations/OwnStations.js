@@ -562,7 +562,7 @@ const OwnStations = ({ language: langKey }) => {
     }
     setStatusMessage(null);
     try {
-      await requests.deleteStation(station.station_id, token, true);
+      await requests.deleteStation(station.station_id, token);
       setStations((prev) => prev.filter((item) => item.station_id !== station.station_id));
       setMovementMeta((prev) => {
         const next = { ...prev };
@@ -581,7 +581,7 @@ const OwnStations = ({ language: langKey }) => {
       return;
     }
     try {
-      await requests.deleteMovement(stationId, movementId, token, true);
+      await requests.deleteMovement(stationId, movementId, token);
       const targetStation = stations.find((station) => station.station_id === stationId);
       const filteredMovements = (targetStation?.movements || []).filter((movement) => movement.mov_id !== movementId);
       setStations((prev) => prev.map((station) => (

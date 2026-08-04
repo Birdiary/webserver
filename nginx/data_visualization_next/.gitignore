@@ -1,0 +1,14 @@
+# dependencies
+/node_modules
+
+# build output
+/dist
+
+# test artifacts
+/test-results
+/playwright-report
+
+# misc
+.DS_Store
+.env.local
+*.log
