@@ -48,7 +48,8 @@
   margin-bottom: 4px;
 }
 
-.station-movement-list {
+.station-movement-list,
+.station-logbook-list {
   display: flex;
   flex-direction: column;
   gap: 12px;

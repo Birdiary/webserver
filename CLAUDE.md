@@ -62,3 +62,4 @@ Cookie/Bearer-token auth with `werkzeug.security` password hashing; user + admin
 ## Conventions worth matching
 - Keep endpoint + background-job logic in api.py alongside the existing routes rather than splitting into new modules (that is the established pattern here).
 - Observability is Sentry (`sentry_sdk.init` near the top of api.py, with a custom `traces_sampler` that down-samples static/upload/high-frequency POST paths). ffmpeg/MP4Box are required in the API image for video jobs.
+- Whenever a route in api.py is added, removed, or has its parameters/behavior changed, update the matching path in [api/static/api.yaml](api/static/api.yaml) (the hand-maintained OpenAPI spec served by the Redoc docs page) in the same change.

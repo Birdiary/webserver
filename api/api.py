@@ -906,7 +906,6 @@ def removeMovementFiles(movement):
     if audiofile and audiofile != "pending":
         safe_remove_file("./uploads/disk/audios/" + os.path.basename(audiofile))
 
-
 @enqueueable
 def cleanupUploads(dry_run=False, min_age_hours=24):
     """Housekeeping sweep, run on an RQ worker (heavy: full DB + fs scan). Two parts:
@@ -1550,7 +1549,7 @@ def calculateStatistics():
 # It then reads the video using OpenCV, extracts frames from the video, and calls a classify function to classify the image and detect any birds present in it. 
 # It then processes the detected birds to create a list of dictionaries, where each dictionary contains the details of each bird. It then updates the database with the movement and counts the number of each bird seen for a given day. 
 # It also sends an email to the provided email addresses with the details of the detected birds.  
-def videoAnalysis(filename, movement_id, station_id, movement):
+def videoAnalysis(filename, movement_id, station_id, movement, frames=None):
     if  os.path.splitext(filename)[1] != ".mp4":
         if os.path.splitext(filename)[1] == ".avi":
            command = "ffmpeg -i {} -an -c:v libx264 -pix_fmt yuv420p {}.mp4".format("./uploads/disk/videos/" + filename, "./uploads/disk/videos/" + os.path.splitext(filename)[0])
@@ -1574,7 +1573,15 @@ def videoAnalysis(filename, movement_id, station_id, movement):
         print(f"videoAnalysis: station {station_id} not found")
     #print(total_frames)
     result=[]
-    for fno in range(0, total_frames, 10):
+    if frames:
+        frame_numbers = sorted({fno for fno in frames if 0 <= fno < total_frames})
+    else:
+        target_frames = 30
+        if total_frames <= target_frames:
+            frame_numbers = range(total_frames)
+        else:
+            frame_numbers = sorted({round(i * (total_frames - 1) / (target_frames - 1)) for i in range(target_frames)})
+    for fno in frame_numbers:
         cap.set(cv2.CAP_PROP_POS_FRAMES, fno)
         _, image = cap.read()
         result.append(classify(image))
@@ -2120,7 +2127,8 @@ def add_station():
 
         #print(mail)
         count = dict()
-        station_payload = {"station_id": id, "location":location, "name":body['name'], "mail":mail, "count": count, "sensebox_id":sensebox_id, "type": type, "advancedSettings": advancedSettings, "key":key, "stationSoftware": sationSoftware}
+        description = (body.get('description') or '').strip()
+        station_payload = {"station_id": id, "location":location, "name":body['name'], "mail":mail, "count": count, "sensebox_id":sensebox_id, "type": type, "advancedSettings": advancedSettings, "key":key, "stationSoftware": sationSoftware, "description": description, "logbook": []}
         if owner_id:
             station_payload["ownerId"] = owner_id
         # Add object to movie and save
@@ -2140,6 +2148,7 @@ def add_station():
             'mail': False,
             'count': False,
             'key': False,
+            'logbook': False,
             'lastMovement._id': False,
             'lastEnvironment._id': False,
             'lastFeedStatus._id': False
@@ -2181,6 +2190,8 @@ def station(station_id: str):
         is_owner = is_station_owner(station, auth_user)
         is_admin = is_admin_user(auth_user)
         response_station = dict(station)
+        if not is_owner and not is_admin:
+            response_station.pop("logbook", None)
         if not has_api_access and not is_owner and not is_admin:
             response_station.pop("mail", None)
             response_station.pop("key", None)
@@ -2246,6 +2257,11 @@ def station(station_id: str):
             if normalized_software not in ALLOWED_STATION_SOFTWARE:
                 return "stationSoftware must be one of birdiary or duisbird", 400
             body["stationSoftware"] = normalized_software
+        # logbook entries are managed exclusively via the dedicated /logbook endpoints,
+        # so a generic station update can't silently wipe the owner's entry history.
+        body.pop("logbook", None)
+        if "description" in body:
+            body["description"] = (body.get("description") or "").strip()
         result= stations.update_one({"station_id":station_id}, {'$set': body})
         return jsonify(result.modified_count), 200
     if request.method=="DELETE":
@@ -2266,6 +2282,42 @@ def station(station_id: str):
         db["environments_" + station_id].drop()
         db["feed_" + station_id].drop()
         return jsonify(str(station_id)), 200
+
+
+def _require_station_owner_or_admin(station_id):
+    station = stations.find_one({"station_id": station_id}, {'_id': False})
+    if station is None:
+        abort(404, description="not found")
+    user = get_authenticated_user()
+    if not is_station_owner(station, user) and not is_admin_user(user):
+        abort(401, description="Not authorized")
+    return station, user
+
+
+@app.route('/api/station/<station_id>/logbook', methods=['POST'])
+def add_station_logbook_entry(station_id):
+    station, user = _require_station_owner_or_admin(station_id)
+    body = request.get_json() or {}
+    text = (body.get('text') or '').strip()
+    if not text:
+        return "text is required", 400
+    entry = {
+        "id": str(uuid.uuid4()),
+        "text": text,
+        "createdAt": datetime.utcnow().isoformat() + "Z",
+        "authorId": str(user["_id"]),
+        "authorEmail": user.get("email")
+    }
+    stations.update_one({"station_id": station_id}, {'$push': {"logbook": entry}})
+    return jsonify(entry), 201
+
+
+@app.route('/api/station/<station_id>/logbook/<entry_id>', methods=['DELETE'])
+def delete_station_logbook_entry(station_id, entry_id):
+    _require_station_owner_or_admin(station_id)
+    stations.update_one({"station_id": station_id}, {'$pull': {"logbook": {"id": entry_id}}})
+    return jsonify(entry_id), 200
+
 
 @app.route('/api/updateStations')
 def updateStations():
@@ -2362,10 +2414,11 @@ def add_movement(station_id: str):
     
     
     db["movements_"+station_id].insert_one(movementsClass)
-    job = q_priority.enqueue(videoAnalysis, filename, mov_id, station_id, movementsClass)
+    frames = body.get('frames')
+    job = q_priority.enqueue(videoAnalysis, filename, mov_id, station_id, movementsClass, frames)
     station = stations.find_one({"station_id":station_id}, {'_id' : False} )
     if station["type"] in ["test", "exhibit"]:
-        try: 
+        try:
             deleteMinutes = station["advancedSettings"]["deleteMinutes"]
             job = q.enqueue_in(timedelta(minutes=deleteMinutes), deleteMovement, mov_id, station_id)
         except:
@@ -2443,13 +2496,23 @@ def handle_movement(station_id: str, movement_id: str):
         user = get_authenticated_user()
         if API_KEY != apikey and (not station or station_key != apikey) and not is_station_owner(station, user) and not is_admin_user(user):
             return "Not authorized", 401
-        # Always delete the underlying video/audio files so nothing stays servable after the movement is gone.
         movements = list(db["movements_" + station_id].find({"mov_id": movement_id}))
-        for movement in movements:
-            q.enqueue(removeMovementFiles, movement)
-        db["movements_" + station_id].delete_many({"mov_id": movement_id})
+        video_audio_only = request.args.get("videoAudioOnly", "false").lower() == "true"
+        if video_audio_only:
+            # Delete only the video/audio files and references. The movement document itself
+            # (detections, validation, start_date, ...) is kept so it still counts in
+            # statistics - it just has nothing left to show as a video/audio preview.
+            for movement in movements:
+                q.enqueue(removeMovementFiles, movement)
+            db["movements_" + station_id].update_many({"mov_id": movement_id}, {"$unset": {"video": "", "audio": ""}})
+        else:
+            # Default: delete everything - always remove the underlying video/audio files
+            # so nothing stays servable after the movement is gone.
+            for movement in movements:
+                q.enqueue(removeMovementFiles, movement)
+            db["movements_" + station_id].delete_many({"mov_id": movement_id})
         return jsonify(str(station_id)), 200
-        
+
     movement = db["movements_" + station_id].find({"mov_id": movement_id}, {'_id' : False})
     movement = list(movement)[0]
     return jsonify(movement)

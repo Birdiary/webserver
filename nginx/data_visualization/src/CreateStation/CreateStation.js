@@ -108,6 +108,7 @@ class CreateStation extends React.Component {
       pwd: "",
       type: "observer",
       name: "",
+      description: "",
       downloadReady: false,
       DialogText: language[props.language]["createStation"]["creating"],
       rotation: 90,
@@ -137,6 +138,11 @@ class CreateStation extends React.Component {
   handleChange = (event) => {
     var value = event.target.value
     this.setState({ name: value });
+  };
+
+  handleDescriptionChange = (event) => {
+    var value = event.target.value
+    this.setState({ description: value });
   };
 
   handlePositionChange = (event) => {
@@ -277,6 +283,7 @@ class CreateStation extends React.Component {
     const stationSoftware = normalizeSoftware(this.state.stationSoftware);
     const payload = {
       "name": this.state.name,
+      "description": this.state.description,
       "location": this.state.position,
       "type": this.state.type,
       "software": stationSoftware,
@@ -336,6 +343,18 @@ class CreateStation extends React.Component {
           label={createCopy["name"]}
           value={this.state.name}
           onChange={this.handleChange}
+        />
+        <br />
+        <br />
+        <TextField style={{ width: "50vw" }}
+          id="description"
+          name="description"
+          label={createCopy["descriptionLabel"]}
+          helperText={createCopy["descriptionHelper"]}
+          value={this.state.description}
+          onChange={this.handleDescriptionChange}
+          multiline
+          minRows={3}
         />
         <br />
         <br />

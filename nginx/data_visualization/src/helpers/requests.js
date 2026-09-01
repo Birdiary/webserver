@@ -264,6 +264,11 @@ function deleteMovement(stationId, movementId, token){
     return axios.delete(_url, authHeaders(token));
 }
 
+function deleteMovementVideoAudio(stationId, movementId, token){
+    var _url = _env.api + `/movement/${stationId}/${movementId}`;
+    return axios.delete(_url, buildConfig(token, { videoAudioOnly: true }));
+}
+
 function adminSetUserPassword(payload, token){
     if (!payload || !payload.userId) {
         throw new Error('userId is required');
@@ -285,6 +290,16 @@ function adminDeleteUser(userId, token){
 function adminAssignStationOwner(stationId, payload, token){
     var _url = _env.api + `/admin/stations/${stationId}/owner`;
     return axios.put(_url, payload, authHeaders(token));
+}
+
+function addLogbookEntry(stationId, text, token){
+    var _url = _env.api + `/station/${stationId}/logbook`;
+    return axios.post(_url, { text: text }, authHeaders(token));
+}
+
+function deleteLogbookEntry(stationId, entryId, token){
+    var _url = _env.api + `/station/${stationId}/logbook/${entryId}`;
+    return axios.delete(_url, authHeaders(token));
 }
 
 module.exports = {
@@ -316,8 +331,11 @@ module.exports = {
     updateStation: updateStation,
     deleteStation: deleteStation,
     deleteMovement: deleteMovement,
+    deleteMovementVideoAudio: deleteMovementVideoAudio,
     adminSetUserPassword: adminSetUserPassword,
     adminAssignStationOwner: adminAssignStationOwner,
     adminListUsers: adminListUsers,
     adminDeleteUser: adminDeleteUser,
+    addLogbookEntry: addLogbookEntry,
+    deleteLogbookEntry: deleteLogbookEntry,
 };

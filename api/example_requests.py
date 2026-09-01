@@ -186,6 +186,11 @@ def deleteMovement(url, stationid, movid, apiKey):
     r = requests.delete(url +"/api/movement/"+ stationid +"/"+ movid+ "?apikey="+ apiKey)
 
 
+def deleteMovementVideoAudio(url, stationid, movid, apiKey):
+    #Keeps the movement (still counts in statistics) but removes the video/audio files and references
+    r = requests.delete(url +"/api/movement/"+ stationid +"/"+ movid+ "?apikey="+ apiKey +"&videoAudioOnly=true")
+
+
 def addValidation(payload, url, stationid, movid):
     #payload = {"validation": {"latinName": "test2"}}
     r = requests.put(url + "/api/validate/"+ stationid, + "/" + movid, json=payload)

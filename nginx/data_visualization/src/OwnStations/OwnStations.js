@@ -65,6 +65,7 @@ const queriesEqual = (left, right) => {
 
 const createDraftFromStation = (station) => ({
   name: station.name || '',
+  description: station.description || '',
   lat: station.location?.lat ?? '',
   lng: station.location?.lng ?? '',
   mailAdresses: (station.mail?.adresses || []).join(', '),
@@ -110,6 +111,8 @@ const OwnStations = ({ language: langKey }) => {
   const [movementMeta, setMovementMeta] = useState({});
   const [assignForms, setAssignForms] = useState({});
   const [assignFeedback, setAssignFeedback] = useState({});
+  const [logbookDrafts, setLogbookDrafts] = useState({});
+  const [logbookFeedback, setLogbookFeedback] = useState({});
   const [claimForm, setClaimForm] = useState({ stationId: '' });
   const [claimStatus, setClaimStatus] = useState(null);
   const [claimError, setClaimError] = useState(null);
@@ -510,6 +513,7 @@ const OwnStations = ({ language: langKey }) => {
     const stationSoftware = normalizeSoftware(draft.stationSoftware);
     const payload = {
       name: draft.name,
+      description: (draft.description || '').trim(),
       location: { lat, lng },
       mail: {
         adresses: parseMailAddresses(draft.mailAdresses),
@@ -599,6 +603,50 @@ const OwnStations = ({ language: langKey }) => {
       setStatusMessage(copy.deleteMovementSuccess);
     } catch (err) {
       setError(err.response?.data?.message || copy.deleteMovementError);
+    }
+  };
+
+  const handleLogbookDraftChange = (stationId) => (event) => {
+    const { value } = event.target;
+    setLogbookDrafts((prev) => ({ ...prev, [stationId]: value }));
+  };
+
+  const handleAddLogbookEntry = async (stationId) => {
+    const text = (logbookDrafts[stationId] || '').trim();
+    if (!text) {
+      return;
+    }
+    setLogbookFeedback((prev) => ({ ...prev, [stationId]: null }));
+    try {
+      const response = await requests.addLogbookEntry(stationId, text, token);
+      setStations((prev) => prev.map((station) => (
+        station.station_id === stationId
+          ? { ...station, logbook: [...(station.logbook || []), response.data] }
+          : station
+      )));
+      setLogbookDrafts((prev) => ({ ...prev, [stationId]: '' }));
+    } catch (err) {
+      setLogbookFeedback((prev) => ({
+        ...prev,
+        [stationId]: { error: err.response?.data?.message || copy.logbookAddError },
+      }));
+    }
+  };
+
+  const handleDeleteLogbookEntry = async (stationId, entryId) => {
+    setLogbookFeedback((prev) => ({ ...prev, [stationId]: null }));
+    try {
+      await requests.deleteLogbookEntry(stationId, entryId, token);
+      setStations((prev) => prev.map((station) => (
+        station.station_id === stationId
+          ? { ...station, logbook: (station.logbook || []).filter((entry) => entry.id !== entryId) }
+          : station
+      )));
+    } catch (err) {
+      setLogbookFeedback((prev) => ({
+        ...prev,
+        [stationId]: { error: err.response?.data?.message || copy.logbookDeleteError },
+      }));
     }
   };
 
@@ -935,6 +983,17 @@ const OwnStations = ({ language: langKey }) => {
                       </Select>
                     </FormControl>
                   </div>
+                  <div className="station-advanced-field">
+                    <TextField
+                      label={copy.descriptionLabel}
+                      value={draft.description}
+                      onChange={handleFieldChange(station.station_id, 'description')}
+                      helperText={copy.descriptionHelper}
+                      multiline
+                      minRows={3}
+                      fullWidth
+                    />
+                  </div>
                   <FormControlLabel
                     control={(
                       <Switch
@@ -1060,6 +1119,64 @@ const OwnStations = ({ language: langKey }) => {
                 disabled={movementInfo.loading || movementInfo.loadedAll}
               >
                 {copy.loadAllMovements}
+              </Button>
+            </Box>
+
+            <Divider sx={{ my: 2 }} />
+
+            <Typography variant="subtitle1" gutterBottom>
+              {copy.logbookTitle}
+            </Typography>
+            <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 1 }}>
+              {copy.logbookHelper}
+            </Typography>
+            {(station.logbook && station.logbook.length > 0) ? (
+              <Box className="station-logbook-list">
+                {[...station.logbook].reverse().map((entry) => (
+                  <Box key={entry.id} className="movement-row">
+                    <div>
+                      <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{entry.text}</Typography>
+                      <Typography variant="caption" color="textSecondary">
+                        {formatDateTime(entry.createdAt)}
+                      </Typography>
+                    </div>
+                    <Button
+                      color="error"
+                      size="small"
+                      startIcon={<DeleteIcon fontSize="small" />}
+                      onClick={() => handleDeleteLogbookEntry(station.station_id, entry.id)}
+                    >
+                      {copy.logbookDeleteEntry}
+                    </Button>
+                  </Box>
+                ))}
+              </Box>
+            ) : (
+              <Typography variant="body2" color="textSecondary">
+                {copy.logbookEmpty}
+              </Typography>
+            )}
+            {logbookFeedback[station.station_id]?.error && (
+              <Alert severity="error" sx={{ mt: 1 }}>
+                {logbookFeedback[station.station_id].error}
+              </Alert>
+            )}
+            <Box className="station-advanced-field" sx={{ mt: 2 }}>
+              <TextField
+                label={copy.logbookAddLabel}
+                value={logbookDrafts[station.station_id] || ''}
+                onChange={handleLogbookDraftChange(station.station_id)}
+                multiline
+                minRows={2}
+                fullWidth
+              />
+              <Button
+                variant="contained"
+                sx={{ mt: 1 }}
+                onClick={() => handleAddLogbookEntry(station.station_id)}
+                disabled={!(logbookDrafts[station.station_id] || '').trim()}
+              >
+                {copy.logbookAddSubmit}
               </Button>
             </Box>
           </Paper>

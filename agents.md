@@ -34,7 +34,7 @@
   - Email notifications are formatted in [api/scripts/email_service.py#L10-L45](api/scripts/email_service.py#L10-L45).
 - HTTP surface (selected groups):
   - Classification uploads: `/api/image`, `/api/video`, `/api/audio` ([api/api.py#L1067-L1131](api/api.py#L1067-L1131)).
-  - Station lifecycle + metadata: `/api/station`, `/api/station/<station_id>` with API key gates and exhibit/test logic ([api/api.py#L1132-L1257](api/api.py#L1132-L1257)).
+  - Station lifecycle + metadata: `/api/station`, `/api/station/<station_id>` with API key gates and exhibit/test logic ([api/api.py#L1132-L1257](api/api.py#L1132-L1257)). Stations carry a public `description` field (shown on the public station page) and a private `logbook` array (owner/admin-only, stripped from responses for everyone else) managed via `/api/station/<station_id>/logbook` (POST to add, DELETE `/logbook/<entry_id>` to remove) — see [api/README.md](api/README.md) for the full contract.
   - Environment + feed series: `/api/environment/<station_id>` and `/api/feed/<station_id>` ([api/api.py#L1258-L1350](api/api.py#L1258-L1350), [api/api.py#L1596-L1634](api/api.py#L1596-L1634)).
   - Movement ingestion, listing, media downloads, and validation endpoints ([api/api.py#L1313-L1548](api/api.py#L1313-L1548)).
   - Station image customization endpoints `/api/image/<id>` for Raspberry Pi OS templating ([api/api.py#L1563-L1587](api/api.py#L1563-L1587)).
@@ -76,6 +76,7 @@
 ## Shared Assets & Templates
 - Landing pages, legal imprint, upload forms, and API documentation themes live under [nginx/templates](nginx/templates). They are copied verbatim into nginx images.
 - The API exposes OpenAPI/Redoc content in `templates/redoc`, and static CSS/JS assets live under `api/static` for direct serving when bypassing the React UI.
+- [api/static/api.yaml](api/static/api.yaml) is the OpenAPI spec served by that Redoc page (`nginx/templates/redoc/index.html` points `spec-url` at `/static/api.yaml`). **Whenever a route in `api.py` is added, removed, or has its parameters/behavior changed, update the matching path in `api.yaml` in the same change** — it is hand-maintained, not generated, so it silently drifts otherwise.
 
 ## Local & Production Workflows
 1. **Development**: `docker-compose --file docker-compose-dev.yml up` starts API, MongoDB, Redis, nginx proxy, RQ workers, dashboard, and live React UI. The UI code mounts directly from `nginx/data_visualization` for hot reloads (see [README.md](README.md)).

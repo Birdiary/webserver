@@ -4,7 +4,7 @@ import requests from "../helpers/requests";
 import ReactPlayer from 'react-player'
 import ReactAudioPlayer from 'react-audio-player';
 import ApexChart from "./visualization/Chart"
-import { Grid, Tab, Box, Button, Skeleton, TextField, Autocomplete, Snackbar, Alert, Tabs, ButtonGroup, Typography } from "@mui/material";
+import { Grid, Tab, Box, Button, Skeleton, TextField, Autocomplete, Snackbar, Alert, Tabs, ButtonGroup, Typography, Tooltip } from "@mui/material";
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -17,6 +17,8 @@ import BasicTable from "./visualization/Table";
 import AmountTable from "./visualization/Table2";
 import IconButton from '@mui/material/IconButton';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
+import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
 import zIndex from "@mui/material/styles/zIndex";
 import language from "../languages/languages";
 import TimelineChart from "./visualization/Charts2";
@@ -80,6 +82,7 @@ function StationView(props) {
     returned: 0,
     total: 0,
     hasMore: false,
+    hasPrevious: false,
     loading: false,
     loadedAll: true,
   });
@@ -174,7 +177,6 @@ function StationView(props) {
     }
   };
 
-
   useEffect(() => {
     getStation();
 
@@ -186,56 +188,38 @@ function StationView(props) {
   }, [counter]);
 
 
-  const getStation = ({ limit = MOVEMENT_PAGE_SIZE, offset = 0, append = false, refreshEnvironment = true } = {}) => {
+  const getStation = ({ limit = MOVEMENT_PAGE_SIZE, offset = 0, refreshEnvironment = true, selectTab = 0 } = {}) => {
     setMovementSource('station');
     setMovementMeta((prev) => ({ ...prev, loading: true }));
     requests.getStation(id, { movements: limit, movementsOffset: offset })
       .then((res) => {
         const fetchedMovements = res.data?.measurements?.movements || [];
-        setData((prev) => {
-          if (!append || !prev || !prev.measurements) {
-            return res.data;
-          }
-          const existingMovements = prev.measurements.movements || [];
-          const existingIds = new Set(existingMovements.map((movement) => movement.mov_id));
-          const mergedMovements = [...existingMovements];
-          fetchedMovements.forEach((movement) => {
-            if (!existingIds.has(movement.mov_id)) {
-              mergedMovements.push(movement);
-            }
-          });
-          return {
-            ...res.data,
-            measurements: {
-              ...res.data.measurements,
-              movements: mergedMovements,
-            },
-          };
-        });
+        setData(res.data);
+        setValue(selectTab === 'last' ? Math.max(0, fetchedMovements.length - 1) : selectTab);
         if (refreshEnvironment) {
           getEnvironment(selectedButton);
         }
         const meta = res.data?.movementsMeta;
         if (meta) {
+          const metaOffset = meta.offset ?? offset;
           setMovementMeta({
             limit: meta.limit ?? limit,
-            offset: meta.offset ?? offset,
+            offset: metaOffset,
             returned: meta.returned ?? fetchedMovements.length,
             total: meta.total ?? fetchedMovements.length,
             hasMore: Boolean(meta.hasMore),
+            hasPrevious: metaOffset > 0,
             loading: false,
             loadedAll: !meta.hasMore,
           });
         } else {
-          const totalCount = append
-            ? (res.data?.measurements?.movements?.length || 0)
-            : fetchedMovements.length;
           setMovementMeta({
             limit,
-            offset: append ? Math.max(0, totalCount - fetchedMovements.length) : 0,
+            offset,
             returned: fetchedMovements.length,
-            total: totalCount,
+            total: fetchedMovements.length,
             hasMore: false,
+            hasPrevious: offset > 0,
             loading: false,
             loadedAll: true,
           });
@@ -253,16 +237,28 @@ function StationView(props) {
       });
   }
 
-  const handleLoadMoreMovements = () => {
+  const handleLoadNextMovementsPage = () => {
     if (movementMeta.loading || movementSource !== 'station' || !movementMeta.hasMore) {
       return;
     }
-    const currentCount = data?.measurements?.movements?.length || 0;
     getStation({
-      limit: MOVEMENT_PAGE_SIZE,
-      offset: currentCount,
-      append: true,
+      limit: movementMeta.limit || MOVEMENT_PAGE_SIZE,
+      offset: movementMeta.offset + (movementMeta.limit || MOVEMENT_PAGE_SIZE),
       refreshEnvironment: false,
+      selectTab: 0,
+    });
+  }
+
+  const handleLoadPreviousMovementsPage = () => {
+    if (movementMeta.loading || movementSource !== 'station' || !movementMeta.hasPrevious) {
+      return;
+    }
+    const limit = movementMeta.limit || MOVEMENT_PAGE_SIZE;
+    getStation({
+      limit,
+      offset: Math.max(0, movementMeta.offset - limit),
+      refreshEnvironment: false,
+      selectTab: 'last',
     });
   }
 
@@ -440,6 +436,7 @@ function StationView(props) {
           returned: res.data.length,
           total: res.data.length,
           hasMore: false,
+          hasPrevious: false,
           loading: false,
           loadedAll: true,
         });
@@ -500,6 +497,12 @@ function StationView(props) {
 
     <Button variant="contained" onClick={() => { getStation() }} sx={{ display: { xs: 'none', md: 'block' } }} style={{ margin: "15px", position: "absolute", right: "25px", zIndex: "10000" }}>Refresh</Button>
     <h1 style={{ textAlign: "center" }}>Station: {data ? data.name : id}</h1>
+    {data && data.description ? (
+      <div style={{ maxWidth: "700px", margin: "0 auto 20px", textAlign: "center" }}>
+        <h3>{stationCopy.descriptionTitle || language.en.stations.descriptionTitle}</h3>
+        <p style={{ whiteSpace: "pre-wrap" }}>{data.description}</p>
+      </div>
+    ) : null}
     <Grid container spacing={2} style={{ marginLeft: "20px" }}>
       <Grid item lg={3}>
         <Autocomplete
@@ -542,31 +545,86 @@ function StationView(props) {
         {data.measurements.movements && data.measurements.movements.length > 0 ?
           <div>
             <TabContext value={value}>
-              <Box sx={{ bgcolor: 'background.paper' }} style={{ maxWidth: "94vw", marginLeft: "3vw" }}>
+              <Box sx={{ bgcolor: 'background.paper', display: 'flex', alignItems: 'center' }} style={{ maxWidth: "94vw", marginLeft: "3vw" }}>
 
-                <TabList
-                  value={value}
-                  onChange={handleChange}
-                  variant="scrollable"
-                  scrollButtons="auto"
-                  aria-label="scrollable auto tabs example"
-                >
-                  {data.measurements.movements.map((movement) =>
-                    <Tab label={displayTimestamp(movement.start_date)}></Tab>
-                  )}
-                </TabList>
+                {movementSource === 'station' && movementMeta.hasPrevious ? (
+                  <Tooltip title={language[props.language]["stations"]["loadPreviousMovements"] || language.en.stations.loadPreviousMovements}>
+                    <span>
+                      <IconButton
+                        onClick={handleLoadPreviousMovementsPage}
+                        disabled={movementMeta.loading}
+                        aria-label={language[props.language]["stations"]["loadPreviousMovements"] || language.en.stations.loadPreviousMovements}
+                        sx={{ flexShrink: 0 }}
+                      >
+                        <KeyboardDoubleArrowLeftIcon />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                ) : null}
+                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                  <TabList
+                    value={value}
+                    onChange={handleChange}
+                    variant="scrollable"
+                    scrollButtons="auto"
+                    aria-label="scrollable auto tabs example"
+                  >
+                    {data.measurements.movements.map((movement) =>
+                      <Tab label={displayTimestamp(movement.start_date)}></Tab>
+                    )}
+                  </TabList>
+                </Box>
+                {movementSource === 'station' && movementMeta.hasMore ? (
+                  <Tooltip title={language[props.language]["stations"]["loadMoreMovements"]}>
+                    <span>
+                      <IconButton
+                        onClick={handleLoadNextMovementsPage}
+                        disabled={movementMeta.loading}
+                        aria-label={language[props.language]["stations"]["loadMoreMovements"]}
+                        sx={{ flexShrink: 0 }}
+                      >
+                        <KeyboardDoubleArrowRightIcon />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                ) : null}
               </Box>
               {data.measurements.movements.map((movement, i) =>
                 <TabPanel value={i}>
                   <GestureDetector
-                onSwipeLeft={() => setValue(Math.min(data.measurements.movements.length, value+1))}
-                onSwipeRight={() => setValue(Math.max(0, value-1))}
-                onDragLeft={() => setValue(Math.min(data.measurements.movements.length, value+1))}
-                onDragRight={() => setValue(Math.max(0, value-1))}
+                onSwipeLeft={() => {
+                  if (value < data.measurements.movements.length - 1) {
+                    setValue(value + 1);
+                  } else {
+                    handleLoadNextMovementsPage();
+                  }
+                }}
+                onSwipeRight={() => {
+                  if (value > 0) {
+                    setValue(value - 1);
+                  } else {
+                    handleLoadPreviousMovementsPage();
+                  }
+                }}
+                onDragLeft={() => {
+                  if (value < data.measurements.movements.length - 1) {
+                    setValue(value + 1);
+                  } else {
+                    handleLoadNextMovementsPage();
+                  }
+                }}
+                onDragRight={() => {
+                  if (value > 0) {
+                    setValue(value - 1);
+                  } else {
+                    handleLoadPreviousMovementsPage();
+                  }
+                }}
             >
                   <Grid container spacing={4}>
                     <Grid item lg={8}>
                       {movement.video == "pending" ? < div><p>{language[props.language]["stations"]["wait1"]}<br />  </p> <Button variant="contained" onClick={() => { getStation() }} style={{ margin: "15px" }}>Refresh</Button></div>
+                        : !movement.video ? <p>{stationCopy.videoDeleted || language.en.stations.videoDeleted}</p>
                         :
                         <ReactPlayer playing={true} playsinline url={movement.video} loop={true} controls={true} width="100%" height="min(95vw, 80vh)" style={{ aspectRatio: 1 }} />}
                     </Grid>
@@ -607,11 +665,18 @@ function StationView(props) {
                   </GestureDetector>
                 </TabPanel>)}
             </TabContext>
-            {movementSource === 'station' && movementMeta.hasMore ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                <Button variant="outlined" onClick={handleLoadMoreMovements} disabled={movementMeta.loading}>
-                  {movementMeta.loading ? language[props.language]["stations"]["loadingMovements"] : language[props.language]["stations"]["loadMoreMovements"]}
-                </Button>
+            {movementSource === 'station' && (movementMeta.hasPrevious || movementMeta.hasMore) ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, mt: 2 }}>
+                {movementMeta.hasPrevious ? (
+                  <Button variant="outlined" onClick={handleLoadPreviousMovementsPage} disabled={movementMeta.loading}>
+                    {movementMeta.loading ? language[props.language]["stations"]["loadingMovements"] : language[props.language]["stations"]["loadPreviousMovements"] || language.en.stations.loadPreviousMovements}
+                  </Button>
+                ) : null}
+                {movementMeta.hasMore ? (
+                  <Button variant="outlined" onClick={handleLoadNextMovementsPage} disabled={movementMeta.loading}>
+                    {movementMeta.loading ? language[props.language]["stations"]["loadingMovements"] : language[props.language]["stations"]["loadMoreMovements"]}
+                  </Button>
+                ) : null}
               </Box>
             ) : movementSource === 'station' && !movementMeta.hasMore && data && data.measurements && data.measurements.movements && data.measurements.movements.length > 0 ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
