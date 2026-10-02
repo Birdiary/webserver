@@ -533,6 +533,7 @@ const OwnStations = ({ language: langKey }) => {
         return {
           ...station,
           name: payload.name,
+          description: payload.description,
           location: payload.location,
           mail: payload.mail,
           sensebox_id: payload.sensebox_id,
@@ -543,6 +544,7 @@ const OwnStations = ({ language: langKey }) => {
       }));
       updateDraftState(stationId, () => ({
         name: payload.name,
+        description: payload.description,
         lat,
         lng,
         mailAdresses: (payload.mail.adresses || []).join(', '),
@@ -875,6 +877,11 @@ const OwnStations = ({ language: langKey }) => {
           const stationError = stationErrors[station.station_id];
           const currentMovementCount = station.movements?.length || 0;
           const fallbackHasMore = MOVEMENT_INITIAL_LIMIT > 0 && currentMovementCount === MOVEMENT_INITIAL_LIMIT;
+          const movements = station.movements || [];
+          const movementDateRange = movements.length > 0 ? {
+            newest: movements[0].start_date,
+            oldest: movements[movements.length - 1].start_date,
+          } : null;
           const movementInfo = movementMeta[station.station_id] || ensureMovementMetaShape({
             returned: currentMovementCount,
             total: currentMovementCount,
@@ -1097,29 +1104,49 @@ const OwnStations = ({ language: langKey }) => {
                 {copy.noMovements}
               </Typography>
             )}
+            {movements.length > 0 && (
+              <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 1 }}>
+                {copy.movementsOverviewCount
+                  .replace('{shown}', movementInfo.returned ?? movements.length)
+                  .replace('{total}', movementInfo.total ?? movements.length)}
+                {movementDateRange && (
+                  ` — ${copy.movementsOverviewRange
+                    .replace('{from}', formatDateTime(movementDateRange.oldest))
+                    .replace('{to}', formatDateTime(movementDateRange.newest))}`
+                )}
+              </Typography>
+            )}
             <Box className="movement-actions">
               {movementInfo.hasMore ? (
-                <Button
-                  size="small"
-                  variant="outlined"
-                  onClick={() => handleLoadMoreMovements(station.station_id)}
-                  disabled={movementInfo.loading}
-                >
-                  {movementInfo.loading ? copy.loadingMovements : copy.loadMoreMovements}
-                </Button>
+                <Tooltip title={copy.loadMoreMovementsTooltip}>
+                  <span>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => handleLoadMoreMovements(station.station_id)}
+                      disabled={movementInfo.loading}
+                    >
+                      {movementInfo.loading ? copy.loadingMovements : copy.loadMoreMovements}
+                    </Button>
+                  </span>
+                </Tooltip>
               ) : (
                 <Typography variant="caption" color="textSecondary">
                   {copy.allMovementsLoaded}
                 </Typography>
               )}
-              <Button
-                size="small"
-                variant="text"
-                onClick={() => handleLoadAllMovements(station.station_id)}
-                disabled={movementInfo.loading || movementInfo.loadedAll}
-              >
-                {copy.loadAllMovements}
-              </Button>
+              <Tooltip title={copy.loadAllMovementsTooltip}>
+                <span>
+                  <Button
+                    size="small"
+                    variant="text"
+                    onClick={() => handleLoadAllMovements(station.station_id)}
+                    disabled={movementInfo.loading || movementInfo.loadedAll}
+                  >
+                    {copy.loadAllMovements}
+                  </Button>
+                </span>
+              </Tooltip>
             </Box>
 
             <Divider sx={{ my: 2 }} />

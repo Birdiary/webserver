@@ -548,7 +548,7 @@ function StationView(props) {
               <Box sx={{ bgcolor: 'background.paper', display: 'flex', alignItems: 'center' }} style={{ maxWidth: "94vw", marginLeft: "3vw" }}>
 
                 {movementSource === 'station' && movementMeta.hasPrevious ? (
-                  <Tooltip title={language[props.language]["stations"]["loadPreviousMovements"] || language.en.stations.loadPreviousMovements}>
+                  <Tooltip title={language[props.language]["stations"]["loadPreviousMovementsTooltip"] || language.en.stations.loadPreviousMovementsTooltip}>
                     <span>
                       <IconButton
                         onClick={handleLoadPreviousMovementsPage}
@@ -575,7 +575,7 @@ function StationView(props) {
                   </TabList>
                 </Box>
                 {movementSource === 'station' && movementMeta.hasMore ? (
-                  <Tooltip title={language[props.language]["stations"]["loadMoreMovements"]}>
+                  <Tooltip title={language[props.language]["stations"]["loadMoreMovementsTooltip"] || language.en.stations.loadMoreMovementsTooltip}>
                     <span>
                       <IconButton
                         onClick={handleLoadNextMovementsPage}
@@ -589,6 +589,18 @@ function StationView(props) {
                   </Tooltip>
                 ) : null}
               </Box>
+              {movementSource === 'station' && data.measurements.movements.length > 0 ? (
+                <Typography variant="caption" color="textSecondary" sx={{ display: 'block', textAlign: 'center', mt: 0.5 }}>
+                  {(language[props.language]["stations"]["movementsOverviewCount"] || language.en.stations.movementsOverviewCount)
+                    .replace('{start}', movementMeta.offset + 1)
+                    .replace('{end}', movementMeta.offset + (movementMeta.returned ?? data.measurements.movements.length))
+                    .replace('{total}', movementMeta.total ?? data.measurements.movements.length)}
+                  {' — '}
+                  {(language[props.language]["stations"]["movementsOverviewRange"] || language.en.stations.movementsOverviewRange)
+                    .replace('{from}', displayTimestamp(data.measurements.movements[data.measurements.movements.length - 1].start_date))
+                    .replace('{to}', displayTimestamp(data.measurements.movements[0].start_date))}
+                </Typography>
+              ) : null}
               {data.measurements.movements.map((movement, i) =>
                 <TabPanel value={i}>
                   <GestureDetector
@@ -668,14 +680,22 @@ function StationView(props) {
             {movementSource === 'station' && (movementMeta.hasPrevious || movementMeta.hasMore) ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, mt: 2 }}>
                 {movementMeta.hasPrevious ? (
-                  <Button variant="outlined" onClick={handleLoadPreviousMovementsPage} disabled={movementMeta.loading}>
-                    {movementMeta.loading ? language[props.language]["stations"]["loadingMovements"] : language[props.language]["stations"]["loadPreviousMovements"] || language.en.stations.loadPreviousMovements}
-                  </Button>
+                  <Tooltip title={language[props.language]["stations"]["loadPreviousMovementsTooltip"] || language.en.stations.loadPreviousMovementsTooltip}>
+                    <span>
+                      <Button variant="outlined" onClick={handleLoadPreviousMovementsPage} disabled={movementMeta.loading}>
+                        {movementMeta.loading ? language[props.language]["stations"]["loadingMovements"] : language[props.language]["stations"]["loadPreviousMovements"] || language.en.stations.loadPreviousMovements}
+                      </Button>
+                    </span>
+                  </Tooltip>
                 ) : null}
                 {movementMeta.hasMore ? (
-                  <Button variant="outlined" onClick={handleLoadNextMovementsPage} disabled={movementMeta.loading}>
-                    {movementMeta.loading ? language[props.language]["stations"]["loadingMovements"] : language[props.language]["stations"]["loadMoreMovements"]}
-                  </Button>
+                  <Tooltip title={language[props.language]["stations"]["loadMoreMovementsTooltip"] || language.en.stations.loadMoreMovementsTooltip}>
+                    <span>
+                      <Button variant="outlined" onClick={handleLoadNextMovementsPage} disabled={movementMeta.loading}>
+                        {movementMeta.loading ? language[props.language]["stations"]["loadingMovements"] : language[props.language]["stations"]["loadMoreMovements"]}
+                      </Button>
+                    </span>
+                  </Tooltip>
                 ) : null}
               </Box>
             ) : movementSource === 'station' && !movementMeta.hasMore && data && data.measurements && data.measurements.movements && data.measurements.movements.length > 0 ? (
