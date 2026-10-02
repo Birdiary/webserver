@@ -1033,23 +1033,33 @@ def cleanupUploads(dry_run=False, min_age_hours=24):
     }
 
 
+DELETE_MOVEMENT_RETRY_MINUTES = 2
+DELETE_MOVEMENT_MAX_RETRIES = 15  # ~30 minutes before giving up and deleting the pending movement anyway
+
 @enqueueable
-def deleteMovement(movement_id, station_id):
+def deleteMovement(movement_id, station_id, retries=0):
     movement = db["movements_"+station_id].find_one({"mov_id": movement_id}, {'_id' : False})
-    videofile = movement["video"]
-    videofilename = os.path.basename(videofile)
-    audiofile = movement["audio"]
-    audiofilename = os.path.basename(audiofile)
-    os.remove("./uploads/disk/audios/" + audiofilename)
-    os.remove("./uploads/disk/videos/" + videofilename)
+    if movement is None:
+        return
+    if movement.get("video") == "pending" and retries < DELETE_MOVEMENT_MAX_RETRIES:
+        # videoAnalysis hasn't written the real video file back to this document yet. Deleting
+        # now would either skip the file it's about to save (orphaning it on disk, since the
+        # "pending" guard in removeMovementFiles won't touch it) or race with videoAnalysis's
+        # own update_one on this document. Push the delete back until processing has caught up.
+        q.enqueue_in(timedelta(minutes=DELETE_MOVEMENT_RETRY_MINUTES), deleteMovement, movement_id, station_id, retries + 1)
+        return
+    removeMovementFiles(movement)
     db["movements_" + station_id].delete_many({"mov_id": movement_id})
     station = stations.find_one({"station_id":station_id}, {'_id' : False} )
-    if station["type"] == "exhibit":
-        if station["lastMovement"]["mov_id"] == movement["mov_id"]:
+    if station is None:
+        return
+    if station.get("type") == "exhibit":
+        lastMovement = station.get("lastMovement")
+        if lastMovement and lastMovement.get("mov_id") == movement["mov_id"]:
                 statistics = db["statistics"].find_one({"station_id": "all"}, {'_id' : False})
                 bird = random.choice(statistics["specialBirds"])
-                movement = random.choice(bird["movements"])
-                stations.update_one({"station_id":station_id}, {'$set': {"lastMovement" : movement}})
+                newLastMovement = random.choice(bird["movements"])
+                stations.update_one({"station_id":station_id}, {'$set': {"lastMovement" : newLastMovement}})
                     
 
     
